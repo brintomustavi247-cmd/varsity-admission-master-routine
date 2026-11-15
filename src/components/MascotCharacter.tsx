@@ -11,33 +11,59 @@ interface MascotCharacterProps {
 const MOOD_IMAGE_MAP: Record<MascotMood, { src: string; fallback: string; alt: string }> = {
   sassy: {
     src: '/mascot/cyber-cat-sassy.png',
-    fallback: '/mascot/cyber-cat.png',
-    alt: 'Sassy Aura Cat',
+    fallback: '/mascot/cyber-cat-sassy.png',
+    alt: 'Sassy Shushing Cat',
   },
   psycho: {
     src: '/mascot/cyber-cat-psycho.png',
-    fallback: '/mascot/cyber-cat.png',
-    alt: 'Psycho Threat Cat',
-  },
-  jealous: {
-    src: '/mascot/cyber-cat-jealous.png',
-    fallback: '/mascot/cyber-cat.png',
-    alt: 'Jealous Rivalry Cat',
+    fallback: '/mascot/cyber-cat-psycho.png',
+    alt: 'Furious Psycho Cat',
   },
   crying: {
     src: '/mascot/cyber-cat-crying.png',
-    fallback: '/mascot/cyber-cat.png',
-    alt: 'Guilt Trip Crying Cat',
+    fallback: '/mascot/cyber-cat-crying.png',
+    alt: 'Teary Crying Cat',
+  },
+  smug: {
+    src: '/mascot/cyber-cat-smug.png',
+    fallback: '/mascot/cyber-cat-smug.png',
+    alt: 'Confident Thumbs-Up Cat',
+  },
+  panic: {
+    src: '/mascot/cyber-cat-panic.png',
+    fallback: '/mascot/cyber-cat-panic.png',
+    alt: 'Trembling Panic Cat',
+  },
+  exhausted: {
+    src: '/mascot/cyber-cat-exhausted.png',
+    fallback: '/mascot/cyber-cat-exhausted.png',
+    alt: 'Facepalm Exhausted Cat',
+  },
+  sleepy: {
+    src: '/mascot/cyber-cat-sleepy.png',
+    fallback: '/mascot/cyber-cat-sleepy.png',
+    alt: 'Yawning Sleepy Cat',
+  },
+  happy: {
+    src: '/mascot/cyber-cat-happy.png',
+    fallback: '/mascot/cyber-cat-happy.png',
+    alt: 'Smiling Cheerful Cat',
+  },
+  // Legacy fallbacks:
+  jealous: {
+    src: '/mascot/cyber-cat-smug.png',
+    fallback: '/mascot/cyber-cat-smug.png',
+    alt: 'Jealous Cat',
   },
   roast: {
-    src: '/mascot/cyber-cat-roast.png',
-    fallback: '/mascot/cyber-cat.png',
-    alt: 'Playful Roasting Cat',
+    src: '/mascot/cyber-cat-exhausted.png',
+    fallback: '/mascot/cyber-cat-exhausted.png',
+    alt: 'Roasting Cat',
   },
   doodie: {
-    src: '/mascot/cyber-cat-doodie.png',
-    fallback: '/mascot/cyber-cat.png',
-    alt: 'Do or Die Midnight Cat',
+    src: '/mascot/cyber-cat-panic.png',
+    fallback: '/mascot/cyber-cat-panic.png',
+    alt: 'Midnight Panic Cat',
   },
 };
 
@@ -68,15 +94,41 @@ export const MascotCharacter: React.FC<MascotCharacterProps> = ({
       auraBorder: 'border-red-500/80 shadow-[0_0_30px_rgba(255,23,68,0.7)]',
       glow: 'from-red-600 via-rose-500 to-amber-500',
     },
-    jealous: {
-      themeColor: '#38BDF8',
-      auraBorder: 'border-sky-400/70 shadow-[0_0_24px_rgba(56,189,248,0.5)]',
-      glow: 'from-sky-500 via-teal-500 to-emerald-500',
-    },
     crying: {
       themeColor: '#60A5FA',
       auraBorder: 'border-blue-400/70 shadow-[0_0_24px_rgba(96,165,250,0.5)]',
       glow: 'from-blue-600 via-indigo-600 to-sky-400',
+    },
+    smug: {
+      themeColor: '#38BDF8',
+      auraBorder: 'border-sky-400/70 shadow-[0_0_24px_rgba(56,189,248,0.55)]',
+      glow: 'from-sky-500 via-blue-500 to-cyan-400',
+    },
+    panic: {
+      themeColor: '#E11D48',
+      auraBorder: 'border-rose-500/90 shadow-[0_0_32px_rgba(225,29,72,0.8)]',
+      glow: 'from-rose-600 via-red-600 to-amber-600',
+    },
+    exhausted: {
+      themeColor: '#FBBF24',
+      auraBorder: 'border-amber-400/70 shadow-[0_0_24px_rgba(251,191,36,0.5)]',
+      glow: 'from-amber-500 via-orange-500 to-rose-500',
+    },
+    sleepy: {
+      themeColor: '#818CF8',
+      auraBorder: 'border-indigo-400/70 shadow-[0_0_24px_rgba(129,140,248,0.5)]',
+      glow: 'from-indigo-600 via-violet-600 to-purple-500',
+    },
+    happy: {
+      themeColor: '#22D3EE',
+      auraBorder: 'border-cyan-300/80 shadow-[0_0_28px_rgba(34,211,238,0.6)]',
+      glow: 'from-cyan-400 via-teal-400 to-sky-400',
+    },
+    // Legacy fallbacks
+    jealous: {
+      themeColor: '#38BDF8',
+      auraBorder: 'border-sky-400/70 shadow-[0_0_24px_rgba(56,189,248,0.5)]',
+      glow: 'from-sky-500 via-teal-500 to-emerald-500',
     },
     roast: {
       themeColor: '#FBBF24',
@@ -102,7 +154,9 @@ export const MascotCharacter: React.FC<MascotCharacterProps> = ({
       <div
         aria-hidden="true"
         className={`absolute -inset-1 rounded-3xl opacity-60 blur-md transition-all duration-500 ${cfg.glow} ${
-          animate && (mood === 'psycho' || mood === 'doodie') ? 'animate-pulse' : ''
+          animate && (mood === 'psycho' || mood === 'panic' || mood === 'doodie')
+            ? 'animate-pulse'
+            : ''
         }`}
       />
 

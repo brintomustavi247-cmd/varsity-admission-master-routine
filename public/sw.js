@@ -1,4 +1,4 @@
-const CACHE_NAME = 'varsity-routine-v8';
+const CACHE_NAME = 'varsity-routine-v9';
 const STATIC_ASSETS = [
   '/icons/mascot-notification.png',
   '/icons/badge-cyber-cat.png',
@@ -10,9 +10,11 @@ const STATIC_ASSETS = [
   '/mascot/cyber-cat-sassy.png',
   '/mascot/cyber-cat-psycho.png',
   '/mascot/cyber-cat-crying.png',
-  '/mascot/cyber-cat-roast.png',
-  '/mascot/cyber-cat-jealous.png',
-  '/mascot/cyber-cat-doodie.png',
+  '/mascot/cyber-cat-smug.png',
+  '/mascot/cyber-cat-panic.png',
+  '/mascot/cyber-cat-exhausted.png',
+  '/mascot/cyber-cat-sleepy.png',
+  '/mascot/cyber-cat-happy.png',
   '/favicon.ico',
   '/manifest.webmanifest'
 ];
