@@ -5,7 +5,13 @@ import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+const firestoreDbId =
+  firebaseConfig.firestoreDatabaseId &&
+  firebaseConfig.firestoreDatabaseId !== '(default)'
+    ? firebaseConfig.firestoreDatabaseId
+    : undefined;
+
+export const db = firestoreDbId ? getFirestore(app, firestoreDbId) : getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });

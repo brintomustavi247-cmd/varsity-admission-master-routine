@@ -1,12 +1,12 @@
 {
-  "projectId": "lateral-container-f6shk",
-  "appId": "1:990778219809:web:4befb75887f3ddf1d03260",
-  "apiKey": "AIzaSyBH_fUcBqqLbvtnx7R2IqftHM-f_EQ0Dns",
-  "authDomain": "lateral-container-f6shk.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-4de10e82-e8dd-4e5d-bf8e-b7e0f03f7271",
-  "storageBucket": "lateral-container-f6shk.firebasestorage.app",
-  "messagingSenderId": "990778219809",
+  "projectId": "varsity-admission-2026",
+  "appId": "1:104315184230:web:273d688f862d357f5d79a7",
+  "apiKey": "AIzaSyBggHyuB4VJRBM-fO_F94QGSDrKNFitMos",
+  "authDomain": "varsity-admission-2026.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "varsity-admission-2026.firebasestorage.app",
+  "messagingSenderId": "104315184230",
   "measurementId": "",
-  "oAuthClientId": "990778219809-bd5a9jp8iu7vlch89f1hv3u6lh8qil15.apps.googleusercontent.com",
+  "oAuthClientId": "",
   "recaptchaSiteKey": ""
 }
