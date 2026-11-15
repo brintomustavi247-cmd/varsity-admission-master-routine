@@ -1,8 +1,11 @@
-const CACHE_NAME = 'varsity-routine-v3';
+const CACHE_NAME = 'varsity-routine-v4';
 const STATIC_ASSETS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon.svg',
+  '/icons/badge-96.png',
+  '/icons/badge-72.png',
+  '/icons/badge.svg',
   '/favicon.ico',
   '/manifest.webmanifest'
 ];
@@ -62,6 +65,26 @@ self.addEventListener('fetch', (event) => {
 
   // For all other requests (JS/CSS assets): Network first
   event.respondWith(fetch(req));
+});
+
+// Handle push notifications
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  try {
+    const data = event.data.json();
+    event.waitUntil(
+      self.registration.showNotification(data.title || 'ভার্সিটি অ্যাডমিশন রুটিন', {
+        body: data.body || 'আজকের মিশন সম্পূর্ণ করুন!',
+        icon: '/icons/icon-192.png',
+        badge: '/icons/badge-96.png',
+        tag: data.tag || 'admission-routine-alert',
+        renotify: true,
+        data: { url: data.url || '/?tab=routine' },
+      })
+    );
+  } catch {
+    // Ignore non-json push
+  }
 });
 
 // Handle notification click on mobile phone / desktop
