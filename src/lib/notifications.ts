@@ -1,3 +1,9 @@
+import {
+  getContextualSavageNotification,
+  getRandomSavageNotification,
+  type SavageNotification,
+} from '../data/savageNotifications';
+
 export function isNotificationSupported(): boolean {
   return (
     typeof window !== 'undefined' &&
@@ -92,8 +98,10 @@ export async function checkAndSendDailyReminder(
     return false;
   }
 
-  const title = '📚 আজকের মিশন এখনো বাকি!';
-  const body = `Day ${String(dayNumber).padStart(2, '0')}-এর ${remainingTasks}টি টাস্ক এখনো শেষ হয়নি। ঘুমানোর আগেই মিশন শেষ করে স্ট্রিক বজায় রাখুন! 🔥`;
+  // Pick one of the 30 context-aware Duolingo-style savage notifications!
+  const savage = getContextualSavageNotification();
+  const title = savage.title;
+  const body = `${savage.body} (Day ${String(dayNumber).padStart(2, '0')}-এর ${remainingTasks}টি টাস্ক বাকি!)`;
 
   const sent = await sendPhoneNotification({
     title,
@@ -107,4 +115,18 @@ export async function checkAndSendDailyReminder(
   }
 
   return sent;
+}
+
+export async function sendSavageTestNotification(
+  custom?: SavageNotification
+): Promise<SavageNotification | null> {
+  const savage = custom || getRandomSavageNotification();
+  const sent = await sendPhoneNotification({
+    title: savage.title,
+    body: savage.body,
+    tag: `test-savage-${Date.now()}`,
+    url: '/?tab=routine',
+  });
+
+  return sent ? savage : null;
 }
