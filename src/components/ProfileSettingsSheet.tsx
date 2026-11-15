@@ -11,6 +11,7 @@ import {
   LogOut,
   Moon,
   Send,
+  Sparkles,
   Sun,
   Trash2,
   Upload,

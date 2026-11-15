@@ -21,6 +21,7 @@ import {
   Globe,
   LogOut,
   Search,
+  Sparkles,
   Trash2,
   Upload,
   Users,

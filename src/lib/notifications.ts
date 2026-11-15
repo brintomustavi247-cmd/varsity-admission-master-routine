@@ -45,7 +45,7 @@ export async function sendPhoneNotification({
   if (!isNotificationSupported()) return false;
   if (Notification.permission !== 'granted') return false;
 
-  const options: NotificationOptions = {
+  const options: NotificationOptions & { renotify?: boolean } = {
     body,
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-192.png',
