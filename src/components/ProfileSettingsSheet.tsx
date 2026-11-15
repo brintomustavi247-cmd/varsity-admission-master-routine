@@ -1,14 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Bell,
   BellOff,
+  BellRing,
   Dna,
   Download,
   Flame,
   Globe,
   LogOut,
   Moon,
+  Send,
   Sun,
   Trash2,
   Upload,
@@ -18,6 +20,11 @@ import {
 } from 'lucide-react';
 import type { StudyTrack } from '../types/study';
 import { UserAvatar } from './AvatarStack';
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  sendPhoneNotification,
+} from '../lib/notifications';
 
 interface ProfileSettingsSheetProps {
   open: boolean;
@@ -75,6 +82,33 @@ export function ProfileSettingsSheet({
   onRequestReset,
   onSignOut,
 }: ProfileSettingsSheetProps) {
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>(() => getNotificationPermission());
+  const [testSent, setTestSent] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setNotifPermission(getNotificationPermission());
+    }
+  }, [open]);
+
+  const handleEnableNotification = async () => {
+    const perm = await requestNotificationPermission();
+    setNotifPermission(perm);
+    if (perm === 'granted' && !reminderEnabled) {
+      onToggleReminder();
+    }
+  };
+
+  const handleSendTestNotification = async () => {
+    setTestSent(true);
+    await sendPhoneNotification({
+      title: '📚 টেস্ট নোটিফিকেশন সফল!',
+      body: 'আপনার ফোনে অ্যাডমিশন রুটিন নোটিফিকেশন সক্রিয় আছে। প্রতিদিন টাস্ক বাকি থাকলে সরাসরি রিমাইন্ডার পাবেন। 🔥',
+      tag: 'test-notification',
+    });
+    setTimeout(() => setTestSent(false), 3000);
+  };
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -274,34 +308,83 @@ export function ProfileSettingsSheet({
                     </button>
                   </div>
 
-                  <div className="min-h-[48px] px-4 py-2.5 flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={onToggleReminder}
-                      className="flex-1 flex items-center justify-between text-left cursor-pointer"
-                    >
-                      <span className="flex items-center gap-2.5 text-sm font-bold text-slate-800 dark:text-slate-100">
+                  <div className="p-3 bg-amber-500/5 dark:bg-amber-500/10 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
                         {reminderEnabled ? (
-                          <Bell className="w-4 h-4 text-amber-500" />
+                          <BellRing className="w-4 h-4 text-amber-500" />
                         ) : (
                           <BellOff className="w-4 h-4 text-slate-400" />
                         )}
-                        রাত ৮টার রিমাইন্ডার
-                      </span>
-                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                        <div>
+                          <div className="text-sm font-bold text-slate-800 dark:text-slate-100">
+                            দৈনিক ফোন নোটিফিকেশন
+                          </div>
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            পড়া বাকি থাকলে রাত ৮টায় সরাসরি ফোনে অ্যালার্ট
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={onToggleReminder}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                          reminderEnabled
+                            ? 'bg-amber-500 text-white hover:bg-amber-600'
+                            : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
                         {reminderEnabled ? 'চালু' : 'বন্ধ'}
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onPreviewReminder();
-                        onClose();
-                      }}
-                      className="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[11px] font-bold text-[#4F46E5] dark:text-[#818CF8] hover:bg-indigo-100 dark:hover:bg-indigo-900/60 whitespace-nowrap cursor-pointer"
-                    >
-                      প্রিভিউ
-                    </button>
+                      </button>
+                    </div>
+
+                    {/* Notification Permission / Action Buttons */}
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/50 dark:border-slate-800/80 gap-2">
+                      {notifPermission === 'granted' ? (
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>ফোনে পুশ সক্রিয়</span>
+                        </div>
+                      ) : notifPermission === 'denied' ? (
+                        <span className="text-[11px] font-bold text-rose-500">
+                          ব্রাউজারে ব্লক করা (সাইট সেটিংসে Allow করুন)
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleEnableNotification}
+                          className="text-xs font-bold text-[#4F46E5] dark:text-[#818CF8] hover:underline cursor-pointer"
+                        >
+                          🔔 ফোনের নোটিফিকেশন পারমিশন দিন
+                        </button>
+                      )}
+
+                      <div className="flex items-center gap-1.5">
+                        {notifPermission === 'granted' && (
+                          <button
+                            type="button"
+                            onClick={handleSendTestNotification}
+                            disabled={testSent}
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-60"
+                          >
+                            <Send className="w-3 h-3" />
+                            <span>{testSent ? 'পাঠানো হয়েছে!' : 'টেস্ট পাঠান'}</span>
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onPreviewReminder();
+                            onClose();
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[11px] font-bold text-[#4F46E5] dark:text-[#818CF8] hover:bg-indigo-100 dark:hover:bg-indigo-900/60 whitespace-nowrap cursor-pointer"
+                        >
+                          ব্যানার প্রিভিউ
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

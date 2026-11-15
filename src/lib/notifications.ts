@@ -1,0 +1,110 @@
+export function isNotificationSupported(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    'Notification' in window &&
+    'serviceWorker' in navigator
+  );
+}
+
+export function getNotificationPermission(): NotificationPermission {
+  if (!isNotificationSupported()) return 'denied';
+  return Notification.permission;
+}
+
+export async function requestNotificationPermission(): Promise<NotificationPermission> {
+  if (!isNotificationSupported()) return 'denied';
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      await sendPhoneNotification({
+        title: '🔔 দৈনিক নোটিফিকেশন চালু হয়েছে!',
+        body: 'আজকের পড়ার কোনো টাস্ক বাকি থাকলে প্রতিদিন ফোনে সরাসরি রিমাইন্ডার পৌঁছে যাবে।',
+        tag: 'welcome-notification',
+      });
+    }
+    return permission;
+  } catch (err) {
+    console.warn('Failed to request notification permission:', err);
+    return 'denied';
+  }
+}
+
+interface NotificationPayload {
+  title: string;
+  body: string;
+  tag?: string;
+  url?: string;
+}
+
+export async function sendPhoneNotification({
+  title,
+  body,
+  tag = 'admission-routine-alert',
+  url = '/?tab=routine',
+}: NotificationPayload): Promise<boolean> {
+  if (!isNotificationSupported()) return false;
+  if (Notification.permission !== 'granted') return false;
+
+  const options: NotificationOptions = {
+    body,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    tag,
+    renotify: true,
+    data: { url },
+  };
+
+  // Add vibration pattern if supported
+  if ('vibrate' in navigator) {
+    (options as Record<string, unknown>).vibrate = [200, 100, 200];
+  }
+
+  try {
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      if (registration && 'showNotification' in registration) {
+        await registration.showNotification(title, options);
+        return true;
+      }
+    }
+
+    // Fallback to desktop Notification constructor if service worker is not active
+    new Notification(title, options);
+    return true;
+  } catch (err) {
+    console.warn('Failed to display native notification:', err);
+    return false;
+  }
+}
+
+export async function checkAndSendDailyReminder(
+  dayNumber: number,
+  remainingTasks: number,
+  force: boolean = false
+): Promise<boolean> {
+  if (remainingTasks <= 0) return false;
+  if (getNotificationPermission() !== 'granted') return false;
+
+  const todayISO = new Date().toLocaleDateString('en-CA');
+  const alertKey = `daily_phone_alert_${todayISO}`;
+
+  if (!force && localStorage.getItem(alertKey) === 'sent') {
+    return false;
+  }
+
+  const title = '📚 আজকের মিশন এখনো বাকি!';
+  const body = `Day ${String(dayNumber).padStart(2, '0')}-এর ${remainingTasks}টি টাস্ক এখনো শেষ হয়নি। ঘুমানোর আগেই মিশন শেষ করে স্ট্রিক বজায় রাখুন! 🔥`;
+
+  const sent = await sendPhoneNotification({
+    title,
+    body,
+    tag: `daily-mission-${todayISO}`,
+    url: '/?tab=routine',
+  });
+
+  if (sent) {
+    localStorage.setItem(alertKey, 'sent');
+  }
+
+  return sent;
+}

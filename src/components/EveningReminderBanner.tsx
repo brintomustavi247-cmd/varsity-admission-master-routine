@@ -1,6 +1,11 @@
+import { useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
-import { ArrowRight, BellRing, Clock, X } from 'lucide-react';
+import { ArrowRight, BellRing, Clock, Smartphone, X } from 'lucide-react';
 import type { RoutineDay } from '../types/study';
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+} from '../lib/notifications';
 
 interface EveningReminderBannerProps {
   visible: boolean;
@@ -20,6 +25,12 @@ export function EveningReminderBanner({
   onDismiss,
 }: EveningReminderBannerProps) {
   const prefersReducedMotion = useReducedMotion();
+  const [perm, setPerm] = useState(() => getNotificationPermission());
+
+  const handleRequestPush = async () => {
+    const res = await requestNotificationPermission();
+    setPerm(res);
+  };
 
   return (
     <AnimatePresence>
@@ -88,6 +99,17 @@ export function EveningReminderBanner({
                   </strong>{' '}
                   টাস্ক এখনো বাকি! ঘুমানোর আগেই আজকের মিশন শেষ করুন।
                 </p>
+
+                {perm !== 'granted' && (
+                  <button
+                    type="button"
+                    onClick={handleRequestPush}
+                    className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer"
+                  >
+                    <Smartphone className="w-3 h-3" />
+                    <span>ফোনে সরাসরি পুশ নোটিফিকেশন পেতে ট্যাপ করুন</span>
+                  </button>
+                )}
 
                 <div className="mt-2.5 sm:hidden">
                   <button

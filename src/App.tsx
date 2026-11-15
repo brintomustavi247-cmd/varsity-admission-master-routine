@@ -69,6 +69,7 @@ import { SyllabusView } from './components/SyllabusView';
 import { SquadView } from './components/SquadView';
 import { StrategyView } from './components/StrategyView';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
+import { checkAndSendDailyReminder } from './lib/notifications';
 
 type TabId = 'routine' | 'syllabus' | 'squad' | 'strategy';
 
@@ -574,6 +575,30 @@ export default function App() {
     dailyMissionRemaining > 0 &&
     (forcePreviewReminder ||
       (isAfter8PM && reminderDismissedKey !== currentAlertKey));
+
+  // Trigger native phone notification when tasks are not solved and it is after 8 PM (or user tests reminder)
+  useEffect(() => {
+    if (
+      dataReady &&
+      reminderEnabled &&
+      dailyMissionRemaining > 0 &&
+      dailyMissionDay &&
+      (isAfter8PM || forcePreviewReminder)
+    ) {
+      checkAndSendDailyReminder(
+        dailyMissionDay.d,
+        dailyMissionRemaining,
+        forcePreviewReminder
+      );
+    }
+  }, [
+    dataReady,
+    reminderEnabled,
+    dailyMissionRemaining,
+    dailyMissionDay,
+    isAfter8PM,
+    forcePreviewReminder,
+  ]);
 
   const persistProgress = useCallback(
     async (
