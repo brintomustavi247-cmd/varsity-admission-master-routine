@@ -1,9 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { motion } from 'motion/react';
-import { Award, CheckCircle2, Flame, Users, ShieldCheck } from 'lucide-react';
+import {
+  Award,
+  CheckCircle2,
+  Download,
+  Flame,
+  Monitor,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
 import { auth, googleProvider } from '../lib/firebase';
 import { PwaInstallBanner } from './PwaInstallBanner';
+import { DesktopInstallModal } from './DesktopInstallModal';
+import {
+  isAppInstalled,
+  promptPwaInstall,
+  subscribeDeferredPrompt,
+} from '../lib/pwa';
 
 interface LoginGateProps {
   theme: 'light' | 'dark';
@@ -13,6 +27,27 @@ interface LoginGateProps {
 export function LoginGate({ theme, onToggleTheme }: LoginGateProps) {
   const [signingIn, setSigningIn] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [installModalOpen, setInstallModalOpen] = useState(false);
+  const [hasNativePrompt, setHasNativePrompt] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    setIsInstalled(isAppInstalled());
+    return subscribeDeferredPrompt((prompt) => {
+      setHasNativePrompt(Boolean(prompt));
+    });
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (hasNativePrompt) {
+      const outcome = await promptPwaInstall();
+      if (outcome === 'manual') {
+        setInstallModalOpen(true);
+      }
+    } else {
+      setInstallModalOpen(true);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setSigningIn(true);
@@ -46,13 +81,24 @@ export function LoginGate({ theme, onToggleTheme }: LoginGateProps) {
           <img src="/icons/icon-192.png" alt="লোগো" className="w-8 h-8 rounded-xl shadow-xs border border-sky-400/30 object-cover" />
           <span>ভার্সিটি অ্যাডমিশন রুটিন</span>
         </div>
-        <button
-          type="button"
-          onClick={onToggleTheme}
-          className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-xs"
-        >
-          {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleInstallClick}
+            className="px-3.5 py-2 text-xs font-bold rounded-xl border border-sky-400/40 bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Monitor className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+            <span className="hidden sm:inline">ডেস্কটপে ইনস্টল</span>
+            <span className="sm:hidden">ইনস্টল</span>
+          </button>
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors whitespace-nowrap shrink-0 cursor-pointer shadow-xs"
+          >
+            {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
+          </button>
+        </div>
       </header>
 
       <div className="w-full max-w-5xl mx-auto px-4 mb-2">
@@ -175,6 +221,40 @@ export function LoginGate({ theme, onToggleTheme }: LoginGateProps) {
               <span>{signingIn ? 'সাইন ইন হচ্ছে...' : 'Google দিয়ে সাইন ইন করুন'}</span>
             </button>
 
+            {/* Permanent Dedicated Desktop & Mobile App Install Button */}
+            <div className="relative my-4 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+              </div>
+              <div className="relative bg-white dark:bg-slate-900 px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                অথবা সরাসরি অ্যাপ হিসেবে চালান
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleInstallClick}
+              className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border-2 border-indigo-500/35 dark:border-indigo-400/30 bg-gradient-to-r from-indigo-50/70 via-white to-sky-50/70 dark:from-slate-800 dark:via-indigo-950/40 dark:to-slate-800 text-slate-800 dark:text-slate-100 hover:border-indigo-500 hover:shadow-md transition-all cursor-pointer group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform">
+                <Monitor className="w-4 h-4" />
+              </div>
+              <div className="text-left flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-50 truncate">
+                  <span>ডেস্কটপ / পিসিতে ইনস্টল করুন</span>
+                  <span className="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 text-[10px] font-extrabold uppercase">
+                    Desktop App
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  {isInstalled
+                    ? '✅ ইতিমধ্যে ইনস্টল করা আছে (ওপেন করতে ট্যাপ করুন)'
+                    : 'সরাসরি কম্পিউটার স্ক্রিন থেকে আইকন দিয়ে চালু করুন'}
+                </div>
+              </div>
+              <Download className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 group-hover:translate-y-0.5 transition-transform" />
+            </button>
+
             {errorMsg && (
               <div
                 role="alert"
@@ -191,6 +271,13 @@ export function LoginGate({ theme, onToggleTheme }: LoginGateProps) {
           </div>
         </motion.div>
       </main>
+
+      <DesktopInstallModal
+        open={installModalOpen}
+        onClose={() => setInstallModalOpen(false)}
+        onNativePrompt={handleInstallClick}
+        hasNativePrompt={hasNativePrompt}
+      />
     </div>
   );
 }
