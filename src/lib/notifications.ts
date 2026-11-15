@@ -66,17 +66,31 @@ export async function sendPhoneNotification({
   }
 
   try {
+    let sent = false;
+
     if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
-      if (registration && 'showNotification' in registration) {
-        await registration.showNotification(title, options);
-        return true;
+      try {
+        const swPromise = navigator.serviceWorker.ready;
+        const timeoutPromise = new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), 1200)
+        );
+        const registration = await Promise.race([swPromise, timeoutPromise]);
+
+        if (registration && 'showNotification' in registration) {
+          await registration.showNotification(title, options);
+          sent = true;
+        }
+      } catch {
+        // Fallback to Notification constructor
       }
     }
 
-    // Fallback to desktop Notification constructor if service worker is not active
-    new Notification(title, options);
-    return true;
+    if (!sent && typeof Notification !== 'undefined') {
+      new Notification(title, options);
+      sent = true;
+    }
+
+    return sent;
   } catch (err) {
     console.warn('Failed to display native notification:', err);
     return false;
@@ -206,4 +220,34 @@ export async function sendSavageTestNotification(
   });
 
   return sent ? savage : null;
+}
+
+/**
+ * 60-Second Automated Countdown Test:
+ * Allows user to lock screen or background app, and witness the auto notification fire in exactly 60 seconds!
+ */
+export function scheduleCountdownNotification(
+  seconds: number,
+  onTick?: (remaining: number) => void,
+  onComplete?: (savage: SavageNotification) => void
+): () => void {
+  let remaining = seconds;
+  const intervalId = window.setInterval(() => {
+    remaining -= 1;
+    if (onTick) onTick(remaining);
+
+    if (remaining <= 0) {
+      window.clearInterval(intervalId);
+      const savage = getRandomSavageNotification();
+      sendPhoneNotification({
+        title: savage.title,
+        body: savage.body,
+        tag: `countdown-${Date.now()}`,
+        url: '/?tab=routine',
+      });
+      if (onComplete) onComplete(savage);
+    }
+  }, 1000);
+
+  return () => window.clearInterval(intervalId);
 }

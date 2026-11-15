@@ -24,6 +24,7 @@ import { UserAvatar } from './AvatarStack';
 import {
   getNotificationPermission,
   requestNotificationPermission,
+  scheduleCountdownNotification,
   sendPhoneNotification,
   sendSavageTestNotification,
 } from '../lib/notifications';
@@ -91,9 +92,23 @@ export function ProfileSettingsSheet({
 }: ProfileSettingsSheetProps) {
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>(() => getNotificationPermission());
   const [testSent, setTestSent] = useState(false);
+  const [countdownSec, setCountdownSec] = useState<number | null>(null);
   const [savagePreview, setSavagePreview] = useState<SavageNotification>(() =>
     getRandomSavageNotification()
   );
+
+  const handleStartCountdown = () => {
+    if (countdownSec !== null) return;
+    setCountdownSec(60);
+    scheduleCountdownNotification(
+      60,
+      (sec) => setCountdownSec(sec),
+      (savage) => {
+        setCountdownSec(null);
+        setSavagePreview(savage);
+      }
+    );
+  };
 
   useEffect(() => {
     if (open) {
@@ -416,17 +431,32 @@ export function ProfileSettingsSheet({
                         </button>
                       )}
 
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
                         {notifPermission === 'granted' && (
-                          <button
-                            type="button"
-                            onClick={handleSendTestNotification}
-                            disabled={testSent}
-                            className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 text-white text-[11px] font-bold shadow-xs hover:from-red-500 hover:to-rose-500 transition-all flex items-center gap-1 cursor-pointer disabled:opacity-60"
-                          >
-                            <Send className="w-3 h-3" />
-                            <span>{testSent ? 'খোঁচা পাঠানো হয়েছে!' : 'ফোনে খোঁচা পাঠান'}</span>
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              onClick={handleSendTestNotification}
+                              disabled={testSent}
+                              className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 text-white text-[11px] font-bold shadow-xs hover:from-red-500 hover:to-rose-500 transition-all flex items-center gap-1 cursor-pointer disabled:opacity-60"
+                            >
+                              <Send className="w-3 h-3" />
+                              <span>{testSent ? 'পাঠানো হয়েছে!' : 'এখনই পাঠান'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={handleStartCountdown}
+                              disabled={countdownSec !== null}
+                              className="px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer disabled:opacity-75 font-mono-num"
+                            >
+                              <span>
+                                {countdownSec !== null
+                                  ? `অটো পুশ: ${countdownSec}s`
+                                  : '⏱️ ৬০সে. অটো টেস্ট'}
+                              </span>
+                            </button>
+                          </>
                         )}
 
                         <button
@@ -435,9 +465,9 @@ export function ProfileSettingsSheet({
                             onPreviewReminder();
                             onClose();
                           }}
-                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap cursor-pointer"
+                          className="px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap cursor-pointer"
                         >
-                          ব্যানার প্রিভিউ
+                          ব্যানার
                         </button>
                       </div>
                     </div>
