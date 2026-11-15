@@ -117,6 +117,83 @@ export async function checkAndSendDailyReminder(
   return sent;
 }
 
+/**
+ * Specifically triggered for the user's required 11:40 PM check tonight!
+ */
+export async function checkAndSend1140Notification(
+  dayNumber: number,
+  remainingTasks: number
+): Promise<boolean> {
+  if (remainingTasks <= 0) return false;
+  if (getNotificationPermission() !== 'granted') return false;
+
+  const now = new Date();
+  const todayISO = now.toLocaleDateString('en-CA');
+  const alertKey = `alert_1140_${todayISO}`;
+
+  if (localStorage.getItem(alertKey) === 'sent') return false;
+
+  const h = now.getHours();
+  const m = now.getMinutes();
+
+  // Trigger between 23:40 and 23:59
+  if (h === 23 && m >= 40) {
+    const title = 'রাত ১১টা ৪০ বাজার আলটিমেটাম! 🕛⏰';
+    const body = `রাত ১২টা বাজতে আর মাত্র ২০ মিনিট বাকি! আজকের ${remainingTasks}টি টাস্ক এখনো শেষ করোনি? ১২টা বাজলেই আজকের AURA ধুলোয় মিশে যাবে! জলদি টেবিলে বসো! 😼`;
+
+    const sent = await sendPhoneNotification({
+      title,
+      body,
+      tag: `must-1140-${todayISO}`,
+      url: '/?tab=routine',
+    });
+
+    if (sent) {
+      localStorage.setItem(alertKey, 'sent');
+    }
+    return sent;
+  }
+
+  return false;
+}
+
+/**
+ * Automate random moment notifications during the day when tasks are pending
+ */
+export async function checkAndSendRandomMomentRoast(
+  dayNumber: number,
+  remainingTasks: number
+): Promise<boolean> {
+  if (remainingTasks <= 0) return false;
+  if (getNotificationPermission() !== 'granted') return false;
+
+  const now = Date.now();
+  const lastRoast = Number(localStorage.getItem('last_auto_roast_time') || '0');
+  
+  // Cooldown of at least 80 minutes between spontaneous roasts
+  const MIN_COOLDOWN_MS = 80 * 60 * 1000;
+  if (now - lastRoast < MIN_COOLDOWN_MS) return false;
+
+  const hour = new Date().getHours();
+  // Don't disturb during sleeping hours (2 AM to 8 AM)
+  if (hour >= 2 && hour < 8) return false;
+
+  // Pick contextual savage roast
+  const savage = getContextualSavageNotification(hour);
+  const sent = await sendPhoneNotification({
+    title: savage.title,
+    body: `${savage.body} (Day ${String(dayNumber).padStart(2, '0')}-এর পড়া বাকি!)`,
+    tag: `auto-roast-${Date.now()}`,
+    url: '/?tab=routine',
+  });
+
+  if (sent) {
+    localStorage.setItem('last_auto_roast_time', String(now));
+  }
+
+  return sent;
+}
+
 export async function sendSavageTestNotification(
   custom?: SavageNotification
 ): Promise<SavageNotification | null> {

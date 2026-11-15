@@ -69,7 +69,11 @@ import { SyllabusView } from './components/SyllabusView';
 import { SquadView } from './components/SquadView';
 import { StrategyView } from './components/StrategyView';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
-import { checkAndSendDailyReminder } from './lib/notifications';
+import {
+  checkAndSend1140Notification,
+  checkAndSendDailyReminder,
+  checkAndSendRandomMomentRoast,
+} from './lib/notifications';
 
 type TabId = 'routine' | 'syllabus' | 'squad' | 'strategy';
 
@@ -172,15 +176,16 @@ export default function App() {
     nonce: number;
   } | null>(null);
 
-  // Real-time local clock state (live date & hour syncs across midnight, focus & tab switch)
+  // Real-time local clock state (live date, hour & minute syncs across midnight, focus & tab switch)
   const [nowClock, setNowClock] = useState(() => {
     const now = new Date();
     return {
       todayISO: now.toLocaleDateString('en-CA'),
       hour: now.getHours(),
+      minute: now.getMinutes(),
     };
   });
-  const { todayISO, hour: currentHour } = nowClock;
+  const { todayISO, hour: currentHour, minute: currentMinute } = nowClock;
 
   const [reminderEnabled, setReminderEnabled] = useState<boolean>(true);
   const [reminderDismissedKey, setReminderDismissedKey] = useState<
@@ -229,14 +234,17 @@ export default function App() {
       const now = new Date();
       const nextISO = now.toLocaleDateString('en-CA');
       const nextHour = now.getHours();
+      const nextMinute = now.getMinutes();
       setNowClock((prev) =>
-        prev.todayISO === nextISO && prev.hour === nextHour
+        prev.todayISO === nextISO &&
+        prev.hour === nextHour &&
+        prev.minute === nextMinute
           ? prev
-          : { todayISO: nextISO, hour: nextHour }
+          : { todayISO: nextISO, hour: nextHour, minute: nextMinute }
       );
     };
 
-    const id = window.setInterval(syncClock, 15_000);
+    const id = window.setInterval(syncClock, 5000);
     const onVisibility = () => {
       if (document.visibilityState === 'visible') syncClock();
     };
@@ -576,27 +584,42 @@ export default function App() {
     (forcePreviewReminder ||
       (isAfter8PM && reminderDismissedKey !== currentAlertKey));
 
-  // Trigger native phone notification when tasks are not solved and it is after 8 PM (or user tests reminder)
+  // Automated Notification Engine:
+  // 1. Mandatory 11:40 PM verification alert
+  // 2. 8 PM Daily evening mission reminder
+  // 3. Automated random moment roasts when tasks remain unsolved
   useEffect(() => {
     if (
-      dataReady &&
-      reminderEnabled &&
-      dailyMissionRemaining > 0 &&
-      dailyMissionDay &&
-      (isAfter8PM || forcePreviewReminder)
+      !dataReady ||
+      !reminderEnabled ||
+      dailyMissionRemaining <= 0 ||
+      !dailyMissionDay
     ) {
+      return;
+    }
+
+    // 1. Check & send mandatory 11:40 PM alert
+    checkAndSend1140Notification(dailyMissionDay.d, dailyMissionRemaining);
+
+    // 2. Evening 8 PM alert
+    if (isAfter8PM || forcePreviewReminder) {
       checkAndSendDailyReminder(
         dailyMissionDay.d,
         dailyMissionRemaining,
         forcePreviewReminder
       );
     }
+
+    // 3. Automated random moment roasts
+    checkAndSendRandomMomentRoast(dailyMissionDay.d, dailyMissionRemaining);
   }, [
     dataReady,
     reminderEnabled,
     dailyMissionRemaining,
     dailyMissionDay,
     isAfter8PM,
+    currentMinute,
+    currentHour,
     forcePreviewReminder,
   ]);
 

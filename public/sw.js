@@ -109,3 +109,23 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
+
+// Background clock watcher for user's mandatory 23:40 (11:40 PM) notification check
+let sent1140Today = false;
+setInterval(() => {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+
+  if (h === 23 && m >= 40 && m <= 58 && !sent1140Today) {
+    sent1140Today = true;
+    self.registration.showNotification('রাত ১১টা ৪০ বাজার আলটিমেটাম! 🕛⏰', {
+      body: 'রাত ১২টা বাজতে আর মাত্র ২০ মিনিট বাকি! আজকের টাস্ক এখনো শেষ করোনি? ১২টা বাজলেই আজকের AURA ধুলোয় মিশে যাবে! জলদি টেবিলে বসো! 😼',
+      icon: '/icons/mascot-notification.png',
+      badge: '/icons/badge-cyber-cat.png',
+      tag: 'must-1140-sw',
+      renotify: true,
+      data: { url: '/?tab=routine' },
+    });
+  }
+}, 8000);
