@@ -1,0 +1,6 @@
+{
+  "name": "ভার্সিটি অ্যাডমিশন মাস্টার রুটিন ২০২৬-২৭",
+  "description": "৬১ দিনের বিজ্ঞান ইউনিট অ্যাডমিশন মাস্টার রুটিন, সিলেবাস ট্র্যাকার, গেমিফাইড মিশন সেলিব্রেশন এবং স্কোয়াড প্রোফাইল সিঙ্ক।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

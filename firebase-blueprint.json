@@ -1,0 +1,124 @@
+{
+  "entities": {
+    "UserPrivateProfile": {
+      "title": "UserPrivateProfile",
+      "description": "Private user settings and PII isolated to the authenticated owner.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 3,
+          "maxLength": 256
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["light", "dark"]
+        },
+        "soundEnabled": {
+          "type": "boolean"
+        },
+        "studyTrack": {
+          "type": "string",
+          "enum": ["unset", "english", "biology"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email", "displayName", "photoURL", "theme", "soundEnabled", "studyTrack", "createdAt", "updatedAt"]
+    },
+    "SquadMemberProgress": {
+      "title": "SquadMemberProgress",
+      "description": "Public-to-squad study routine and syllabus completion state for a squad member without PII.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "studyTrack": {
+          "type": "string",
+          "enum": ["english", "biology"]
+        },
+        "routine": {
+          "type": "object",
+          "description": "Map of completed routine task keys (e.g. d1_main) to true."
+        },
+        "syllabus": {
+          "type": "object",
+          "description": "Map of completed syllabus step keys (e.g. chap_0_t) to true."
+        },
+        "daysDone": {
+          "type": "integer"
+        },
+        "chapsDone": {
+          "type": "integer"
+        },
+        "xp": {
+          "type": "integer"
+        },
+        "streak": {
+          "type": "integer"
+        },
+        "isPublicSquadMember": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "photoURL", "studyTrack", "routine", "syllabus", "daysDone", "chapsDone", "xp", "streak", "isPublicSquadMember", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserPrivateProfile"
+      },
+      "description": "Owner-only private profile containing user email and UI/track preferences."
+    },
+    "/squadProgress/{userId}": {
+      "schema": {
+        "$ref": "#/entities/SquadMemberProgress"
+      },
+      "description": "Shared squad member completion progress so all signed-in members see who completed each task."
+    }
+  }
+}

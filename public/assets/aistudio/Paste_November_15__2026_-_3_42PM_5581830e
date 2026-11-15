@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ভার্সিটি অ্যাডমিশন মাস্টার রুটিন ২০২৬-২৭</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script>
+try {
+  const saved = JSON.parse(localStorage.getItem('admission_revised_v3'));
+  if (saved && saved.settings && saved.settings.theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+} catch (e) {}
+</script>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#F8FAFC;
+  --card:#FFFFFF;
+  --text:#0F172A;
+  --muted:#64748B;
+  --border:#E2E8F0;
+  --primary:#4F46E5;
+  --primary-soft:#EEF2FF;
+  --success:#059669;
+  --success-soft:#D1FAE5;
+  --warning:#D97706;
+  --warning-soft:#FEF3C7;
+  --info:#0284C7;
+  --info-soft:#E0F2FE;
+  --purple:#7E22CE;
+  --purple-soft:#F3E8FF;
+  --shadow:0 8px 24px rgba(15,23,42,.06);
+}
+html[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#0B1120;
+  --card:#111827;
+  --text:#F9FAFB;
+  --muted:#9CA3AF;
+  --border:#1F2937;
+  --primary:#818CF8;
+  --primary-soft:rgba(129,140,248,.12);
+  --success:#34D399;
+  --success-soft:rgba(52,211,153,.12);
+  --warning:#FBBF24;
+  --warning-soft:rgba(251,191,36,.12);
+  --info:#38BDF8;
+  --info-soft:rgba(56,189,248,.12);
+  --purple:#C084FC;
+  --purple-soft:rgba(192,132,252,.12);
+  --shadow:0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Hind Siliguri',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  min-height:100vh;
+}
+.container{max-width:980px;margin:0 auto;padding:16px}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+}
+.hero{
+  padding:22px;
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:center;
+  margin-bottom:14px;
+}
+.hero h1{
+  font-size:26px;
+  font-weight:800;
+  line-height:1.35;
+}
+.hero p{color:var(--muted);font-size:14px;margin-top:4px}
+.theme-btn{
+  border:1px solid var(--border);
+  background:var(--bg);
+  color:var(--text);
+  border-radius:14px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-family:inherit;
+  font-weight:700;
+  white-space:nowrap;
+}
+.stats{
+  padding:18px;
+  margin-bottom:14px;
+}
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.stat-box{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px 10px;
+  text-align:center;
+}
+.stat-value{
+  font-family:'Inter',sans-serif;
+  font-size:24px;
+  font-weight:800;
+  color:var(--primary);
+}
+.stat-label{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+  margin-top:4px;
+}
+.progress-bar{
+  height:10px;
+  border-radius:999px;
+  background:var(--border);
+  overflow:hidden;
+  margin-top:14px;
+}
+.progress-fill{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--primary),#22C55E);
+  transition:width .35s ease;
+}
+.tabs{
+  display:flex;
+  gap:8px;
+  padding:8px;
+  margin-bottom:14px;
+  overflow-x:auto;
+}
+.tab-btn{
+  flex:1;
+  min-width:max-content;
+  border:none;
+  background:transparent;
+  color:var(--muted);
+  padding:12px 16px;
+  border-radius:14px;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+}
+.tab-btn.active{
+  background:var(--primary);
+  color:#fff;
+  box-shadow:0 8px 18px rgba(79,70,229,.22);
+}
+.toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.search-box{
+  flex:1;
+  min-width:220px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  border-radius:14px;
+  padding:12px 14px;
+  font-family:inherit;
+  outline:none;
+}
+.search-box:focus{border-color:var(--primary)}
+.action-btn{
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--text);
+  border-radius:14px;
+  padding:12px 14px;
+  cursor:pointer;
+  font-family:inherit;
+  font-weight:700;
+}
+.action-btn.danger{color:#DC2626;border-color:rgba(220,38,38,.25)}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.phase-header{
+  margin:18px 0 12px;
+  padding:12px 16px;
+  border-radius:16px;
+  background:var(--primary-soft);
+  color:var(--primary);
+  font-weight:800;
+  border:1px solid rgba(79,70,229,.08);
+}
+.day-card{
+  padding:16px;
+  margin-bottom:12px;
+  border-left:5px solid var(--primary);
+}
+.day-card.test{border-left-color:#F59E0B}
+.day-card.buffer,.day-card.solve{border-left-color:#38BDF8}
+.day-card.revision,.day-card.final{border-left-color:#10B981}
+.day-card.model{border-left-color:#A855F7}
+.day-card.completed{opacity:.78}
+.day-card.today{outline:2px solid var(--primary);outline-offset:2px}
+.day-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+.day-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.day-badge{
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  font-family:'Inter',sans-serif;
+}
+.badge-normal{background:var(--primary-soft);color:var(--primary)}
+.badge-test{background:var(--warning-soft);color:var(--warning)}
+.badge-buffer,.badge-solve{background:var(--info-soft);color:var(--info)}
+.badge-revision,.badge-final{background:var(--success-soft);color:var(--success)}
+.badge-model{background:var(--purple-soft);color:var(--purple)}
+.day-date{font-weight:800}
+.type-label{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:700;
+}
+.today-badge{
+  background:var(--success-soft);
+  color:var(--success);
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+}
+.task-row{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:10px 0;
+  border-top:1px dashed var(--border);
+}
+.task-row:first-of-type{border-top:none}
+.task-icon{font-size:18px;margin-top:3px}
+.task-content{flex:1}
+.task-title{
+  font-size:11px;
+  letter-spacing:.6px;
+  font-weight:800;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:3px;
+}
+.task-desc{font-weight:600}
+.task-row.completed .task-desc{
+  text-decoration:line-through;
+  color:var(--muted);
+}
+.check-box{
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  border:2px solid var(--border);
+  background:var(--bg);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  transition:.18s ease;
+}
+.check-box:hover{transform:scale(1.05);border-color:var(--primary)}
+.check-box.checked{
+  background:var(--success);
+  border-color:var(--success);
+}
+.check-box.checked::after{
+  content:"✓";
+  color:#fff;
+  font-weight:900;
+}
+.subject-card{margin-bottom:14px;overflow:hidden}
+.subject-head{
+  padding:16px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+  cursor:pointer;
+}
+.subject-title{font-size:18px;font-weight:800}
+.subject-progress{
+  font-family:'Inter',sans-serif;
+  font-weight:800;
+  color:var(--primary);
+}
+.subject-body{padding:16px;border-top:1px solid var(--border)}
+.chap-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+@media(min-width:760px){.chap-grid{grid-template-columns:1fr 1fr}}
+.chap-item{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px;
+}
+.chap-name{font-weight:700;margin-bottom:10px}
+.chap-actions{display:flex;gap:6px;flex-wrap:wrap}
+.mini-check{
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--muted);
+  padding:6px 10px;
+  border-radius:10px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+.mini-check.active{
+  background:var(--success);
+  border-color:var(--success);
+  color:#fff;
+}
+.info-card{padding:18px;margin-bottom:14px}
+.info-card h3{
+  font-size:18px;
+  margin-bottom:10px;
+  color:var(--primary);
+}
+.info-card ul{padding-left:20px;color:var(--muted)}
+.info-card li{margin-bottom:8px}
+.info-card strong{color:var(--text)}
+.hidden{display:none!important}
+.empty-msg{
+  padding:30px;
+  text-align:center;
+  color:var(--muted);
+}
+@media(max-width:640px){
+  .hero{flex-direction:column;align-items:flex-start}
+  .stats-grid{grid-template-columns:1fr 1fr 1fr}
+  .stat-value{font-size:20px}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="hero card">
+    <div>
+      <h1>🎓 ভার্সিটি অ্যাডমিশন মাস্টার রুটিন</h1>
+      <p>Revised • ১৬ নভেম্বর ২০২৬ – ১৫ জানুয়ারি ২০২৭ • ৬১ দিন • বিজ্ঞান ইউনিট</p>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 Dark Mode</button>
+  </header>
+
+  <section class="stats card">
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-value" id="daysDone">0/61</div>
+        <div class="stat-label">দিন সম্পন্ন</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="chapsDone">0/51</div>
+        <div class="stat-label">অধ্যায় সম্পন্ন</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="overallPct">0%</div>
+        <div class="stat-label">সামগ্রিক</div>
+      </div>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="overallBar"></div>
+    </div>
+  </section>
+
+  <nav class="tabs card">
+    <button class="tab-btn active" onclick="switchTab(event,'routine')">📅 রুটিন</button>
+    <button class="tab-btn" onclick="switchTab(event,'syllabus')">📚 সিলেবাস ট্র্যাকার</button>
+    <button class="tab-btn" onclick="switchTab(event,'strategy')">🧠 কৌশল</button>
+  </nav>
+
+  <div class="toolbar">
+    <input class="search-box" id="searchInput" placeholder="🔍 অধ্যায় / টপিক সার্চ করুন..." oninput="renderRoutine(this.value)">
+    <button class="action-btn" onclick="exportData()">📥 Backup</button>
+    <button class="action-btn" onclick="document.getElementById('importFile').click()">📤 Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="action-btn danger" onclick="resetData()">🗑️ Reset</button>
+  </div>
+
+  <main>
+    <section id="routine" class="tab-content active">
+      <div id="routine-list"></div>
+    </section>
+
+    <section id="syllabus" class="tab-content">
+      <div id="syllabus-list"></div>
+    </section>
+
+    <section id="strategy" class="tab-content">
+      <div class="info-card card">
+        <h3>⏱️ দৈনিক সময়বণ্টন (প্রায় ৮ ঘণ্টা)</h3>
+        <ul>
+          <li><strong>সকাল/দুপুর (৩ ঘণ্টা):</strong> নির্ধারিত অধ্যায়ের থিওরি, সূত্র ও কনসেপ্ট কুইক রিভিশন।</li>
+          <li><strong>বিকাল (৩.৫ ঘণ্টা):</strong> বিগত বছরের ব্যাংক (RU, CU, GST, JU, DU) হাতে-কলমে সলভ। ভুল/কঠিন প্রশ্ন লাল কলমে মার্ক করো।</li>
+          <li><strong>রাত (১ ঘণ্টা):</strong> ইংরেজির নির্ধারিত টপিক অনুশীলন।</li>
+          <li><strong>রাত (৩০ মিনিট):</strong> স্পেসড রিভিশন — আগের দিন + ১ সপ্তাহ আগের অধ্যায়।</li>
+        </ul>
+      </div>
+
+      <div class="info-card card">
+        <h3>📌 কীভাবে চলবে</h3>
+        <ul>
+          <li><strong>১ দিন পিছিয়ে পড়লে:</strong> পরের শুক্রবারের কাভার-আপ সেটে পূরণ করো।</li>
+          <li><strong>২ দিনের বেশি পিছালে:</strong> হালকা অধ্যায়গুলোর ব্যাংক ছোট করো (পরিবেশ, অর্থনৈতিক, কো-অর্ডিনেশন, জ্যোতির্বিজ্ঞান, সেমিকন্ডাক্টর, রৈখিক প্রোগ্রামিং, বিস্তার পরিমাপ)।</li>
+          <li><strong>ভারী অধ্যায় কখনো বাদ দেবে না।</strong></li>
+          <li><strong>ভুলের খাতা:</strong> প্রতিদিনের ভুল প্রশ্ন সংক্ষেপে লিখবে। শুক্রবার ও মডেল টেস্টের পর এখান থেকেই রিভিশন হবে।</li>
+          <li><strong>সাপ্তাহিক টেস্ট:</strong> প্রতি শুক্রবার সকালে ঐ সপ্তাহের অধ্যায়গুলো থেকে ২ ঘণ্টার মিক্সড টেস্ট দাও।</li>
+        </ul>
+      </div>
+
+      <div class="info-card card">
+        <h3>💾 Save / Backup</h3>
+        <ul>
+          <li>টিক দিলেই অটোমেটিক এই ব্রাউজারের <strong>LocalStorage</strong>-এ সেভ হবে।</li>
+          <li>ব্রাউজার ডাটা ক্লিন করলে মুছে যেতে পারে, তাই মাঝে মাঝে <strong>Backup</strong> নিয়ে রাখো।</li>
+          <li>ডিভাইস/ব্রাউজার পরিবর্তন করলে <strong>Import</strong> করে ব্যাকআপ ফিরিয়ে আনতে পারবে।</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const STORAGE_KEY = 'admission_revised_v3';
+
+let state = {
+  routine: {},
+  syllabus: {},
+  settings: { theme: 'light' }
+};
+
+try {
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  if (saved) {
+    state = {
+      ...state,
+      ...saved,
+      settings: { ...state.settings, ...(saved.settings || {}) }
+    };
+  }
+} catch (e) {}
+
+const routineData = [
+  {d:1, iso:"2026-11-16", date:"১৬ নভেম্বর", main:"ত্রিকোণমিতিক অনুপাত + ভৌতজগৎ ও পরিমাপ (দুই অধ্যায়)", eng:"Parts of Speech & Noun", rev:"আজকের অধ্যায়ের সূত্র একবার লিখে ফেলা", type:"normal"},
+  {d:2, iso:"2026-11-17", date:"১৭ নভেম্বর", main:"সংযুক্ত কোণের ত্রিকোণমিতি + ল্যাবরেটরির নিরাপদ ব্যবহার (দুই অধ্যায়)", eng:"Pronoun & Determiners", rev:"আগের দিন: ত্রিকোণমিতিক অনুপাত + ভৌতজগৎ ও পরিমাপ", type:"normal"},
+  {d:3, iso:"2026-11-18", date:"১৮ নভেম্বর", main:"গুণগত রসায়ন-১ (পরমাণু মডেল, কোয়ান্টাম সংখ্যা)", eng:"Articles & Tag Questions", rev:"আগের দিন: সংযুক্ত কোণ + ল্যাবরেটরি", type:"normal"},
+  {d:4, iso:"2026-11-19", date:"১৯ নভেম্বর", main:"গুণগত রসায়ন-২ (দ্রাব্যতা ও আয়ন শনাক্তকরণ)", eng:"Right Form of Verbs (Rule 1–15)", rev:"আগের দিন: গুণগত রসায়ন-১", type:"normal"},
+  {d:5, iso:"2026-11-20", date:"২০ নভেম্বর", main:"সাপ্তাহিক টেস্ট + কাভার-আপ দিন (২ ঘণ্টা টেস্ট → ২ ঘণ্টা ভুল বিশ্লেষণ → ২ ঘণ্টা ব্যাকলগ)", eng:"সম্পূর্ণ সপ্তাহের রিভিশন", rev:"ভুলের খাতা আপডেট ও বিশ্রাম", type:"test"},
+  {d:6, iso:"2026-11-21", date:"২১ নভেম্বর", main:"ফাংশন ও ফাংশনের লেখচিত্র", eng:"Right Form of Verbs (Rule 16–30)", rev:"আগের দিন: গুণগত রসায়ন-২", type:"normal"},
+  {d:7, iso:"2026-11-22", date:"২২ নভেম্বর", main:"ভেক্টর (পদার্থবিজ্ঞান)", eng:"Subject-Verb Agreement", rev:"আগের দিন: ফাংশন ও লেখচিত্র", type:"normal"},
+  {d:8, iso:"2026-11-23", date:"২৩ নভেম্বর", main:"অন্তরীকরণ-১ (সীমা ও মূল নিয়ম)", eng:"Tense & Sequence of Tense", rev:"আগের দিন: ভেক্টর | ১ সপ্তাহ আগে: ত্রিকোণমিতি + ভৌতজগৎ", type:"normal"},
+  {d:9, iso:"2026-11-24", date:"২৪ নভেম্বর", main:"অন্তরীকরণ-২ (প্রয়োগ: স্পর্শক, ম্যাক্সিমা-মিনিমা)", eng:"Appropriate Preposition (A–D)", rev:"আগের দিন: অন্তরীকরণ-১ | ১ সপ্তাহ আগে: সংযুক্ত কোণ + ল্যাবরেটরি", type:"normal"},
+  {d:10, iso:"2026-11-25", date:"২৫ নভেম্বর", main:"গতিবিদ্যা", eng:"Appropriate Preposition (E–M)", rev:"আগের দিন: অন্তরীকরণ-২ | ১ সপ্তাহ আগে: গুণগত রসায়ন-১", type:"normal"},
+  {d:11, iso:"2026-11-26", date:"২৬ নভেম্বর", main:"মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন", eng:"Appropriate Preposition (N–Z)", rev:"আগের দিন: গতিবিদ্যা | ১ সপ্তাহ আগে: গুণগত রসায়ন-২", type:"normal"},
+  {d:12, iso:"2026-11-27", date:"২৭ নভেম্বর", main:"সাপ্তাহিক টেস্ট + কাভার-আপ দিন", eng:"সম্পূর্ণ সপ্তাহের রিভিশন", rev:"ভুলের খাতা আপডেট ও বিশ্রাম", type:"test"},
+
+  {d:13, iso:"2026-11-28", date:"২৮ নভেম্বর", main:"নিউটনীয় বলবিদ্যা", eng:"Conditional Sentences", rev:"আগের দিন: পর্যায়বৃত্ত ধর্ম | ১ সপ্তাহ আগে: ফাংশন ও লেখচিত্র", type:"normal"},
+  {d:14, iso:"2026-11-29", date:"২৯ নভেম্বর", main:"যোগজীকরণ-১ (মূল নিয়ম ও কৌশল)", eng:"Subjunctive & Causative Verbs", rev:"আগের দিন: নিউটনীয় বলবিদ্যা | ১ সপ্তাহ আগে: ভেক্টর", type:"normal"},
+  {d:15, iso:"2026-11-30", date:"৩০ নভেম্বর", main:"যোগজীকরণ-২ (সমাকলন ও ক্ষেত্রফল)", eng:"Voice Change (All Rules)", rev:"আগের দিন: যোগজীকরণ-১ | ১ সপ্তাহ আগে: অন্তরীকরণ-১", type:"normal"},
+  {d:16, iso:"2026-12-01", date:"১ ডিসেম্বর", main:"পরিমাণগত রসায়ন (মোল, ঘনমাত্রা)", eng:"Narration (Direct & Indirect)", rev:"আগের দিন: যোগজীকরণ-২ | ১ সপ্তাহ আগে: অন্তরীকরণ-২", type:"normal"},
+  {d:17, iso:"2026-12-02", date:"২ ডিসেম্বর", main:"কাজ, শক্তি ও ক্ষমতা", eng:"Degree of Comparison", rev:"আগের দিন: পরিমাণগত রসায়ন | ১ সপ্তাহ আগে: গতিবিদ্যা", type:"normal"},
+  {d:18, iso:"2026-12-03", date:"৩ ডিসেম্বর", main:"রাসায়নিক পরিবর্তন (Kp, Kc, pH, তাপ)", eng:"Clause & Phrase Identification", rev:"আগের দিন: কাজ, শক্তি | ১ সপ্তাহ আগে: পর্যায়বৃত্ত ধর্ম", type:"normal"},
+  {d:19, iso:"2026-12-04", date:"৪ ডিসেম্বর", main:"সাপ্তাহিক টেস্ট + কাভার-আপ দিন", eng:"সম্পূর্ণ সপ্তাহের রিভিশন", rev:"ভুলের খাতা আপডেট ও বিশ্রাম", type:"test"},
+  {d:20, iso:"2026-12-05", date:"৫ ডিসেম্বর", main:"মহাকর্ষ ও অভিকর্ষ + ম্যাট্রিক্স ও নির্ণায়ক", eng:"Transformation of Sentences (1)", rev:"আগের দিন: রাসায়নিক পরিবর্তন | ১ সপ্তাহ আগে: নিউটনীয় বলবিদ্যা", type:"normal"},
+  {d:21, iso:"2026-12-06", date:"৬ ডিসেম্বর", main:"তড়িৎ রসায়ন", eng:"Transformation of Sentences (2)", rev:"আগের দিন: মহাকর্ষ + ম্যাট্রিক্স | ১ সপ্তাহ আগে: যোগজীকরণ-১", type:"normal"},
+  {d:22, iso:"2026-12-07", date:"৭ ডিসেম্বর", main:"পদার্থের গাঠনিক ধর্ম + ভেক্টর (গণিত)", eng:"Dangling Modifier & Inversion", rev:"আগের দিন: তড়িৎ রসায়ন | ১ সপ্তাহ আগে: যোগজীকরণ-২", type:"normal"},
+  {d:23, iso:"2026-12-08", date:"৮ ডিসেম্বর", main:"জৈব রসায়ন-১ (নামকরণ, সমানুতা, অ্যালকেন/অ্যালকিন/অ্যালকাইন)", eng:"Sentence Correction & Parallelism", rev:"আগের দিন: গাঠনিক ধর্ম + ভেক্টর | ১ সপ্তাহ আগে: পরিমাণগত রসায়ন", type:"normal"},
+  {d:24, iso:"2026-12-09", date:"৯ ডিসেম্বর", main:"জৈব রসায়ন-২ (অ্যারোমেটিক ও হ্যালাইড)", eng:"Spelling Correction", rev:"আগের দিন: জৈব রসায়ন-১ | ১ সপ্তাহ আগে: কাজ, শক্তি", type:"normal"},
+  {d:25, iso:"2026-12-10", date:"১০ ডিসেম্বর", main:"জৈব রসায়ন-৩ (অ্যালকোহল, অ্যালডিহাইড, এসিড)", eng:"Phrases & Idioms (Part 1)", rev:"আগের দিন: জৈব রসায়ন-২ | ১ সপ্তাহ আগে: রাসায়নিক পরিবর্তন", type:"normal"},
+  {d:26, iso:"2026-12-11", date:"১১ ডিসেম্বর", main:"সাপ্তাহিক টেস্ট + কাভার-আপ দিন", eng:"সম্পূর্ণ সপ্তাহের রিভিশন", rev:"ভুলের খাতা আপডেট ও বিশ্রাম", type:"test"},
+
+  {d:27, iso:"2026-12-12", date:"১২ ডিসেম্বর", main:"পর্যাবৃত্ত গতি + সরলরেখা", eng:"Phrases & Idioms (Part 2)", rev:"আগের দিন: জৈব রসায়ন-৩ | ১ সপ্তাহ আগে: মহাকর্ষ + ম্যাট্রিক্স", type:"normal"},
+  {d:28, iso:"2026-12-13", date:"১৩ ডিসেম্বর", main:"তরঙ্গ + বৃত্ত", eng:"Phrasal Verbs (1)", rev:"আগের দিন: পর্যাবৃত্ত গতি + সরলরেখা | ১ সপ্তাহ আগে: তড়িৎ রসায়ন", type:"normal"},
+  {d:29, iso:"2026-12-14", date:"১৪ ডিসেম্বর", main:"আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব + বিন্যাস ও সমাবেশ", eng:"Phrasal Verbs (2)", rev:"আগের দিন: তরঙ্গ + বৃত্ত | ১ সপ্তাহ আগে: গাঠনিক ধর্ম + ভেক্টর", type:"normal"},
+  {d:30, iso:"2026-12-15", date:"১৫ ডিসেম্বর", main:"তাপগতিবিদ্যা + পরিবেশ রসায়ন", eng:"Synonyms & Antonyms (A–F)", rev:"আগের দিন: আদর্শ গ্যাস + বিন্যাস | ১ সপ্তাহ আগে: জৈব রসায়ন-১", type:"normal"},
+  {d:31, iso:"2026-12-16", date:"১৬ ডিসেম্বর", main:"বাস্তব সংখ্যা ও অসমতা + রৈখিক প্রোগ্রামিং", eng:"Synonyms & Antonyms (G–M)", rev:"আগের দিন: তাপগতিবিদ্যা + পরিবেশ | ১ সপ্তাহ আগে: জৈব রসায়ন-২", type:"normal"},
+  {d:32, iso:"2026-12-17", date:"১৭ ডিসেম্বর", main:"স্থির তড়িৎ", eng:"Synonyms & Antonyms (N–S)", rev:"আগের দিন: বাস্তব সংখ্যা + রৈখিক | ১ সপ্তাহ আগে: জৈব রসায়ন-৩", type:"normal"},
+  {d:33, iso:"2026-12-18", date:"১৮ ডিসেম্বর", main:"সাপ্তাহিক টেস্ট + কাভার-আপ দিন", eng:"সম্পূর্ণ সপ্তাহের রিভিশন", rev:"ভুলের খাতা আপডেট ও বিশ্রাম", type:"test"},
+  {d:34, iso:"2026-12-19", date:"১৯ ডিসেম্বর", main:"জটিল সংখ্যা + অর্থনৈতিক রসায়ন", eng:"Synonyms & Antonyms (T–Z)", rev:"আগের দিন: স্থির তড়িৎ | ১ সপ্তাহ আগে: পর্যাবৃত্ত গতি + সরলরেখা", type:"normal"},
+  {d:35, iso:"2026-12-20", date:"২০ ডিসেম্বর", main:"চল তড়িৎ", eng:"One Word Substitution", rev:"আগের দিন: জটিল সংখ্যা + অর্থনৈতিক | ১ সপ্তাহ আগে: তরঙ্গ + বৃত্ত", type:"normal"},
+  {d:36, iso:"2026-12-21", date:"২১ ডিসেম্বর", main:"বহুপদী ও বহুপদী সমীকরণ + কো-অর্ডিনেশন রসায়ন", eng:"Confusing Words", rev:"আগের দিন: চল তড়িৎ | ১ সপ্তাহ আগে: আদর্শ গ্যাস + বিন্যাস", type:"normal"},
+  {d:37, iso:"2026-12-22", date:"২২ ডিসেম্বর", main:"তড়িৎ প্রবাহের চুম্বকীয় ক্রিয়া + দ্বিপদী বিস্তৃতি", eng:"Fill in the Blanks & Analogy", rev:"আগের দিন: বহুপদী + কো-অর্ডিনেশন | ১ সপ্তাহ আগে: তাপগতিবিদ্যা + পরিবেশ", type:"normal"},
+  {d:38, iso:"2026-12-23", date:"২৩ ডিসেম্বর", main:"তড়িৎচুম্বক আবেশ ও পরিবর্তী প্রবাহ", eng:"Pinpoint Error & Analogy", rev:"আগের দিন: চুম্বকীয় ক্রিয়া + দ্বিপদী | ১ সপ্তাহ আগে: বাস্তব সংখ্যা + রৈখিক", type:"normal"},
+  {d:39, iso:"2026-12-24", date:"২৪ ডিসেম্বর", main:"কনিক", eng:"Comprehension / Passage Practice", rev:"আগের দিন: তড়িৎচুম্বক আবেশ | ১ সপ্তাহ আগে: স্থির তড়িৎ", type:"normal"},
+  {d:40, iso:"2026-12-25", date:"২৫ ডিসেম্বর", main:"সাপ্তাহিক টেস্ট + কাভার-আপ দিন", eng:"সম্পূর্ণ সপ্তাহের রিভিশন", rev:"ভুলের খাতা আপডেট ও বিশ্রাম", type:"test"},
+
+  {d:41, iso:"2026-12-26", date:"২৬ ডিসেম্বর", main:"জ্যামিতিক আলোকবিজ্ঞান + বিপরীত ত্রিকোণমিতিক ফাংশন ও সমীকরণ", eng:"RU Previous English Questions", rev:"আগের দিন: কনিক | ১ সপ্তাহ আগে: জটিল সংখ্যা + অর্থনৈতিক", type:"normal"},
+  {d:42, iso:"2026-12-27", date:"২৭ ডিসেম্বর", main:"ভৌত আলোকবিজ্ঞান", eng:"CU Previous English Questions", rev:"আগের দিন: জ্যামিতিক আলো + বিপরীত ত্রিকোণ | ১ সপ্তাহ আগে: চল তড়িৎ", type:"normal"},
+  {d:43, iso:"2026-12-28", date:"২৮ ডিসেম্বর", main:"স্থিতিবিদ্যা + আধুনিক পদার্থবিজ্ঞানের সূচনা", eng:"JU Previous English Questions", rev:"আগের দিন: ভৌত আলো | ১ সপ্তাহ আগে: বহুপদী + কো-অর্ডিনেশন", type:"normal"},
+  {d:44, iso:"2026-12-29", date:"২৯ ডিসেম্বর", main:"সমতল বস্তুকণার গতি", eng:"DU Previous English Questions", rev:"আগের দিন: স্থিতিবিদ্যা + আধুনিক | ১ সপ্তাহ আগে: চুম্বকীয় ক্রিয়া + দ্বিপদী", type:"normal"},
+  {d:45, iso:"2026-12-30", date:"৩০ ডিসেম্বর", main:"পরমাণুর মডেল ও নিউক্লিয়ার পদার্থবিজ্ঞান + সেমিকন্ডাক্টর ও ইলেকট্রনিক্স", eng:"Grammar Revision", rev:"আগের দিন: সমতল গতি | ১ সপ্তাহ আগে: তড়িৎচুম্বক আবেশ", type:"normal"},
+  {d:46, iso:"2026-12-31", date:"৩১ ডিসেম্বর", main:"জ্যোতির্বিজ্ঞান + বিস্তার পরিমাপ ও সম্ভাবনা", eng:"Grammar + Vocabulary Revision", rev:"আগের দিন: পরমাণু + সেমিকন্ডাক্টর | ১ সপ্তাহ আগে: কনিক", type:"normal"},
+  {d:47, iso:"2027-01-01", date:"১ জানুয়ারি", main:"সাপ্তাহিক টেস্ট + কাভার-আপ দিন", eng:"সম্পূর্ণ সপ্তাহের রিভিশন", rev:"ভুলের খাতা আপডেট ও বিশ্রাম", type:"test"},
+  {d:48, iso:"2027-01-02", date:"২ জানুয়ারি", main:"বাফার ও ফুল সিলেবাস চেক: বাঁকি/দুর্বল অধ্যায় শেষ করো। সব ঠিক থাকলে PCM মিক্সড ৩ ঘণ্টার টেস্ট দাও", eng:"Vocabulary + Preposition & Idioms Revision", rev:"দুর্বল অধ্যায় চূড়ান্ত করা", type:"buffer"},
+
+  {d:49, iso:"2027-01-03", date:"৩ জানুয়ারি", main:"পদার্থ ১ম ও ২য় পত্র: ২১ অধ্যায়ের সূত্র রিভিশন + লাল দাগানো সলভ", eng:"পদার্থের সূত্রের খাতা + Grammar দ্রুত রিভিশন", rev:"লাল দাগানো ও ভুল প্রশ্ন সমাধান", type:"revision"},
+  {d:50, iso:"2027-01-04", date:"৪ জানুয়ারি", main:"রসায়ন ১ম ও ২য় পত্র: ১০ অধ্যায়ের লাল দাগানো সলভ + জৈব রসায়নের বিক্রিয়া চার্ট", eng:"রসায়নের বৈশিষ্ট্য ও তথ্য-তালিকা + Vocabulary", rev:"জৈব রসায়নের বিক্রিয়া চার্ট", type:"revision"},
+  {d:51, iso:"2027-01-05", date:"৫ জানুয়ারি", main:"গণিত ১ম ও ২য় পত্র: ২০ অধ্যায়ের লাল দাগানো সলভ + ত্রিকোণমিতি ও ক্যালকুলাস শর্টকাট", eng:"গণিতের সূত্রের খাতা + Preposition ও Idioms", rev:"ত্রিকোণমিতি ও ক্যালকুলাস শর্টকাট", type:"revision"},
+  {d:52, iso:"2027-01-06", date:"৬ জানুয়ারি", main:"DU ও JU (A-Unit) বিগত বছরের পূর্ণাঙ্গ প্রশ্ন ঘড়ি ধরে সলভ + IQ প্র্যাকটিস", eng:"ভুল বিশ্লেষণ + ইংরেজি ও IQ শর্টকাট", rev:"সময় ব্যবস্থাপনা চর্চা", type:"solve"},
+  {d:53, iso:"2027-01-07", date:"৭ জানুয়ারি", main:"RU, CU ও GST বিগত বছরের পূর্ণাঙ্গ প্রশ্ন ঘড়ি ধরে সলভ", eng:"ভুল বিশ্লেষণ + ইংরেজি রিভিশন", rev:"কনসেপ্ট ব্রাশ-আপ", type:"solve"},
+  {d:54, iso:"2027-01-08", date:"৮ জানুয়ারি", main:"মডেল টেস্ট ১ — ভুলের ধরন চিনে নাও (অজানা, অসাবধানতা, সময়)", eng:"ভুলের খাতা + সূত্র + ইংরেজি", rev:"ভুলের ধরন চিহ্নিত করা", type:"model"},
+  {d:55, iso:"2027-01-09", date:"৯ জানুয়ারি", main:"মডেল টেস্ট ২ — সকাল ১০টায় ঘড়ি ধরে পূর্ণাঙ্গ মডেল", eng:"ভুলের খাতা + সূত্র + ইংরেজি", rev:"দুর্বল অধ্যায়ের পুনরাবৃত্তি", type:"model"},
+  {d:56, iso:"2027-01-10", date:"১০ জানুয়ারি", main:"মডেল টেস্ট ৩ — নেগেটিভ মার্কিং কমানোর কৌশল প্রয়োগ", eng:"ভুলের খাতা + সূত্র + ইংরেজি", rev:"নেগেটিভ মার্কিং কমানো", type:"model"},
+  {d:57, iso:"2027-01-11", date:"১১ জানুয়ারি", main:"মডেল টেস্ট ৪ — প্রতিটি প্রশ্নের পুঙ্খানুপুঙ্খ ব্যাখ্যা বিশ্লেষণ", eng:"ভুলের খাতা + সূত্র + ইংরেজি", rev:"ব্যাখ্যা বিশ্লেষণ", type:"model"},
+  {d:58, iso:"2027-01-12", date:"১২ জানুয়ারি", main:"মডেল টেস্ট ৫ — সময় ব্যবস্থাপনার দিকে বিশেষ নজর", eng:"ভুলের খাতা + সূত্র + ইংরেজি", rev:"সময় ব্যবস্থাপনা চূড়ান্ত করা", type:"model"},
+  {d:59, iso:"2027-01-13", date:"১৩ জানুয়ারি", main:"মডেল টেস্ট ৬ — পূর্ণাঙ্গ রিয়েল-টাইম মেডল টেস্ট", eng:"ভুলের খাতা + সূত্র + ইংরেজি", rev:"রিয়েল-টাইম পরীক্ষার অনুভূতি", type:"model"},
+  {d:60, iso:"2027-01-14", date:"১৪ জানুয়ারি", main:"মডেল টেস্ট ৭ — চূড়ান্ত কনফিডেন্স বুস্টিং", eng:"ভুলের খাতা + শেষ মুহূর্তের চোখ বুলানো", rev:"চূড়ান্ত কনফিডেন্স বুস্টিং", type:"model"},
+  {d:61, iso:"2027-01-15", date:"১৫ জানুয়ারি", main:"চূড়ান্ত হালকা রিভিশন: শুধু সূত্রের খাতা ও ভুলের খাতা (৪–৫ ঘণ্টা)। নতুন কিছু পড়া বা টেস্ট নয়", eng:"প্রবেশপত্র, কলম ও সামগ্রী গুছিয়ে রাখো", rev:"দ্রুত ঘুমাও", type:"final"}
+];
+
+const syllabusData = {
+  "পদার্থবিজ্ঞান ১ম পত্র (১০)": [
+    "ভৌতজগৎ ও পরিমাপ",
+    "ভেক্টর",
+    "গতিবিদ্যা",
+    "নিউটনীয় বলবিদ্যা",
+    "কাজ, শক্তি ও ক্ষমতা",
+    "মহাকর্ষ ও অভিকর্ষ",
+    "পদার্থের গাঠনিক ধর্ম",
+    "পর্যাবৃত্ত গতি",
+    "তরঙ্গ",
+    "আদর্শ গ্যাস ও গ্যাসের গতিতত্ত্ব"
+  ],
+  "পদার্থবিজ্ঞান ২য় পত্র (১১)": [
+    "তাপগতিবিদ্যা",
+    "স্থির তড়িৎ",
+    "চল তড়িৎ",
+    "তড়িৎ প্রবাহের চুম্বকীয় ক্রিয়া",
+    "তড়িৎচুম্বক আবেশ ও পরিবর্তী প্রবাহ",
+    "জ্যামিতিক আলোকবিজ্ঞান",
+    "ভৌত আলোকবিজ্ঞান",
+    "আধুনিক পদার্থবিজ্ঞানের সূচনা",
+    "পরমাণুর মডেল ও নিউক্লিয়ার পদার্থবিজ্ঞান",
+    "সেমিকন্ডাক্টর ও ইলেকট্রনিক্স",
+    "জ্যোতির্বিজ্ঞান"
+  ],
+  "রসায়ন ১ম পত্র (৫)": [
+    "ল্যাবরেটরির নিরাপদ ব্যবহার",
+    "গুণগত রসায়ন (২ দিন)",
+    "মৌলের পর্যায়বৃত্ত ধর্ম ও রাসায়নিক বন্ধন",
+    "রাসায়নিক পরিবর্তন",
+    "কো-অর্ডিনেশন রসায়ন"
+  ],
+  "রসায়ন ২য় পত্র (৫)": [
+    "পরিবেশ রসায়ন",
+    "জৈব রসায়ন (৩ দিন)",
+    "পরিমাণগত রসায়ন",
+    "তড়িৎ রসায়ন",
+    "অর্থনৈতিক রসায়ন"
+  ],
+  "উচ্চতর গণিত ১ম পত্র (১০)": [
+    "ম্যাট্রিক্স ও নির্ণায়ক",
+    "ভেক্টর",
+    "সরলরেখা",
+    "বৃত্ত",
+    "বিন্যাস ও সমাবেশ",
+    "ত্রিকোণমিতিক অনুপাত",
+    "সংযুক্ত কোণের ত্রিকোণমিতি",
+    "ফাংশন ও ফাংশনের লেখচিত্র",
+    "অন্তরীকরণ (২ দিন)",
+    "যোগজীকরণ (২ দিন)"
+  ],
+  "উচ্চতর গণিত ২য় পত্র (১০)": [
+    "বাস্তব সংখ্যা ও অসমতা",
+    "রৈখিক প্রোগ্রামিং",
+    "জটিল সংখ্যা",
+    "বহুপদী ও বহুপদী সমীকরণ",
+    "দ্বিপদী বিস্তৃতি",
+    "কনিক",
+    "বিপরীত ত্রিকোণমিতিক ফাংশন ও সমীকরণ",
+    "স্থিতিবিদ্যা",
+    "সমতল বস্তুকণার গতি",
+    "বিস্তার পরিমাপ ও সম্ভাবনা"
+  ]
+};
+
+let subjectRanges = [];
+const todayISO = new Date().toLocaleDateString('en-CA');
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+  updateStats();
+}
+
+function getWeekday(iso) {
+  const bn = ["রবি","সোম","মঙ্গল","বুধ","বৃহ","শুক্র","শনি"];
+  const d = new Date(iso + "T00:00:00");
+  return bn[d.getDay()];
+}
+
+function getPhase(d) {
+  if (d <= 12) return "ধাপ ১ • সপ্তাহ ১–২ (১৬–২৭ নভেম্বর)";
+  if (d <= 26) return "ধাপ ১ • সপ্তাহ ৩–৪ (২৮ নভেম্বর–১১ ডিসেম্বর)";
+  if (d <= 40) return "ধাপ ১ • সপ্তাহ ৫–৬ (১২–২৫ ডিসেম্বর)";
+  if (d <= 48) return "ধাপ ১ • সপ্তাহ ৭–৮ (২৬ ডিসেম্বর–২ জানুয়ারি)";
+  return "ধাপ ২ • ফাইনাল রিভিশন ও মডেল টেস্ট (৩–১৫ জানুয়ারি)";
+}
+
+function typeMeta(type) {
+  const map = {
+    normal: {label:"রেগুলার", badge:"badge-normal", cls:"normal"},
+    test: {label:"সাপ্তাহিক টেস্ট", badge:"badge-test", cls:"test"},
+    buffer: {label:"বাফার", badge:"badge-buffer", cls:"buffer"},
+    revision: {label:"ফাইনাল রিভিশন", badge:"badge-revision", cls:"revision"},
+    solve: {label:"ইউনিভার্সিটি সলভ", badge:"badge-solve", cls:"solve"},
+    model: {label:"মডেল টেস্ট", badge:"badge-model", cls:"model"},
+    final: {label:"ফাইনাল ডে", badge:"badge-final", cls:"final"}
+  };
+  return map[type] || map.normal;
+}
+
+function renderRoutine(filter = "") {
+  const list = document.getElementById("routine-list");
+  list.innerHTML = "";
+  const q = filter.trim().toLowerCase();
+  const data = q
+    ? routineData.filter(item =>
+        (item.main + item.eng + item.rev + item.date).toLowerCase().includes(q)
+      )
+    : routineData;
+
+  if (!data.length) {
+    list.innerHTML = `<div class="card empty-msg">কোনো রুটিন খুঁজে পাওয়া যায়নি।</div>`;
+    return;
+  }
+
+  let lastPhase = "";
+  data.forEach(day => {
+    if (!q) {
+      const phase = getPhase(day.d);
+      if (phase !== lastPhase) {
+        list.insertAdjacentHTML("beforeend", `<div class="phase-header">${phase}</div>`);
+        lastPhase = phase;
+      }
+    }
+
+    const s = state.routine[day.d] || {main:false, eng:false, rev:false};
+    const allDone = s.main && s.eng && s.rev;
+    const meta = typeMeta(day.type);
+    const isToday = day.iso === todayISO;
+
+    list.insertAdjacentHTML("beforeend", `
+      <article class="day-card card ${meta.cls} ${allDone ? "completed" : ""} ${isToday ? "today" : ""}">
+        <div class="day-head">
+          <div class="day-meta">
+            <span class="day-badge ${meta.badge}">Day ${String(day.d).padStart(2,"0")}</span>
+            <span class="day-date">${day.date}, ${getWeekday(day.iso)}</span>
+            ${isToday ? `<span class="today-badge">আজ</span>` : ""}
+          </div>
+          <div class="type-label">${meta.label}</div>
+        </div>
+
+        <div class="task-row ${s.main ? "completed" : ""}">
+          <div class="task-icon">📌</div>
+          <div class="task-content">
+            <div class="task-title">মূল অধ্যায়</div>
+            <div class="task-desc">${day.main}</div>
+          </div>
+          <button class="check-box ${s.main ? "checked" : ""}" aria-label="মূল অধ্যায় সম্পন্ন" onclick="toggleTask(${day.d}, 'main', this)"></button>
+        </div>
+
+        <div class="task-row ${s.eng ? "completed" : ""}">
+          <div class="task-icon">🇬🇧</div>
+          <div class="task-content">
+            <div class="task-title">ইংরেজি (রাত ১ ঘণ্টা)</div>
+            <div class="task-desc">${day.eng}</div>
+          </div>
+          <button class="check-box ${s.eng ? "checked" : ""}" aria-label="ইংরেজি সম্পন্ন" onclick="toggleTask(${day.d}, 'eng', this)"></button>
+        </div>
+
+        <div class="task-row ${s.rev ? "completed" : ""}">
+          <div class="task-icon">🔄</div>
+          <div class="task-content">
+            <div class="task-title">স্পেসড রিভিশন (৩০ মিনিট)</div>
+            <div class="task-desc">${day.rev}</div>
+          </div>
+          <button class="check-box ${s.rev ? "checked" : ""}" aria-label="রিভিশন সম্পন্ন" onclick="toggleTask(${day.d}, 'rev', this)"></button>
+        </div>
+      </article>
+    `);
+  });
+}
+
+function renderSyllabus() {
+  const list = document.getElementById("syllabus-list");
+  list.innerHTML = "";
+  subjectRanges = [];
+  let chapIndex = 0;
+  let subjectIndex = 0;
+
+  Object.entries(syllabusData).forEach(([subject, chapters]) => {
+    const start = chapIndex;
+    let subjectDone = 0;
+    let chapHTML = "";
+
+    chapters.forEach(chap => {
+      const key = "chap_" + chapIndex;
+      const s = state.syllabus[key] || {t:false,b:false,r1:false,r2:false};
+      if (s.t) subjectDone++;
+      if (s.b) subjectDone++;
+      if (s.r1) subjectDone++;
+      if (s.r2) subjectDone++;
+
+      chapHTML += `
+        <div class="chap-item">
+          <div class="chap-name">${chap}</div>
+          <div class="chap-actions">
+            <button class="mini-check ${s.t ? "active" : ""}" data-key="${key}" data-step="t">থিওরি</button>
+            <button class="mini-check ${s.b ? "active" : ""}" data-key="${key}" data-step="b">ব্যাংক</button>
+            <button class="mini-check ${s.r1 ? "active" : ""}" data-key="${key}" data-step="r1">রিভিশন ১</button>
+            <button class="mini-check ${s.r2 ? "active" : ""}" data-key="${key}" data-step="r2">রিভিশন ২</button>
+          </div>
+        </div>
+      `;
+      chapIndex++;
+    });
+
+    subjectRanges.push({start, count: chapters.length});
+    const pct = Math.round((subjectDone / (chapters.length * 4)) * 100);
+
+    list.insertAdjacentHTML("beforeend", `
+      <div class="subject-card card">
+        <div class="subject-head" onclick="this.parentElement.querySelector('.subject-body').classList.toggle('hidden')">
+          <div class="subject-title">📖 ${subject}</div>
+          <div class="subject-progress" id="subject-progress-${subjectIndex}">${pct}%</div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="subject-bar-${subjectIndex}" style="width:${pct}%"></div></div>
+        <div class="subject-body">
+          <div class="chap-grid">${chapHTML}</div>
+        </div>
+      </div>
+    `);
+    subjectIndex++;
+  });
+
+  list.querySelectorAll(".mini-check").forEach(btn => {
+    btn.addEventListener("click", () => {
+      toggleChap(btn.dataset.key, btn.dataset.step, btn);
+    });
+  });
+}
+
+function toggleTask(dayId, task, btn) {
+  if (!state.routine[dayId]) state.routine[dayId] = {main:false, eng:false, rev:false};
+  state.routine[dayId][task] = !state.routine[dayId][task];
+
+  btn.classList.toggle("checked");
+  const row = btn.closest(".task-row");
+  row.classList.toggle("completed");
+
+  const card = btn.closest(".day-card");
+  const s = state.routine[dayId];
+  card.classList.toggle("completed", Boolean(s.main && s.eng && s.rev));
+
+  saveState();
+}
+
+function toggleChap(key, step, btn) {
+  if (!state.syllabus[key]) state.syllabus[key] = {t:false,b:false,r1:false,r2:false};
+  state.syllabus[key][step] = !state.syllabus[key][step];
+  btn.classList.toggle("active");
+  saveState();
+  updateSubjectProgress();
+}
+
+function updateSubjectProgress() {
+  subjectRanges.forEach((range, idx) => {
+    let done = 0;
+    for (let i = range.start; i < range.start + range.count; i++) {
+      const s = state.syllabus["chap_" + i];
+      if (s) {
+        if (s.t) done++;
+        if (s.b) done++;
+        if (s.r1) done++;
+        if (s.r2) done++;
+      }
+    }
+    const pct = Math.round((done / (range.count * 4)) * 100);
+    const bar = document.getElementById("subject-bar-" + idx);
+    const label = document.getElementById("subject-progress-" + idx);
+    if (bar) bar.style.width = pct + "%";
+    if (label) label.textContent = pct + "%";
+  });
+}
+
+function updateStats() {
+  let daysDone = 0;
+  routineData.forEach(day => {
+    const s = state.routine[day.d];
+    if (s && s.main && s.eng && s.rev) daysDone++;
+  });
+
+  let totalChapters = 0;
+  Object.values(syllabusData).forEach(arr => totalChapters += arr.length);
+
+  let chaptersDone = 0;
+  for (let i = 0; i < totalChapters; i++) {
+    const s = state.syllabus["chap_" + i];
+    if (s && s.t && s.b && s.r1 && s.r2) chaptersDone++;
+  }
+
+  let doneTasks = 0;
+  Object.values(state.routine).forEach(s => {
+    if (s.main) doneTasks++;
+    if (s.eng) doneTasks++;
+    if (s.rev) doneTasks++;
+  });
+  Object.values(state.syllabus).forEach(s => {
+    if (s.t) doneTasks++;
+    if (s.b) doneTasks++;
+    if (s.r1) doneTasks++;
+    if (s.r2) doneTasks++;
+  });
+
+  const totalTasks = (routineData.length * 3) + (totalChapters * 4);
+  const pct = Math.round((doneTasks / totalTasks) * 100);
+
+  document.getElementById("daysDone").textContent = daysDone + "/61";
+  document.getElementById("chapsDone").textContent = chaptersDone + "/" + totalChapters;
+  document.getElementById("overallPct").textContent = pct + "%";
+  document.getElementById("overallBar").style.width = pct + "%";
+}
+
+function switchTab(evt, tabId) {
+  document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  document.getElementById(tabId).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+
+function applyTheme() {
+  const dark = state.settings.theme === "dark";
+  if (dark) document.documentElement.setAttribute("data-theme", "dark");
+  else document.documentElement.removeAttribute("data-theme");
+
+  const btn = document.getElementById("themeBtn");
+  if (btn) btn.innerHTML = dark ? "☀️ Light Mode" : "🌙 Dark Mode";
+}
+
+function toggleTheme() {
+  state.settings.theme = state.settings.theme === "dark" ? "light" : "dark";
+  saveState();
+  applyTheme();
+}
+
+function renderAll() {
+  const q = document.getElementById("searchInput") ? document.getElementById("searchInput").value : "";
+  renderRoutine(q);
+  renderSyllabus();
+  updateStats();
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "admission-routine-backup.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (parsed && typeof parsed === "object") {
+        state = {
+          routine: parsed.routine || {},
+          syllabus: parsed.syllabus || {},
+          settings: { theme: (parsed.settings && parsed.settings.theme) || "light" }
+        };
+        saveState();
+        applyTheme();
+        renderAll();
+        alert("ডাটা সফলভাবে ইমপোর্ট হয়েছে ✅");
+      }
+    } catch (err) {
+      alert("দুঃখিত, ফাইলটি সঠিক JSON নয় ❌");
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = "";
+}
+
+function resetData() {
+  if (!confirm("সব টিক/প্রগ্রেস মুছে যাবে। আপনি কি নিশ্চিত?")) return;
+  state = {
+    routine: {},
+    syllabus: {},
+    settings: { theme: state.settings.theme }
+  };
+  saveState();
+  renderAll();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  applyTheme();
+  renderAll();
+});
+</script>
+</body>
+</html>

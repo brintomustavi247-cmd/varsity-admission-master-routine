@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+          'uid', 'email', 'displayName', 'photoURL',
+          'theme', 'soundEnabled', 'studyTrack', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'photoURL',
+          'theme', 'soundEnabled', 'studyTrack', 'createdAt', 'updatedAt'
+        ])
+        && data.uid is string && data.uid == request.auth.uid && isValidId(data.uid)
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 256
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100
+        && data.photoURL is string && data.photoURL.size() <= 500
+        && data.theme in ['light', 'dark']
+        && data.soundEnabled is bool
+        && data.studyTrack in ['unset', 'english', 'biology']
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidSquadProgress(data) {
+      return data.keys().hasAll([
+          'uid', 'displayName', 'photoURL', 'studyTrack', 'routine', 'syllabus',
+          'daysDone', 'chapsDone', 'xp', 'streak',
+          'isPublicSquadMember', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'photoURL', 'studyTrack', 'routine', 'syllabus',
+          'daysDone', 'chapsDone', 'xp', 'streak',
+          'isPublicSquadMember', 'createdAt', 'updatedAt'
+        ])
+        && data.uid is string && data.uid == request.auth.uid && isValidId(data.uid)
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100
+        && data.photoURL is string && data.photoURL.size() <= 500
+        && data.studyTrack in ['english', 'biology']
+        && data.routine is map && data.routine.size() <= 200
+        && data.syllabus is map && data.syllabus.size() <= 320
+        && data.daysDone is int && data.daysDone >= 0 && data.daysDone <= 61
+        && data.chapsDone is int && data.chapsDone >= 0 && data.chapsDone <= 75
+        && data.xp is int && data.xp >= 0 && data.xp <= 150000
+        && data.streak is int && data.streak >= 0 && data.streak <= 365
+        && data.isPublicSquadMember == true
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isVerifiedUser() && isValidId(userId) && isOwner(userId);
+      allow list: if false;
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().uid == userId
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'photoURL', 'email', 'theme', 'soundEnabled', 'studyTrack', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    match /squadProgress/{userId} {
+      allow get: if isVerifiedUser() && isValidId(userId);
+      allow list: if isVerifiedUser() && resource.data.isPublicSquadMember == true;
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidSquadProgress(incoming())
+        && incoming().uid == userId
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidSquadProgress(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'photoURL', 'studyTrack', 'routine', 'syllabus',
+          'daysDone', 'chapsDone', 'xp', 'streak', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+  }
+}

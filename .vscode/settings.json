@@ -1,0 +1,38 @@
+{
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "css.lint.unknownAtRules": "ignore",
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "tailwindCSS.includeLanguages": {
+    "typescriptreact": "html",
+    "typescript": "html"
+  },
+  "files.exclude": {
+    "**/.aistudio": true,
+    "**/dist": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.aistudio": true
+  },
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#16206E",
+    "titleBar.activeForeground": "#E0F2FE",
+    "titleBar.inactiveBackground": "#111954",
+    "titleBar.inactiveForeground": "#93C5FD",
+    "activityBar.background": "#111954",
+    "activityBar.foreground": "#38BDF8",
+    "activityBar.activeBorder": "#38BDF8",
+    "activityBarBadge.background": "#4F46E5",
+    "activityBarBadge.foreground": "#FFFFFF",
+    "statusBar.background": "#1D2B8F",
+    "statusBar.foreground": "#E0F2FE",
+    "statusBar.debuggingBackground": "#0284C7",
+    "tab.activeBorderTop": "#38BDF8"
+  }
+}
