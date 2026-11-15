@@ -1,11 +1,12 @@
-const CACHE_NAME = 'varsity-routine-v4';
+const CACHE_NAME = 'varsity-routine-v5';
 const STATIC_ASSETS = [
+  '/icons/mascot-notification.png',
+  '/icons/badge-cyber-cat.png',
+  '/mascot/cyber-cat.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon.svg',
   '/icons/badge-96.png',
-  '/icons/badge-72.png',
-  '/icons/badge.svg',
   '/favicon.ico',
   '/manifest.webmanifest'
 ];
@@ -75,8 +76,8 @@ self.addEventListener('push', (event) => {
     event.waitUntil(
       self.registration.showNotification(data.title || 'ভার্সিটি অ্যাডমিশন রুটিন', {
         body: data.body || 'আজকের মিশন সম্পূর্ণ করুন!',
-        icon: '/icons/icon-192.png',
-        badge: '/icons/badge-96.png',
+        icon: '/icons/mascot-notification.png',
+        badge: '/icons/badge-cyber-cat.png',
         tag: data.tag || 'admission-routine-alert',
         renotify: true,
         data: { url: data.url || '/?tab=routine' },

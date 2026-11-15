@@ -368,8 +368,8 @@ export function ProfileSettingsSheet({
                     <div className="rounded-xl border border-red-400/30 bg-white/70 dark:bg-slate-900/80 p-3 flex items-start gap-3 shadow-xs">
                       <div className="shrink-0 pt-0.5 text-center">
                         <MascotCharacter mood={savagePreview.mood} size="sm" />
-                        <div className="text-[9px] font-extrabold text-rose-500 font-aura tracking-wider">
-                          MIMI 😼
+                        <div className="text-[9px] font-black text-cyan-400 font-aura tracking-widest mt-0.5">
+                          AURA CAT
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
