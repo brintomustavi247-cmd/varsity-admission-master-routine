@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2B8F" />
+      <stop offset="50%" stop-color="#141D5E" />
+      <stop offset="100%" stop-color="#0B1038" />
+    </linearGradient>
+
+    <!-- Cap Diamond Gradient -->
+    <linearGradient id="capGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="40%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+
+    <!-- Book Gradient -->
+    <linearGradient id="bookGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BAE6FD" />
+    </linearGradient>
+
+    <!-- Gold Tassel Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+
+    <!-- Ribbon Gradient -->
+    <linearGradient id="ribbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F43F5E" />
+      <stop offset="50%" stop-color="#FB7185" />
+      <stop offset="100%" stop-color="#E11D48" />
+    </linearGradient>
+
+    <!-- Ambient Shadow -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#0284C7" flood-opacity="0.35" />
+    </filter>
+    <filter id="capShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="url(#bgGrad)" stroke="#38BDF8" stroke-width="4" stroke-opacity="0.35" />
+
+  <!-- Inner Soft Aura -->
+  <circle cx="256" cy="220" r="160" fill="#38BDF8" opacity="0.12" />
+
+  <!-- Group with Drop Shadow -->
+  <g filter="url(#shadow)">
+    <!-- Open Book / Wings of Knowledge -->
+    <path d="M 120 330 C 180 300 240 315 256 335 C 272 315 332 300 392 330 L 392 385 C 332 355 272 370 256 390 C 240 370 180 355 120 385 Z" fill="url(#bookGrad)" />
+    <!-- Book Spine & Pages Line -->
+    <path d="M 256 335 L 256 390" stroke="#0284C7" stroke-width="3" stroke-linecap="round" />
+    <path d="M 135 348 C 185 325 235 338 248 355" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8" />
+    <path d="M 377 348 C 327 325 277 338 264 355" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.8" />
+
+    <!-- Graduation Cap Lower Skull Cap -->
+    <path d="M 176 210 Q 256 255 336 210 L 336 235 C 336 268 300 295 256 295 C 212 295 176 268 176 235 Z" fill="#0C4A6E" />
+    <path d="M 182 225 Q 256 262 330 225 L 330 236 C 330 262 297 285 256 285 C 215 285 182 262 182 236 Z" fill="#0284C7" opacity="0.6" />
+
+    <!-- Cap Mortarboard Diamond (Perspective) -->
+    <g filter="url(#capShadow)">
+      <polygon points="256,110 396,175 256,238 116,175" fill="url(#capGrad)" stroke="#BAE6FD" stroke-width="3" />
+      <polygon points="256,110 396,175 256,178 116,175" fill="#FFFFFF" opacity="0.25" />
+    </g>
+
+    <!-- Cap Center Button -->
+    <ellipse cx="256" cy="174" rx="10" ry="7" fill="url(#goldGrad)" />
+
+    <!-- Gold Tassel -->
+    <path d="M 256 174 Q 320 185 338 230" fill="none" stroke="url(#goldGrad)" stroke-width="5" stroke-linecap="round" />
+    <!-- Tassel Fringe Ribbon -->
+    <polygon points="332,230 344,230 348,275 328,275" fill="url(#goldGrad)" />
+    <circle cx="338" cy="232" r="6" fill="#F59E0B" />
+  </g>
+
+  <!-- Decorative Sparkles -->
+  <path d="M 112 135 Q 112 155 92 155 Q 112 155 112 175 Q 112 155 132 155 Q 112 155 112 135" fill="#FDE68A" />
+  <path d="M 398 120 Q 398 135 383 135 Q 398 135 398 150 Q 398 135 413 135 Q 398 135 398 120" fill="#38BDF8" />
+  <circle cx="150" cy="275" r="4" fill="#38BDF8" opacity="0.8" />
+  <circle cx="365" cy="285" r="3" fill="#FDE68A" opacity="0.8" />
+
+  <!-- Admission 2026-27 Ribbon Badge -->
+  <g>
+    <rect x="136" y="408" width="240" height="42" rx="21" fill="url(#ribbonGrad)" stroke="#FFE4E6" stroke-width="2" />
+    <text x="256" y="435" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="19" fill="#FFFFFF" letter-spacing="2">ADMISSION 2026</text>
+  </g>
+</svg>

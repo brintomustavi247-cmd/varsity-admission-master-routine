@@ -3,6 +3,7 @@ import { signInWithPopup } from 'firebase/auth';
 import { motion } from 'motion/react';
 import { Award, CheckCircle2, Flame, Users, ShieldCheck } from 'lucide-react';
 import { auth, googleProvider } from '../lib/firebase';
+import { PwaInstallBanner } from './PwaInstallBanner';
 
 interface LoginGateProps {
   theme: 'light' | 'dark';
@@ -41,8 +42,8 @@ export function LoginGate({ theme, onToggleTheme }: LoginGateProps) {
   return (
     <div className="min-h-screen bg-[#f4f6fb] dark:bg-[#0b1120] text-slate-900 dark:text-slate-100 flex flex-col">
       <header className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 font-display font-extrabold text-lg tracking-tight whitespace-nowrap shrink-0">
-          <span aria-hidden="true">🎓</span>
+        <div className="flex items-center gap-2.5 font-display font-extrabold text-lg tracking-tight whitespace-nowrap shrink-0">
+          <img src="/icons/icon-192.png" alt="লোগো" className="w-8 h-8 rounded-xl shadow-xs border border-sky-400/30 object-cover" />
           <span>ভার্সিটি অ্যাডমিশন রুটিন</span>
         </div>
         <button
@@ -53,6 +54,10 @@ export function LoginGate({ theme, onToggleTheme }: LoginGateProps) {
           {theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode'}
         </button>
       </header>
+
+      <div className="w-full max-w-5xl mx-auto px-4 mb-2">
+        <PwaInstallBanner />
+      </div>
 
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <motion.div

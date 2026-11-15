@@ -1,0 +1,66 @@
+{
+  "id": "/",
+  "name": "ভার্সিটি অ্যাডমিশন মাস্টার রুটিন ২০২৬-২৭",
+  "short_name": "অ্যাডমিশন রুটিন",
+  "description": "৬১ দিনের বিজ্ঞান ইউনিট অ্যাডমিশন মাস্টার রুটিন, সিলেবাস ট্র্যাকার ও লিডারবোর্ড।",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b1120",
+  "theme_color": "#16206E",
+  "lang": "bn",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ডেইলি রুটিন",
+      "short_name": "রুটিন",
+      "url": "/?tab=routine",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "সিলেবাস ট্র্যাকার",
+      "short_name": "সিলেবাস",
+      "url": "/?tab=syllabus",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "স্কোয়াড লিডারবোর্ড",
+      "short_name": "স্কোয়াড",
+      "url": "/?tab=squad",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

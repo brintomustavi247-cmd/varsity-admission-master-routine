@@ -68,6 +68,7 @@ import { RoutineView } from './components/RoutineView';
 import { SyllabusView } from './components/SyllabusView';
 import { SquadView } from './components/SquadView';
 import { StrategyView } from './components/StrategyView';
+import { PwaInstallBanner } from './components/PwaInstallBanner';
 
 type TabId = 'routine' | 'syllabus' | 'squad' | 'strategy';
 
@@ -1001,6 +1002,9 @@ export default function App() {
       </header>
 
       <div className="max-w-5xl mx-auto px-3 sm:px-6 pt-3 sm:pt-5 space-y-3">
+        {/* PWA Chrome / Add to Home Screen Banner */}
+        <PwaInstallBanner />
+
         {/* Desktop Top Header */}
         <header className="hidden sm:flex rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 items-center justify-between gap-2 shadow-[0_6px_20px_rgba(79,70,229,0.05)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)]">
           <div className="flex items-center gap-3 min-w-0">
