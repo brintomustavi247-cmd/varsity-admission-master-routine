@@ -21,7 +21,6 @@ import {
   Globe,
   LogOut,
   Search,
-  Sparkles,
   Trash2,
   Upload,
   Users,
@@ -717,7 +716,7 @@ export default function App() {
         } else {
           playTaskChime(soundEnabled);
           triggerSmallConfetti(buttonEl);
-          showXpToast('✨ +20 Aura অর্জিত!');
+          showXpToast('+20 AURA অর্জিত!');
         }
       }
 
@@ -780,7 +779,7 @@ export default function App() {
         } else {
           playTaskChime(soundEnabled);
           triggerSmallConfetti(buttonEl);
-          showXpToast('✨ +15 Aura অর্জিত!');
+          showXpToast('+15 AURA অর্জিত!');
         }
       }
 
@@ -1128,9 +1127,11 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <span className="font-mono-num text-xs font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-violet-500" />
-                {todayBanglaShort} · Lv.{myRank.level} · {myMetrics.xp} Aura
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <span className="font-mono-num">{todayBanglaShort} · Lv.{myRank.level} ·</span>
+                <span className="font-aura text-xs font-black text-[#FF1744] dark:text-[#FF2A55] tracking-wider drop-shadow-[0_0_8px_rgba(255,23,68,0.55)]">
+                  {myMetrics.xp} AURA
+                </span>
               </span>
               <div className="flex items-center -space-x-1.5">
                 {squadMembers.map((m) => (

@@ -11,7 +11,6 @@ import {
   LogOut,
   Moon,
   Send,
-  Sparkles,
   Sun,
   Trash2,
   Upload,
@@ -165,9 +164,13 @@ export function ProfileSettingsSheet({
                         {email}
                       </div>
                     )}
-                    <div className="mt-0.5 text-xs font-bold text-violet-600 dark:text-violet-400 font-mono-num flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Lv.{rankLevel} · {rankTitle} · {metrics.xp} Aura
+                    <div className="mt-0.5 text-xs flex items-center gap-1.5">
+                      <span className="font-mono-num font-semibold text-slate-500 dark:text-slate-400">
+                        Lv.{rankLevel} · {rankTitle} ·
+                      </span>
+                      <span className="font-aura text-xs font-black text-[#FF1744] dark:text-[#FF2A55] tracking-wider drop-shadow-[0_0_8px_rgba(255,23,68,0.5)]">
+                        {metrics.xp} AURA
+                      </span>
                     </div>
                   </div>
                 </div>

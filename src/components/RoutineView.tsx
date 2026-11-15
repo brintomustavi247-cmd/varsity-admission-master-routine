@@ -11,7 +11,6 @@ import {
   Globe,
   RefreshCw,
   Search,
-  Sparkles,
   Trophy,
 } from 'lucide-react';
 import {
@@ -371,7 +370,7 @@ export function RoutineView({
                             className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 hover:text-blue-700 dark:hover:text-sky-300 cursor-pointer"
                           >
                             <Trophy className="w-4 h-4 text-amber-500" />
-                            <span>মিশন সম্পন্ন! +50 Bonus Aura ✨</span>
+                            <span>মিশন সম্পন্ন! <span className="font-aura font-black text-[#FF1744] dark:text-[#FF2A55] tracking-wider">+50 BONUS AURA</span></span>
                           </motion.button>
                         ) : (
                           <motion.div
@@ -453,10 +452,9 @@ export function RoutineView({
                               <span
                                 key={floatingXpKey}
                                 aria-hidden="true"
-                                className="pointer-events-none absolute -top-6 right-0 z-20 inline-flex items-center gap-1 text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-cyan-500 dark:from-violet-400 dark:via-fuchsia-300 dark:to-cyan-300 whitespace-nowrap animate-float-aura"
+                                className="pointer-events-none absolute -top-6 right-0 z-20 font-aura text-xs font-black text-[#FF1744] dark:text-[#FF2A55] whitespace-nowrap animate-float-aura drop-shadow-[0_0_8px_rgba(255,23,68,0.7)] tracking-wider"
                               >
-                                <Sparkles className="w-3 h-3 text-violet-500" />
-                                +20 Aura ✨
+                                +20 AURA
                               </span>
                             )}
 

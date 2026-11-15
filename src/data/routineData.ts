@@ -493,7 +493,7 @@ export function computeMetrics(
 }
 
 const RANKS = [
-  { level: 1, title: "Awakened Aura ✨", minXp: 0 },
+  { level: 1, title: "Awakened Aura ⚡", minXp: 0 },
   { level: 2, title: "Radiant Seeker 🌟", minXp: 300 },
   { level: 3, title: "Mystic Scholar 🔮", minXp: 800 },
   { level: 4, title: "Ascendant Solver ⚡", minXp: 1600 },

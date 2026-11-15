@@ -1,4 +1,4 @@
-import { Flame, Medal, Sparkles, Users } from 'lucide-react';
+import { Flame, Medal, Users } from 'lucide-react';
 import { getChapterCountForTrack, getRankInfo } from '../data/routineData';
 import type { SquadMemberProgress } from '../types/study';
 import { UserAvatar } from './AvatarStack';
@@ -107,11 +107,10 @@ export function SquadView({ squadMembers, currentUid }: SquadViewProps) {
 
                     <div className="flex items-center gap-4 sm:gap-6 text-right shrink-0">
                       <div>
-                        <div className="font-mono-num text-sm font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1 justify-end">
-                          <Sparkles className="w-3.5 h-3.5 text-violet-500" />
-                          {member.xp} Aura
+                        <div className="font-aura text-sm font-black text-[#FF1744] dark:text-[#FF2A55] tracking-wider justify-end drop-shadow-[0_0_8px_rgba(255,23,68,0.45)]">
+                          {member.xp} AURA
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
                           মোট অরা
                         </div>
                       </div>

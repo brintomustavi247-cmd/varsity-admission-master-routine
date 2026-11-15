@@ -149,7 +149,7 @@ export function LoginGate({ theme, onToggleTheme }: LoginGateProps) {
                     গেমিফাইড মিশন সেলিব্রেশন
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    প্রতিদিনের ৩টি মিশন শেষ করলেই Aura ✨, র‍্যাংক ও এসথেটিক সেলিব্রেশন।
+                    প্রতিদিনের ৩টি মিশন শেষ করলেই AURA, র‍্যাংক ও এসথেটিক সেলিব্রেশন।
                   </p>
                 </div>
               </div>
