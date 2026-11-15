@@ -2,7 +2,33 @@ import {
   getContextualSavageNotification,
   getRandomSavageNotification,
   type SavageNotification,
+  type MascotMood,
 } from '../data/savageNotifications';
+
+export function getMascotReactionIcon(mood?: MascotMood): string {
+  switch (mood) {
+    case 'psycho':
+      return '/mascot/cyber-cat-psycho.png';
+    case 'crying':
+      return '/mascot/cyber-cat-crying.png';
+    case 'smug':
+    case 'jealous':
+      return '/mascot/cyber-cat-smug.png';
+    case 'panic':
+    case 'doodie':
+      return '/mascot/cyber-cat-panic.png';
+    case 'exhausted':
+    case 'roast':
+      return '/mascot/cyber-cat-exhausted.png';
+    case 'sleepy':
+      return '/mascot/cyber-cat-sleepy.png';
+    case 'happy':
+      return '/mascot/cyber-cat-happy.png';
+    case 'sassy':
+    default:
+      return '/mascot/cyber-cat-sassy.png';
+  }
+}
 
 export function isNotificationSupported(): boolean {
   return (
@@ -26,6 +52,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
         title: '🔔 দৈনিক নোটিফিকেশন চালু হয়েছে!',
         body: 'আজকের পড়ার কোনো টাস্ক বাকি থাকলে প্রতিদিন ফোনে সরাসরি রিমাইন্ডার পৌঁছে যাবে।',
         tag: 'welcome-notification',
+        mood: 'happy',
       });
     }
     return permission;
@@ -40,6 +67,9 @@ interface NotificationPayload {
   body: string;
   tag?: string;
   url?: string;
+  icon?: string;
+  image?: string;
+  mood?: MascotMood;
 }
 
 export async function sendPhoneNotification({
@@ -47,13 +77,21 @@ export async function sendPhoneNotification({
   body,
   tag = 'admission-routine-alert',
   url = '/?tab=routine',
+  icon,
+  image,
+  mood,
 }: NotificationPayload): Promise<boolean> {
   if (!isNotificationSupported()) return false;
   if (Notification.permission !== 'granted') return false;
 
-  const options: NotificationOptions & { renotify?: boolean } = {
+  const reactionIcon =
+    icon || (mood ? getMascotReactionIcon(mood) : '/mascot/cyber-cat-sassy.png');
+  const reactionImage = image || reactionIcon;
+
+  const options: NotificationOptions & { renotify?: boolean; image?: string } = {
     body,
-    icon: '/icons/mascot-notification.png',
+    icon: reactionIcon,
+    image: reactionImage,
     badge: '/icons/badge-cyber-cat.png',
     tag,
     renotify: true,
@@ -122,6 +160,7 @@ export async function checkAndSendDailyReminder(
     body,
     tag: `daily-mission-${todayISO}`,
     url: '/?tab=routine',
+    mood: savage.mood,
   });
 
   if (sent) {
@@ -132,7 +171,7 @@ export async function checkAndSendDailyReminder(
 }
 
 /**
- * Specifically triggered for the user's required 11:40 PM check tonight!
+ * Specifically triggered for the user's required 11:40 PM check
  */
 export async function checkAndSend1140Notification(
   dayNumber: number,
@@ -160,6 +199,7 @@ export async function checkAndSend1140Notification(
       body,
       tag: `must-1140-${todayISO}`,
       url: '/?tab=routine',
+      mood: 'panic',
     });
 
     if (sent) {
@@ -183,7 +223,7 @@ export async function checkAndSendRandomMomentRoast(
 
   const now = Date.now();
   const lastRoast = Number(localStorage.getItem('last_auto_roast_time') || '0');
-  
+
   // Cooldown of at least 80 minutes between spontaneous roasts
   const MIN_COOLDOWN_MS = 80 * 60 * 1000;
   if (now - lastRoast < MIN_COOLDOWN_MS) return false;
@@ -199,6 +239,7 @@ export async function checkAndSendRandomMomentRoast(
     body: `${savage.body} (Day ${String(dayNumber).padStart(2, '0')}-এর পড়া বাকি!)`,
     tag: `auto-roast-${Date.now()}`,
     url: '/?tab=routine',
+    mood: savage.mood,
   });
 
   if (sent) {
@@ -217,6 +258,7 @@ export async function sendSavageTestNotification(
     body: savage.body,
     tag: `test-savage-${Date.now()}`,
     url: '/?tab=routine',
+    mood: savage.mood,
   });
 
   return sent ? savage : null;
@@ -232,6 +274,7 @@ export function scheduleCountdownNotification(
   onComplete?: (savage: SavageNotification) => void
 ): () => void {
   const savage = getRandomSavageNotification();
+  const reactionIcon = getMascotReactionIcon(savage.mood);
 
   // Also arm service worker if active
   if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -242,6 +285,8 @@ export function scheduleCountdownNotification(
         delayMs: seconds * 1000,
         options: {
           body: savage.body,
+          icon: reactionIcon,
+          image: reactionIcon,
           tag: `countdown-sw-${Date.now()}`,
           data: { url: '/?tab=routine' },
         },
@@ -263,6 +308,7 @@ export function scheduleCountdownNotification(
         body: savage.body,
         tag: `countdown-${Date.now()}`,
         url: '/?tab=routine',
+        mood: savage.mood,
       });
       if (onComplete) onComplete(savage);
     }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'varsity-routine-v9';
+const CACHE_NAME = 'varsity-routine-v10';
 const STATIC_ASSETS = [
   '/icons/mascot-notification.png',
   '/icons/badge-cyber-cat.png',
@@ -82,8 +82,11 @@ self.addEventListener('message', (event) => {
 
   if (event.data.type === 'SHOW_NOTIFICATION') {
     const { title, options } = event.data;
+    const icon = options?.icon || '/mascot/cyber-cat-sassy.png';
+    const image = options?.image || icon;
     self.registration.showNotification(title, {
-      icon: '/icons/mascot-notification.png',
+      icon,
+      image,
       badge: '/icons/badge-cyber-cat.png',
       ...options,
     });
@@ -91,9 +94,12 @@ self.addEventListener('message', (event) => {
 
   if (event.data.type === 'SCHEDULE_NOTIFICATION') {
     const { title, options, delayMs } = event.data;
+    const icon = options?.icon || '/mascot/cyber-cat-sassy.png';
+    const image = options?.image || icon;
     setTimeout(() => {
       self.registration.showNotification(title, {
-        icon: '/icons/mascot-notification.png',
+        icon,
+        image,
         badge: '/icons/badge-cyber-cat.png',
         ...options,
       });
@@ -106,10 +112,13 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
   try {
     const data = event.data.json();
+    const icon = data.icon || '/mascot/cyber-cat-sassy.png';
+    const image = data.image || icon;
     event.waitUntil(
       self.registration.showNotification(data.title || 'ভার্সিটি অ্যাডমিশন রুটিন', {
         body: data.body || 'আজকের মিশন সম্পূর্ণ করুন!',
-        icon: '/icons/mascot-notification.png',
+        icon,
+        image,
         badge: '/icons/badge-cyber-cat.png',
         tag: data.tag || 'admission-routine-alert',
         renotify: true,
@@ -154,7 +163,8 @@ setInterval(() => {
     sent1140Today = true;
     self.registration.showNotification('রাত ১১টা ৪০ বাজার আলটিমেটাম! 🕛⏰', {
       body: 'রাত ১২টা বাজতে আর মাত্র ২০ মিনিট বাকি! আজকের টাস্ক এখনো শেষ করোনি? ১২টা বাজলেই আজকের AURA ধুলোয় মিশে যাবে! জলদি টেবিলে বসো! 😼',
-      icon: '/icons/mascot-notification.png',
+      icon: '/mascot/cyber-cat-panic.png',
+      image: '/mascot/cyber-cat-panic.png',
       badge: '/icons/badge-cyber-cat.png',
       tag: 'must-1140-sw',
       renotify: true,
