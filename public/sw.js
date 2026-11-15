@@ -1,26 +1,23 @@
-const CACHE_NAME = 'varsity-routine-v1';
-const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
+const CACHE_NAME = 'varsity-routine-v3';
+const STATIC_ASSETS = [
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon.svg',
-  '/favicon.ico'
+  '/favicon.ico',
+  '/manifest.webmanifest'
 ];
 
-// Install: precache essential shell assets
+// Install: precache only static icons (NEVER index.html to avoid stale hash chunk errors)
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS).catch(() => {
-        // Silently continue if an asset fails to precache
-      });
-    }).then(() => self.skipWaiting())
+      return cache.addAll(STATIC_ASSETS).catch(() => {});
+    })
   );
 });
 
-// Activate: clean up old caches
+// Activate: purge all old caches immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -35,41 +32,36 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch: Network first with cache fallback for navigation, cache-first for static assets
+// Fetch handler: Always fetch fresh HTML from network so new app deployments load immediately
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-
-  // Ignore non-GET or chrome-extension/firebase API requests
   if (req.method !== 'GET') return;
+
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // For HTML navigation: Network first, fall back to cached index.html
+  // For HTML navigation: Network ONLY (no stale cache)
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const resClone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
-          return res;
-        })
-        .catch(() => caches.match('/index.html').then((cached) => cached || caches.match('/')))
+      fetch(req, { cache: 'no-store' }).catch(() => {
+        return caches.match('/index.html');
+      })
     );
     return;
   }
 
-  // For static assets: Cache first, then network
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req).then((res) => {
-        if (!res || res.status !== 200 || res.type !== 'basic') return res;
-        const resClone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
-        return res;
-      });
-    })
-  );
+  // For static icons: Cache first with network fallback
+  if (url.pathname.startsWith('/icons/') || url.pathname === '/favicon.ico') {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        return cached || fetch(req);
+      })
+    );
+    return;
+  }
+
+  // For all other requests (JS/CSS assets): Network first
+  event.respondWith(fetch(req));
 });
 
 // Handle notification click on mobile phone / desktop
@@ -93,4 +85,3 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
-
