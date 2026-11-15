@@ -164,8 +164,9 @@ export function ProfileSettingsSheet({
                         {email}
                       </div>
                     )}
-                    <div className="mt-0.5 text-xs font-bold text-[#4F46E5] dark:text-[#818CF8] font-mono-num">
-                      Lv.{rankLevel} · {rankTitle} · {metrics.xp} XP
+                    <div className="mt-0.5 text-xs font-bold text-violet-600 dark:text-violet-400 font-mono-num flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Lv.{rankLevel} · {rankTitle} · {metrics.xp} Aura
                     </div>
                   </div>
                 </div>

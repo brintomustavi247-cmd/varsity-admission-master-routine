@@ -107,12 +107,12 @@ export function SquadView({ squadMembers, currentUid }: SquadViewProps) {
 
                     <div className="flex items-center gap-4 sm:gap-6 text-right shrink-0">
                       <div>
-                        <div className="font-mono-num text-sm font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 justify-end">
-                          <Sparkles className="w-3.5 h-3.5" />
-                          {member.xp} XP
+                        <div className="font-mono-num text-sm font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1 justify-end">
+                          <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                          {member.xp} Aura
                         </div>
                         <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                          মোট পয়েন্ট
+                          মোট অরা
                         </div>
                       </div>
 

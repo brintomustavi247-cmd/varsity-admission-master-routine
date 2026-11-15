@@ -207,10 +207,10 @@ export function SyllabusView({
                                 <span
                                   key={floatingXpKey}
                                   aria-hidden="true"
-                                  className="pointer-events-none absolute -top-5 left-2 z-20 inline-flex items-center gap-0.5 text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 whitespace-nowrap animate-float-xp"
+                                  className="pointer-events-none absolute -top-5 left-2 z-20 inline-flex items-center gap-1 text-[11px] font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 dark:from-emerald-400 dark:via-teal-300 dark:to-cyan-300 whitespace-nowrap animate-float-aura"
                                 >
-                                  <Sparkles className="w-3 h-3" />
-                                  +15 XP
+                                  <Sparkles className="w-3 h-3 text-emerald-500" />
+                                  +15 Aura ✨
                                 </span>
                               )}
 

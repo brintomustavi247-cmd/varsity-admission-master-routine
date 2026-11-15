@@ -716,7 +716,7 @@ export default function App() {
         } else {
           playTaskChime(soundEnabled);
           triggerSmallConfetti(buttonEl);
-          showXpToast('+20 XP অর্জিত!');
+          showXpToast('✨ +20 Aura অর্জিত!');
         }
       }
 
@@ -779,7 +779,7 @@ export default function App() {
         } else {
           playTaskChime(soundEnabled);
           triggerSmallConfetti(buttonEl);
-          showXpToast('+15 XP অর্জিত!');
+          showXpToast('✨ +15 Aura অর্জিত!');
         }
       }
 
@@ -1127,8 +1127,9 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <span className="font-mono-num text-xs font-bold text-slate-500 dark:text-slate-400">
-                {todayBanglaShort} · Lv.{myRank.level} · {myMetrics.xp} XP
+              <span className="font-mono-num text-xs font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                {todayBanglaShort} · Lv.{myRank.level} · {myMetrics.xp} Aura
               </span>
               <div className="flex items-center -space-x-1.5">
                 {squadMembers.map((m) => (

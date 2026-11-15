@@ -493,14 +493,14 @@ export function computeMetrics(
 }
 
 const RANKS = [
-  { level: 1, title: "Rookie Challenger", minXp: 0 },
-  { level: 2, title: "Formula Seeker", minXp: 300 },
-  { level: 3, title: "Concept Builder", minXp: 800 },
-  { level: 4, title: "Bank Solver", minXp: 1600 },
-  { level: 5, title: "Revision Master", minXp: 2800 },
-  { level: 6, title: "Model Champion", minXp: 4500 },
-  { level: 7, title: "Varsity Ranker", minXp: 6800 },
-  { level: 8, title: "Admission Legend", minXp: 9500 },
+  { level: 1, title: "Awakened Aura ✨", minXp: 0 },
+  { level: 2, title: "Radiant Seeker 🌟", minXp: 300 },
+  { level: 3, title: "Mystic Scholar 🔮", minXp: 800 },
+  { level: 4, title: "Ascendant Solver ⚡", minXp: 1600 },
+  { level: 5, title: "Astral Master 🌌", minXp: 2800 },
+  { level: 6, title: "Ethereal Champion 💫", minXp: 4500 },
+  { level: 7, title: "Celestial Ranker 🌠", minXp: 6800 },
+  { level: 8, title: "Infinite Aura Legend 👑", minXp: 9500 },
 ];
 
 export function getRankInfo(xp: number): RankInfo {
@@ -511,7 +511,7 @@ export function getRankInfo(xp: number): RankInfo {
       current = RANKS[i];
       next = RANKS[i + 1] ?? {
         level: RANKS[i].level + 1,
-        title: "Apex Grandmaster",
+        title: "Godly Aura Grandmaster 💎",
         minXp: RANKS[i].minXp + 3000,
       };
     }

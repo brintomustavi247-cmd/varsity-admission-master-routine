@@ -371,7 +371,7 @@ export function RoutineView({
                             className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 dark:text-emerald-300 hover:text-blue-700 dark:hover:text-sky-300 cursor-pointer"
                           >
                             <Trophy className="w-4 h-4 text-amber-500" />
-                            <span>মিশন সম্পন্ন! +50 Bonus XP</span>
+                            <span>মিশন সম্পন্ন! +50 Bonus Aura ✨</span>
                           </motion.button>
                         ) : (
                           <motion.div
@@ -453,10 +453,10 @@ export function RoutineView({
                               <span
                                 key={floatingXpKey}
                                 aria-hidden="true"
-                                className="pointer-events-none absolute -top-6 right-0 z-20 inline-flex items-center gap-0.5 text-xs font-extrabold text-sky-600 dark:text-sky-400 whitespace-nowrap animate-float-xp"
+                                className="pointer-events-none absolute -top-6 right-0 z-20 inline-flex items-center gap-1 text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-fuchsia-500 to-cyan-500 dark:from-violet-400 dark:via-fuchsia-300 dark:to-cyan-300 whitespace-nowrap animate-float-aura"
                               >
-                                <Sparkles className="w-3 h-3" />
-                                +20 XP
+                                <Sparkles className="w-3 h-3 text-violet-500" />
+                                +20 Aura ✨
                               </span>
                             )}
 
