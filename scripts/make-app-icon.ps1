@@ -1,97 +1,147 @@
-Add-Type -AssemblyName System.Drawing
-$catPath = 'public/mascot/cyber-cat.png'
+﻿Add-Type -AssemblyName System.Drawing
+
+$catPath = "public/mascot/cyber-cat.png"
+if (-not (Test-Path $catPath)) {
+    Write-Error "Cat file not found: $catPath"
+    exit 1
+}
+
 $catImg = [System.Drawing.Image]::FromFile($catPath)
 
-function Make-ProfessionalAppLogo([int]$size, [string]$dest, [bool]$isMaskable) {
+function Generate-AuraEmblemLogo([int]$size, [string]$dest, [bool]$isMaskable) {
     $bmp = New-Object System.Drawing.Bitmap($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g = [System.Drawing.Graphics]::FromImage($bmp)
     $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
     $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
     $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
     $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+    $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
 
-    # Transparent canvas
     $g.Clear([System.Drawing.Color]::FromArgb(0, 0, 0, 0))
 
-    $radius = if ($isMaskable) { 0 } else { [int]($size * 0.22) }
-    $rect = New-Object System.Drawing.Rectangle(0, 0, $size, $size)
+    $padding = if ($isMaskable) { 0 } else { [int]($size * 0.04) }
+    $innerSize = $size - ($padding * 2)
+    $radius = if ($isMaskable) { 0 } else { [int]($innerSize * 0.24) }
 
-    # 1. Rounded Squircle Path
+    # Outer Squircle Path
     $path = New-Object System.Drawing.Drawing2D.GraphicsPath
     if ($radius -gt 0) {
         $d = $radius * 2
-        $path.AddArc(0, 0, $d, $d, 180, 90)
-        $path.AddArc(($size - $d), 0, $d, $d, 270, 90)
-        $path.AddArc(($size - $d), ($size - $d), $d, $d, 0, 90)
-        $path.AddArc(0, ($size - $d), $d, $d, 90, 90)
+        $path.AddArc($padding, $padding, $d, $d, 180, 90)
+        $path.AddArc(($padding + $innerSize - $d), $padding, $d, $d, 270, 90)
+        $path.AddArc(($padding + $innerSize - $d), ($padding + $innerSize - $d), $d, $d, 0, 90)
+        $path.AddArc($padding, ($padding + $innerSize - $d), $d, $d, 90, 90)
         $path.CloseFigure()
     } else {
-        $path.AddRectangle($rect)
+        $path.AddRectangle((New-Object System.Drawing.Rectangle(0, 0, $size, $size)))
     }
 
-    # 2. Fill Squircle with Luxury Deep Cyber Midnight Gradient
-    $p1 = New-Object System.Drawing.PointF(0, 0)
-    $p2 = New-Object System.Drawing.PointF($size, $size)
+    # 1. Fill Base Background with Dark Cyber Space Gradient
     $bgGrad = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
-        $p1, $p2,
-        [System.Drawing.Color]::FromArgb(255, 14, 20, 48),
-        [System.Drawing.Color]::FromArgb(255, 5, 8, 20)
+        (New-Object System.Drawing.PointF(0, 0)),
+        (New-Object System.Drawing.PointF($size, $size)),
+        [System.Drawing.Color]::FromArgb(255, 10, 16, 36),
+        [System.Drawing.Color]::FromArgb(255, 3, 5, 14)
     )
     $g.FillPath($bgGrad, $path)
 
-    # 3. Clip inside Squircle for Clean Framing
+    # 2. Clip inside the Emblem Base
     $g.SetClip($path)
 
-    # Background Ambient Neon Aura behind character
-    $auraBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(70, 0, 240, 255))
-    $g.FillEllipse($auraBrush, [int]($size * 0.15), [int]($size * 0.1), [int]($size * 0.7), [int]($size * 0.7))
+    # 3. Draw Background Radiant Cyber Energy Halo
+    $haloBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush($path)
+    $haloBrush.CenterColor = [System.Drawing.Color]::FromArgb(120, 0, 240, 255)
+    $haloBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 5, 8, 20))
+    $g.FillPath($haloBrush, $path)
 
-    # 4. Gracefully draw character centered with proper scale & positioning
-    $charScale = if ($isMaskable) { 0.82 } else { 0.94 }
-    $charSize = [int]($size * $charScale)
-    $charX = [int](($size - $charSize) / 2)
-    $offsetRatio = if ($isMaskable) { 0.10 } else { 0.03 }
-    $charY = [int]($size * $offsetRatio)
+    # Secondary Crimson Energy Rim at bottom
+    $crimsonBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(60, 255, 23, 68))
+    $g.FillEllipse($crimsonBrush, [int]($size * 0.1), [int]($size * 0.65), [int]($size * 0.8), [int]($size * 0.5))
 
-    $g.DrawImage($catImg, $charX, $charY, $charSize, $charSize)
+    # Circular Inner Tech Crest Portal
+    $portalBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(210, 6, 10, 24))
+    $portalSize = [int]($innerSize * 0.88)
+    $portalX = [int](($size - $portalSize) / 2)
+    $portalY = [int]($size * 0.08)
+    $g.FillEllipse($portalBrush, $portalX, $portalY, $portalSize, $portalSize)
 
-    # 5. High-tech Glass Sheen Glare across top-right
+    # Tech Ring around the Portal
+    $ringPen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(90, 0, 240, 255), [float]([Math]::Max(1.5, $size / 140.0)))
+    $g.DrawEllipse($ringPen, $portalX, $portalY, $portalSize, $portalSize)
+
+    # 4. Gracefully Center & Scale the Cyber-Cat Mascot
+    # We focus on the upper cat head, ears, and glowing visor to make an iconic emblem
+    $charScale = if ($isMaskable) { 0.78 } else { 0.90 }
+    $catW = [int]($size * $charScale)
+    $catH = [int]($size * $charScale)
+    $catX = [int](($size - $catW) / 2)
+    $catY = [int]($size * 0.06)
+
+    # Draw the character
+    $g.DrawImage($catImg, $catX, $catY, $catW, $catH)
+
+    # 5. Bottom Tech Banner Plaque
+    $bannerH = [int]($size * 0.16)
+    $bannerY = [int]($size - $bannerH - $padding)
+    $bannerGrad = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
+        (New-Object System.Drawing.PointF(0, $bannerY)),
+        (New-Object System.Drawing.PointF(0, $size)),
+        [System.Drawing.Color]::FromArgb(235, 6, 12, 28),
+        [System.Drawing.Color]::FromArgb(250, 3, 6, 16)
+    )
+    $g.FillRectangle($bannerGrad, 0, $bannerY, $size, $bannerH)
+
+    # Glowing Cyan Horizon Line above banner
+    $linePen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(220, 0, 240, 255), [float]([Math]::Max(1.5, $size / 120.0)))
+    $g.DrawLine($linePen, 0, $bannerY, $size, $bannerY)
+
+    # Crimson Energy Core Dot in the center of the horizon line
+    $dotSize = [int]([Math]::Max(4, $size * 0.024))
+    $dotX = [int](($size - $dotSize) / 2)
+    $dotY = [int]($bannerY - ($dotSize / 2))
+    $dotBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 255, 23, 68))
+    $g.FillEllipse($dotBrush, $dotX, $dotY, $dotSize, $dotSize)
+
+    # Holographic Glass Sheen Glare across top
     $glareBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
         (New-Object System.Drawing.PointF(0, 0)),
-        (New-Object System.Drawing.PointF($size, [int]($size * 0.6))),
-        [System.Drawing.Color]::FromArgb(70, 255, 255, 255),
+        (New-Object System.Drawing.PointF($size, [int]($size * 0.55))),
+        [System.Drawing.Color]::FromArgb(75, 255, 255, 255),
         [System.Drawing.Color]::FromArgb(0, 255, 255, 255)
     )
     $g.FillRectangle($glareBrush, 0, 0, $size, [int]($size * 0.5))
 
-    # Reset clip to draw border
+    # Reset Clip to draw outer crisp bezel
     $g.ResetClip()
 
-    # 6. Sleek Metallic / Neon Bezel Ring around the Squircle
     if (-not $isMaskable) {
-        $borderWidth = [float]([Math]::Max(2, $size / 96.0))
-        $borderPen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(220, 0, 240, 255), $borderWidth)
-        $g.DrawPath($borderPen, $path)
+        # Outer Glowing Bezel
+        $outerWidth = [float]([Math]::Max(2.5, $size / 80.0))
+        $outerPen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(240, 0, 240, 255), $outerWidth)
+        $g.DrawPath($outerPen, $path)
 
-        # Inner subtle edge highlight
-        $innerPen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(90, 255, 255, 255), 1.0)
+        # Subtle Inner Metallic Highlight
+        $innerPen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(120, 255, 255, 255), 1.0)
         $g.DrawPath($innerPen, $path)
     }
 
+    # Save PNG
     $bmp.Save($dest, [System.Drawing.Imaging.ImageFormat]::Png)
     $g.Dispose()
     $bmp.Dispose()
-    Write-Host "Created professional app icon: $dest"
+    Write-Host "Generated Emblem Logo: $dest ( x )"
 }
 
-Make-ProfessionalAppLogo 512 "public/icons/icon-512.png" $false
-Make-ProfessionalAppLogo 192 "public/icons/icon-192.png" $false
-Make-ProfessionalAppLogo 512 "public/icons/icon-maskable-512.png" $true
-Make-ProfessionalAppLogo 192 "public/icons/icon-maskable-192.png" $true
-Make-ProfessionalAppLogo 180 "public/icons/apple-touch-icon.png" $false
-Make-ProfessionalAppLogo 64 "public/icons/favicon-64.png" $false
-Make-ProfessionalAppLogo 32 "public/icons/favicon-32.png" $false
+Generate-AuraEmblemLogo 512 "public/icons/icon-512.png" $false
+Generate-AuraEmblemLogo 192 "public/icons/icon-192.png" $false
+Generate-AuraEmblemLogo 512 "public/icons/icon-maskable-512.png" $true
+Generate-AuraEmblemLogo 192 "public/icons/icon-maskable-192.png" $true
+Generate-AuraEmblemLogo 180 "public/icons/apple-touch-icon.png" $false
+Generate-AuraEmblemLogo 192 "public/icons/mascot-notification.png" $false
+Generate-AuraEmblemLogo 64 "public/icons/favicon-64.png" $false
+Generate-AuraEmblemLogo 32 "public/icons/favicon-32.png" $false
 
 Copy-Item "public/icons/favicon-32.png" "public/favicon.ico" -Force
 
 $catImg.Dispose()
+Write-Host "All App Icons Generated Successfully!"

@@ -73,24 +73,24 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
-          <div className="w-full max-w-md rounded-3xl border border-sky-400/30 bg-[#16206E] p-7 text-center shadow-2xl">
+        <div className="min-h-screen bg-[#070B19] text-white flex items-center justify-center p-6">
+          <div className="w-full max-w-md rounded-3xl border border-cyan-400/40 bg-[#0A1024] p-7 text-center shadow-[0_0_40px_rgba(0,240,255,0.2)]">
             <img
               src="/icons/icon-192.png"
               alt="অ্যাপ লোগো"
-              className="w-16 h-16 rounded-2xl mx-auto mb-4 border border-sky-400/40 shadow-lg object-cover"
+              className="w-20 h-20 rounded-2xl mx-auto mb-4 border-2 border-cyan-400/60 shadow-[0_0_20px_rgba(0,240,255,0.4)] object-cover"
             />
             <h1 className="font-display font-extrabold text-xl text-white mb-2">
               ভার্সিটি অ্যাডমিশন রুটিন
             </h1>
-            <p className="text-xs sm:text-sm text-sky-100/80 mb-5 leading-relaxed">
+            <p className="text-xs sm:text-sm text-cyan-100/80 mb-5 leading-relaxed">
               অ্যাপের নতুন ভার্সন আপডেট হয়েছে। ক্যাশ ক্লিয়ার করে পেজটি রিলোড
               করুন।
             </p>
             <button
               type="button"
               onClick={this.handleReset}
-              className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#FF6B8B] to-[#F45B7A] hover:from-[#FF5C7F] hover:to-[#E8486B] text-white font-bold text-sm shadow-lg transition-all cursor-pointer"
+              className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-500 hover:from-red-500 hover:to-rose-500 text-white font-bold text-sm shadow-[0_0_20px_rgba(255,23,68,0.4)] transition-all cursor-pointer font-aura tracking-wide"
             >
               🔄 ক্যাশ ক্লিয়ার ও রিলোড করুন
             </button>

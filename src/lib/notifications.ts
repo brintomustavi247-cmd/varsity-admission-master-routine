@@ -231,6 +231,26 @@ export function scheduleCountdownNotification(
   onTick?: (remaining: number) => void,
   onComplete?: (savage: SavageNotification) => void
 ): () => void {
+  const savage = getRandomSavageNotification();
+
+  // Also arm service worker if active
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    try {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'SCHEDULE_NOTIFICATION',
+        title: savage.title,
+        delayMs: seconds * 1000,
+        options: {
+          body: savage.body,
+          tag: `countdown-sw-${Date.now()}`,
+          data: { url: '/?tab=routine' },
+        },
+      });
+    } catch {
+      // Ignore SW postMessage error
+    }
+  }
+
   let remaining = seconds;
   const intervalId = window.setInterval(() => {
     remaining -= 1;
@@ -238,7 +258,6 @@ export function scheduleCountdownNotification(
 
     if (remaining <= 0) {
       window.clearInterval(intervalId);
-      const savage = getRandomSavageNotification();
       sendPhoneNotification({
         title: savage.title,
         body: savage.body,

@@ -1,17 +1,23 @@
-const CACHE_NAME = 'varsity-routine-v6';
+const CACHE_NAME = 'varsity-routine-v8';
 const STATIC_ASSETS = [
   '/icons/mascot-notification.png',
   '/icons/badge-cyber-cat.png',
-  '/mascot/cyber-cat.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon.svg',
-  '/icons/badge-96.png',
+  '/icons/apple-touch-icon.png',
+  '/mascot/cyber-cat.png',
+  '/mascot/cyber-cat-sassy.png',
+  '/mascot/cyber-cat-psycho.png',
+  '/mascot/cyber-cat-crying.png',
+  '/mascot/cyber-cat-roast.png',
+  '/mascot/cyber-cat-jealous.png',
+  '/mascot/cyber-cat-doodie.png',
   '/favicon.ico',
   '/manifest.webmanifest'
 ];
 
-// Install: precache only static icons (NEVER index.html to avoid stale hash chunk errors)
+// Install: precache static branding icons and reaction mascots
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
@@ -21,7 +27,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate: purge all old caches immediately
+// Activate: purge all outdated caches immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -36,7 +42,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch handler: Always fetch fresh HTML from network so new app deployments load immediately
+// Fetch handler: Never cache HTML navigation to ensure latest version is always loaded
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -54,8 +60,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For static icons: Cache first with network fallback
-  if (url.pathname.startsWith('/icons/') || url.pathname === '/favicon.ico') {
+  // For static icons & mascots: Cache first with network fallback
+  if (url.pathname.startsWith('/icons/') || url.pathname.startsWith('/mascot/') || url.pathname === '/favicon.ico') {
     event.respondWith(
       caches.match(req).then((cached) => {
         return cached || fetch(req);
@@ -66,6 +72,31 @@ self.addEventListener('fetch', (event) => {
 
   // For all other requests (JS/CSS assets): Network first
   event.respondWith(fetch(req));
+});
+
+// Message listener for background triggers from foreground tabs
+self.addEventListener('message', (event) => {
+  if (!event.data) return;
+
+  if (event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, options } = event.data;
+    self.registration.showNotification(title, {
+      icon: '/icons/mascot-notification.png',
+      badge: '/icons/badge-cyber-cat.png',
+      ...options,
+    });
+  }
+
+  if (event.data.type === 'SCHEDULE_NOTIFICATION') {
+    const { title, options, delayMs } = event.data;
+    setTimeout(() => {
+      self.registration.showNotification(title, {
+        icon: '/icons/mascot-notification.png',
+        badge: '/icons/badge-cyber-cat.png',
+        ...options,
+      });
+    }, delayMs || 60000);
+  }
 });
 
 // Handle push notifications
@@ -110,7 +141,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Background clock watcher for user's mandatory 23:40 (11:40 PM) notification check
+// Background clock watcher for 23:40 (11:40 PM) notification check
 let sent1140Today = false;
 setInterval(() => {
   const now = new Date();
