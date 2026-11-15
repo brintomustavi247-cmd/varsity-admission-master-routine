@@ -73,6 +73,8 @@ import {
   checkAndSend1140Notification,
   checkAndSendDailyReminder,
   checkAndSendRandomMomentRoast,
+  registerPeriodicBackgroundSync,
+  syncRoutineStateToSW,
 } from './lib/notifications';
 
 type TabId = 'routine' | 'syllabus' | 'squad' | 'strategy';
@@ -584,6 +586,11 @@ export default function App() {
     (forcePreviewReminder ||
       (isAfter8PM && reminderDismissedKey !== currentAlertKey));
 
+  // Register Periodic Background Sync on mount
+  useEffect(() => {
+    registerPeriodicBackgroundSync();
+  }, []);
+
   // Automated Notification Engine:
   // 1. Mandatory 11:40 PM verification alert
   // 2. 8 PM Daily evening mission reminder
@@ -597,6 +604,9 @@ export default function App() {
     ) {
       return;
     }
+
+    // Keep Service Worker synced with latest task status for background triggers
+    syncRoutineStateToSW(dailyMissionDay.d, dailyMissionRemaining);
 
     // 1. Check & send mandatory 11:40 PM alert
     checkAndSend1140Notification(dailyMissionDay.d, dailyMissionRemaining);

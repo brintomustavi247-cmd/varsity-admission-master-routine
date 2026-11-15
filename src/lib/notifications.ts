@@ -48,6 +48,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
+      await registerPeriodicBackgroundSync();
       await sendPhoneNotification({
         title: '🔔 দৈনিক নোটিফিকেশন চালু হয়েছে!',
         body: 'আজকের পড়ার কোনো টাস্ক বাকি থাকলে প্রতিদিন ফোনে সরাসরি রিমাইন্ডার পৌঁছে যাবে।',
@@ -59,6 +60,44 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   } catch (err) {
     console.warn('Failed to request notification permission:', err);
     return 'denied';
+  }
+}
+
+export async function registerPeriodicBackgroundSync(): Promise<boolean> {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return false;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    if ('periodicSync' in reg) {
+      const periodicSync = (reg as unknown as { periodicSync: { getTags: () => Promise<string[]>; register: (tag: string, options: { minInterval: number }) => Promise<void> } }).periodicSync;
+      const tags = await periodicSync.getTags();
+      if (!tags.includes('routine-check')) {
+        await periodicSync.register('routine-check', {
+          minInterval: 60 * 60 * 1000,
+        });
+      }
+      return true;
+    }
+  } catch (err) {
+    console.debug('Periodic background sync not supported or failed:', err);
+  }
+  return false;
+}
+
+export function syncRoutineStateToSW(dayNumber: number, remainingTasks: number): void {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+  try {
+    navigator.serviceWorker.ready.then((reg) => {
+      if (reg.active) {
+        reg.active.postMessage({
+          type: 'SYNC_ROUTINE_STATE',
+          dayNumber,
+          remainingTasks,
+          timestamp: Date.now(),
+        });
+      }
+    });
+  } catch {
+    // ignore
   }
 }
 
@@ -88,11 +127,16 @@ export async function sendPhoneNotification({
     icon || (mood ? getMascotReactionIcon(mood) : '/mascot/cyber-cat-sassy.png');
   const reactionImage = image || reactionIcon;
 
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const absoluteIcon = origin && !reactionIcon.startsWith('http') ? new URL(reactionIcon, origin).href : reactionIcon;
+  const absoluteImage = origin && !reactionImage.startsWith('http') ? new URL(reactionImage, origin).href : reactionImage;
+  const absoluteBadge = origin ? new URL('/icons/badge-cyber-cat.png', origin).href : '/icons/badge-cyber-cat.png';
+
   const options: NotificationOptions & { renotify?: boolean; image?: string } = {
     body,
-    icon: reactionIcon,
-    image: reactionImage,
-    badge: '/icons/badge-cyber-cat.png',
+    icon: absoluteIcon,
+    image: absoluteImage,
+    badge: absoluteBadge,
     tag,
     renotify: true,
     data: { url },
@@ -275,25 +319,31 @@ export function scheduleCountdownNotification(
 ): () => void {
   const savage = getRandomSavageNotification();
   const reactionIcon = getMascotReactionIcon(savage.mood);
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const absoluteIcon = origin ? new URL(reactionIcon, origin).href : reactionIcon;
 
-  // Also arm service worker if active
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    try {
-      navigator.serviceWorker.controller.postMessage({
-        type: 'SCHEDULE_NOTIFICATION',
-        title: savage.title,
-        delayMs: seconds * 1000,
-        options: {
-          body: savage.body,
-          icon: reactionIcon,
-          image: reactionIcon,
-          tag: `countdown-sw-${Date.now()}`,
-          data: { url: '/?tab=routine' },
-        },
-      });
-    } catch {
-      // Ignore SW postMessage error
-    }
+  // Arm service worker with persistent background countdown
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then((reg) => {
+      try {
+        const worker = reg.active || navigator.serviceWorker.controller;
+        worker?.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          title: savage.title,
+          delayMs: seconds * 1000,
+          options: {
+            body: savage.body,
+            icon: absoluteIcon,
+            image: absoluteIcon,
+            badge: origin ? new URL('/icons/badge-cyber-cat.png', origin).href : '/icons/badge-cyber-cat.png',
+            tag: `countdown-sw-${Date.now()}`,
+            data: { url: '/?tab=routine' },
+          },
+        });
+      } catch {
+        // Ignore SW postMessage error
+      }
+    });
   }
 
   let remaining = seconds;

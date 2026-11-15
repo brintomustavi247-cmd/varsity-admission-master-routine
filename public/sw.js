@@ -1,4 +1,4 @@
-const CACHE_NAME = 'varsity-routine-v10';
+const CACHE_NAME = 'varsity-routine-v12';
 const STATIC_ASSETS = [
   '/icons/mascot-notification.png',
   '/icons/badge-cyber-cat.png',
@@ -18,6 +18,19 @@ const STATIC_ASSETS = [
   '/favicon.ico',
   '/manifest.webmanifest'
 ];
+
+// Persistent state cache across wakeups
+let routineState = {
+  dayNumber: 1,
+  remainingTasks: 0,
+  lastUpdated: 0,
+};
+
+function getAbsoluteUrl(path) {
+  if (!path) return `${self.location.origin}/mascot/cyber-cat-sassy.png`;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return new URL(path, self.location.origin).href;
+}
 
 // Install: precache static branding icons and reaction mascots
 self.addEventListener('install', (event) => {
@@ -80,30 +93,96 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
   if (!event.data) return;
 
+  if (event.data.type === 'SYNC_ROUTINE_STATE') {
+    routineState = {
+      dayNumber: event.data.dayNumber || routineState.dayNumber,
+      remainingTasks: event.data.remainingTasks ?? routineState.remainingTasks,
+      lastUpdated: Date.now(),
+    };
+  }
+
   if (event.data.type === 'SHOW_NOTIFICATION') {
     const { title, options } = event.data;
-    const icon = options?.icon || '/mascot/cyber-cat-sassy.png';
-    const image = options?.image || icon;
-    self.registration.showNotification(title, {
-      icon,
-      image,
-      badge: '/icons/badge-cyber-cat.png',
-      ...options,
-    });
+    const icon = getAbsoluteUrl(options?.icon || '/mascot/cyber-cat-sassy.png');
+    const image = getAbsoluteUrl(options?.image || icon);
+    const badge = getAbsoluteUrl('/icons/badge-cyber-cat.png');
+
+    event.waitUntil(
+      self.registration.showNotification(title, {
+        icon,
+        image,
+        badge,
+        ...options,
+      })
+    );
   }
 
   if (event.data.type === 'SCHEDULE_NOTIFICATION') {
     const { title, options, delayMs } = event.data;
-    const icon = options?.icon || '/mascot/cyber-cat-sassy.png';
-    const image = options?.image || icon;
-    setTimeout(() => {
-      self.registration.showNotification(title, {
-        icon,
-        image,
-        badge: '/icons/badge-cyber-cat.png',
-        ...options,
-      });
-    }, delayMs || 60000);
+    const icon = getAbsoluteUrl(options?.icon || '/mascot/cyber-cat-sassy.png');
+    const image = getAbsoluteUrl(options?.image || icon);
+    const badge = getAbsoluteUrl('/icons/badge-cyber-cat.png');
+
+    // Use event.waitUntil so the browser keeps the Service Worker alive in the background
+    event.waitUntil(
+      new Promise((resolve) => {
+        setTimeout(async () => {
+          try {
+            await self.registration.showNotification(title, {
+              icon,
+              image,
+              badge,
+              ...options,
+            });
+          } catch (err) {
+            console.error('Scheduled notification failed:', err);
+          } finally {
+            resolve();
+          }
+        }, delayMs || 60000);
+      })
+    );
+  }
+});
+
+// Periodic Background Sync: wakes up Service Worker periodically even when tab is closed
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'routine-check' || event.tag === 'daily-mission-sync') {
+    event.waitUntil(
+      (async () => {
+        const now = new Date();
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+
+        // 11:40 PM Alert
+        if (hour === 23 && minute >= 40) {
+          const icon = getAbsoluteUrl('/mascot/cyber-cat-panic.png');
+          const tasksText = routineState.remainingTasks > 0 ? `আজকের ${routineState.remainingTasks}টি ` : 'আজকের ';
+          await self.registration.showNotification('রাত ১১টা ৪০ বাজার আলটিমেটাম! 🕛⏰', {
+            body: `রাত ১২টা বাজতে আর মাত্র ২০ মিনিট বাকি! ${tasksText}টাস্ক এখনো শেষ করোনি? ১২টা বাজলেই আজকের AURA ধুলোয় মিশে যাবে! জলদি টেবিলে বসো! 😼`,
+            icon,
+            image: icon,
+            badge: getAbsoluteUrl('/icons/badge-cyber-cat.png'),
+            tag: 'must-1140-sw',
+            renotify: true,
+            data: { url: '/?tab=routine' },
+          });
+        }
+        // Evening 8 PM to 10 PM Alert
+        else if (hour >= 20 && hour < 22) {
+          const icon = getAbsoluteUrl('/mascot/cyber-cat-exhausted.png');
+          await self.registration.showNotification('পড়ার টেবিলে যাওয়ার সময় হয়ে গেছে! 📚', {
+            body: 'আজকের মিশন কি শেষ হয়েছে? একটু সময় বের করে আজকের চ্যাপ্টারের এমসিকিউ সলভ করে ফেলো!',
+            icon,
+            image: icon,
+            badge: getAbsoluteUrl('/icons/badge-cyber-cat.png'),
+            tag: 'evening-8pm-sw',
+            renotify: true,
+            data: { url: '/?tab=routine' },
+          });
+        }
+      })()
+    );
   }
 });
 
@@ -112,14 +191,14 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
   try {
     const data = event.data.json();
-    const icon = data.icon || '/mascot/cyber-cat-sassy.png';
-    const image = data.image || icon;
+    const icon = getAbsoluteUrl(data.icon || '/mascot/cyber-cat-sassy.png');
+    const image = getAbsoluteUrl(data.image || icon);
     event.waitUntil(
       self.registration.showNotification(data.title || 'ভার্সিটি অ্যাডমিশন রুটিন', {
         body: data.body || 'আজকের মিশন সম্পূর্ণ করুন!',
         icon,
         image,
-        badge: '/icons/badge-cyber-cat.png',
+        badge: getAbsoluteUrl('/icons/badge-cyber-cat.png'),
         tag: data.tag || 'admission-routine-alert',
         renotify: true,
         data: { url: data.url || '/?tab=routine' },
@@ -152,7 +231,7 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Background clock watcher for 23:40 (11:40 PM) notification check
+// Foreground/background interval check
 let sent1140Today = false;
 setInterval(() => {
   const now = new Date();

@@ -346,22 +346,22 @@ export function ProfileSettingsSheet({
                   </div>
 
                   {/* Ocean Blue Themed Savage Push Notification Section */}
-                  <div className="p-3.5 bg-gradient-to-br from-sky-500/15 via-blue-600/10 to-cyan-500/5 dark:from-sky-950/40 dark:via-[#0c1e3d] dark:to-[#061226] rounded-2xl border border-sky-400/35 dark:border-sky-500/30 space-y-3 shadow-xs">
+                  <div className="p-3.5 bg-gradient-to-br from-sky-100 via-sky-50/80 to-blue-100/90 dark:from-sky-950/50 dark:via-[#0c1e3d] dark:to-[#061226] rounded-2xl border-2 border-sky-400/60 dark:border-sky-500/30 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5">
                         {reminderEnabled ? (
-                          <BellRing className="w-4 h-4 text-sky-500 dark:text-cyan-400" />
+                          <BellRing className="w-4 h-4 text-sky-600 dark:text-cyan-400" />
                         ) : (
                           <BellOff className="w-4 h-4 text-slate-400" />
                         )}
                         <div>
                           <div className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                             <span>ডুওলিঙ্গো স্টাইল দৈনিক পুশ</span>
-                            <span className="px-1.5 py-0.5 rounded-md bg-sky-500/15 dark:bg-cyan-400/20 text-sky-700 dark:text-cyan-300 border border-sky-400/30 text-[10px] font-black font-aura tracking-wider">
+                            <span className="px-1.5 py-0.5 rounded-md bg-sky-500/20 dark:bg-cyan-400/20 text-sky-800 dark:text-cyan-300 border border-sky-400/40 text-[10px] font-black font-aura tracking-wider">
                               30 ROASTS
                             </span>
                           </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          <div className="text-[11px] text-slate-600 dark:text-slate-400">
                             পড়া বাকি থাকলে সরাসরি ফোনে সাইবার ক্যাটের রোস্টিং অ্যালার্ট
                           </div>
                         </div>
@@ -381,10 +381,10 @@ export function ProfileSettingsSheet({
                     </div>
 
                     {/* Mascot Mini Preview Card - Ocean Blue Framed */}
-                    <div className="rounded-xl border border-sky-300/50 dark:border-sky-500/30 bg-white/90 dark:bg-[#091830]/90 p-3 flex items-start gap-3 shadow-xs">
+                    <div className="rounded-xl border border-sky-300/80 dark:border-sky-500/30 bg-white/95 dark:bg-[#091830]/90 p-3 flex items-start gap-3 shadow-xs">
                       <div className="shrink-0 pt-0.5 text-center">
                         <MascotCharacter mood={savagePreview.mood} size="sm" />
-                        <div className="text-[9px] font-black text-cyan-500 dark:text-cyan-400 font-aura tracking-widest mt-0.5">
+                        <div className="text-[9px] font-black text-cyan-600 dark:text-cyan-400 font-aura tracking-widest mt-0.5">
                           AURA CAT
                         </div>
                       </div>
@@ -409,6 +409,11 @@ export function ProfileSettingsSheet({
                           {savagePreview.body}
                         </div>
                       </div>
+                    </div>
+
+                    {/* Background Notification Guidance Tip */}
+                    <div className="text-[10px] text-sky-900 dark:text-sky-200/90 bg-sky-200/50 dark:bg-sky-950/40 border border-sky-300/60 dark:border-sky-500/20 rounded-lg p-2 leading-relaxed">
+                      💡 <strong>ব্যাকগ্রাউন্ড নোটিফিকেশন:</strong> ফোন লক থাকা অবস্থায় পুশ পেতে অ্যাপটি ফোনে ইনস্টল (PWA) করে ফোনের সেটিংসে ব্যাটারি <em>'No restrictions'</em> রাখুন।
                     </div>
 
                     {/* Notification Permission / Action Buttons */}
