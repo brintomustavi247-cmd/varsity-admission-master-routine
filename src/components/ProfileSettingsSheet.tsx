@@ -345,23 +345,24 @@ export function ProfileSettingsSheet({
                     </button>
                   </div>
 
-                  <div className="p-3 bg-gradient-to-br from-red-500/10 via-amber-500/10 to-transparent dark:from-red-950/30 dark:via-amber-950/20 rounded-2xl border border-red-400/25 space-y-3">
+                  {/* Ocean Blue Themed Savage Push Notification Section */}
+                  <div className="p-3.5 bg-gradient-to-br from-sky-500/15 via-blue-600/10 to-cyan-500/5 dark:from-sky-950/40 dark:via-[#0c1e3d] dark:to-[#061226] rounded-2xl border border-sky-400/35 dark:border-sky-500/30 space-y-3 shadow-xs">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5">
                         {reminderEnabled ? (
-                          <BellRing className="w-4 h-4 text-rose-500" />
+                          <BellRing className="w-4 h-4 text-sky-500 dark:text-cyan-400" />
                         ) : (
                           <BellOff className="w-4 h-4 text-slate-400" />
                         )}
                         <div>
                           <div className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                             <span>ডুওলিঙ্গো স্টাইল দৈনিক পুশ</span>
-                            <span className="px-1.5 py-0.2 rounded-md bg-red-600/20 text-red-600 dark:text-red-400 text-[10px] font-black font-aura">
+                            <span className="px-1.5 py-0.5 rounded-md bg-sky-500/15 dark:bg-cyan-400/20 text-sky-700 dark:text-cyan-300 border border-sky-400/30 text-[10px] font-black font-aura tracking-wider">
                               30 ROASTS
                             </span>
                           </div>
                           <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                            পড়া বাকি থাকলে সরাসরি ফোনে মিমি বিড়ালের রোস্টিং অ্যালার্ট
+                            পড়া বাকি থাকলে সরাসরি ফোনে সাইবার ক্যাটের রোস্টিং অ্যালার্ট
                           </div>
                         </div>
                       </div>
@@ -369,9 +370,9 @@ export function ProfileSettingsSheet({
                       <button
                         type="button"
                         onClick={onToggleReminder}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                           reminderEnabled
-                            ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-xs'
+                            ? 'bg-gradient-to-r from-sky-600 via-blue-600 to-cyan-600 hover:from-sky-500 hover:to-blue-500 text-white shadow-xs'
                             : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                         }`}
                       >
@@ -379,24 +380,24 @@ export function ProfileSettingsSheet({
                       </button>
                     </div>
 
-                    {/* Mimi Mascot Mini Preview Card */}
-                    <div className="rounded-xl border border-red-400/30 bg-white/70 dark:bg-slate-900/80 p-3 flex items-start gap-3 shadow-xs">
+                    {/* Mascot Mini Preview Card - Ocean Blue Framed */}
+                    <div className="rounded-xl border border-sky-300/50 dark:border-sky-500/30 bg-white/90 dark:bg-[#091830]/90 p-3 flex items-start gap-3 shadow-xs">
                       <div className="shrink-0 pt-0.5 text-center">
                         <MascotCharacter mood={savagePreview.mood} size="sm" />
-                        <div className="text-[9px] font-black text-cyan-400 font-aura tracking-widest mt-0.5">
+                        <div className="text-[9px] font-black text-cyan-500 dark:text-cyan-400 font-aura tracking-widest mt-0.5">
                           AURA CAT
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1 mb-0.5">
-                          <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 font-aura">
+                          <span className="text-[10px] font-bold text-sky-700 dark:text-sky-300 font-aura">
                             {savagePreview.categoryLabel}
                           </span>
                           <button
                             type="button"
                             onClick={handleShufflePreview}
                             title="অন্য খোঁচা দেখুন"
-                            className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                            className="p-1 rounded-md hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-600 dark:text-sky-300 transition-colors cursor-pointer"
                           >
                             <Dices className="w-3.5 h-3.5" />
                           </button>
@@ -411,7 +412,7 @@ export function ProfileSettingsSheet({
                     </div>
 
                     {/* Notification Permission / Action Buttons */}
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/50 dark:border-slate-800/80 gap-2">
+                    <div className="flex items-center justify-between pt-1 border-t border-sky-200/60 dark:border-sky-900/60 gap-2">
                       {notifPermission === 'granted' ? (
                         <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -425,7 +426,7 @@ export function ProfileSettingsSheet({
                         <button
                           type="button"
                           onClick={handleEnableNotification}
-                          className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:underline cursor-pointer"
+                          className="text-xs font-bold text-sky-600 dark:text-cyan-400 hover:underline cursor-pointer"
                         >
                           🔔 নোটিফিকেশন পারমিশন দিন
                         </button>
@@ -438,7 +439,7 @@ export function ProfileSettingsSheet({
                               type="button"
                               onClick={handleSendTestNotification}
                               disabled={testSent}
-                              className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-red-600 to-rose-600 text-white text-[11px] font-bold shadow-xs hover:from-red-500 hover:to-rose-500 transition-all flex items-center gap-1 cursor-pointer disabled:opacity-60"
+                              className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-sky-600 via-blue-600 to-cyan-600 hover:from-sky-500 hover:to-blue-500 text-white text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer disabled:opacity-60"
                             >
                               <Send className="w-3 h-3" />
                               <span>{testSent ? 'পাঠানো হয়েছে!' : 'এখনই পাঠান'}</span>
@@ -448,7 +449,7 @@ export function ProfileSettingsSheet({
                               type="button"
                               onClick={handleStartCountdown}
                               disabled={countdownSec !== null}
-                              className="px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer disabled:opacity-75 font-mono-num"
+                              className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-sky-700 hover:from-cyan-500 hover:to-sky-600 text-white text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer disabled:opacity-75 font-mono-num"
                             >
                               <span>
                                 {countdownSec !== null
@@ -465,7 +466,7 @@ export function ProfileSettingsSheet({
                             onPreviewReminder();
                             onClose();
                           }}
-                          className="px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 whitespace-nowrap cursor-pointer"
+                          className="px-2 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-950/60 text-[11px] font-bold text-sky-800 dark:text-sky-200 hover:bg-sky-200 dark:hover:bg-sky-900/60 border border-sky-300/30 dark:border-sky-500/20 whitespace-nowrap cursor-pointer"
                         >
                           ব্যানার
                         </button>
