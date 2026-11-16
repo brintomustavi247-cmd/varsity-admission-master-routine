@@ -38,16 +38,39 @@ export default async function handler(req, res) {
       await new Promise((resolve) => setTimeout(resolve, waitSec * 1000));
     }
 
-    const reactionIcon = mood
-      ? `/mascot/cyber-cat-${mood}.png`
-      : '/mascot/cyber-cat-sassy.png';
+    const moodMap = {
+      pleading: '/mascot/cyber-cat-crying.png',
+      crying: '/mascot/cyber-cat-crying.png',
+      sleepy: '/mascot/cyber-cat-sleepy.png',
+      exhausted: '/mascot/cyber-cat-sleepy.png',
+      panic: '/mascot/cyber-cat-panic.png',
+      shocked: '/mascot/cyber-cat-panic.png',
+      error: '/mascot/cyber-cat-panic.png',
+      fire: '/mascot/cyber-cat-panic.png',
+      smug: '/mascot/cyber-cat-smug.png',
+      happy: '/mascot/cyber-cat-happy.png',
+      heart: '/mascot/cyber-cat-smug.png',
+      crush: '/mascot/cyber-cat-smug.png',
+      bride: '/mascot/cyber-cat-smug.png',
+      stargaze: '/mascot/cyber-cat-smug.png',
+      anya: '/mascot/cyber-cat-happy.png',
+      studying: '/mascot/cyber-cat-sleepy.png',
+      psycho: '/mascot/cyber-cat-psycho.png',
+      demon: '/mascot/cyber-cat-psycho.png',
+      sassy: '/mascot/cyber-cat-sassy.png',
+    };
+
+    const host = 'https://varsity-admission-master-routine.vercel.app';
+    const relativeIcon = moodMap[mood] || '/mascot/cyber-cat-sassy.png';
+    const absoluteIcon = `${host}${relativeIcon}`;
+    const absoluteBadge = `${host}/icons/badge-cyber-cat.png`;
 
     const payload = JSON.stringify({
-      title: title || 'ভার্সিটি অ্যাডমিশন রুটিন',
+      title: title || 'কিরা (KIRA) 😼',
       body: body || 'আজকের মিশন সম্পূর্ণ করতে টেবিলে বসো!',
-      icon: reactionIcon,
-      image: reactionIcon,
-      badge: '/icons/badge-cyber-cat.png',
+      icon: absoluteIcon,
+      image: absoluteIcon,
+      badge: absoluteBadge,
       tag: tag || `server-push-${Date.now()}`,
       data: { url: url || '/?tab=routine' },
     });

@@ -389,11 +389,11 @@ export function ProfileSettingsSheet({
                           <div className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                             <span>ডুওলিঙ্গো স্টাইল দৈনিক পুশ</span>
                             <span className="px-1.5 py-0.5 rounded-md bg-sky-500/20 dark:bg-cyan-400/20 text-sky-800 dark:text-cyan-300 border border-sky-400/40 text-[10px] font-black font-aura tracking-wider">
-                              30 ROASTS
+                              80 ROASTS
                             </span>
                           </div>
                           <div className="text-[11px] text-slate-600 dark:text-slate-400">
-                            পড়া বাকি থাকলে সরাসরি ফোনে সাইবার ক্যাটের রোস্টিং অ্যালার্ট
+                            পড়া বাকি থাকলে সরাসরি ফোনে কিরা-র রোস্টিং ও রিমাইন্ডার অ্যালার্ট
                           </div>
                         </div>
                       </div>
@@ -416,7 +416,7 @@ export function ProfileSettingsSheet({
                       <div className="shrink-0 pt-0.5 text-center">
                         <MascotCharacter mood={savagePreview.mood} size="sm" />
                         <div className="text-[9px] font-black text-cyan-600 dark:text-cyan-400 font-aura tracking-widest mt-0.5">
-                          AURA CAT
+                          কিরা 😼
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">

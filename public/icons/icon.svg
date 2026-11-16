@@ -94,8 +94,8 @@
   <line x1="16" y1="420" x2="496" y2="420" stroke="#00F0FF" stroke-width="2" />
   <circle cx="256" cy="420" r="5" fill="#FF1744" filter="url(#cyanGlow)" />
 
-  <!-- AURA Futuristic Branding Text -->
-  <text x="256" y="468" text-anchor="middle" font-family="'Orbitron', 'Space Grotesk', system-ui, sans-serif" font-size="26" font-weight="900" letter-spacing="8" fill="#00F0FF">AURA</text>
+  <!-- KIRA Futuristic Branding Text -->
+  <text x="256" y="468" text-anchor="middle" font-family="'Orbitron', 'Space Grotesk', system-ui, sans-serif" font-size="26" font-weight="900" letter-spacing="8" fill="#00F0FF">KIRA</text>
 
   <!-- Top Glass Glare Overlay -->
   <path d="M 16 16 L 380 16 L 16 380 Z" fill="url(#glassGlare)" />

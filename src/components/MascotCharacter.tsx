@@ -49,6 +49,61 @@ const MOOD_IMAGE_MAP: Record<MascotMood, { src: string; fallback: string; alt: s
     fallback: '/mascot/cyber-cat-happy.png',
     alt: 'Smiling Cheerful Cat',
   },
+  pleading: {
+    src: '/mascot/cyber-cat-crying.png',
+    fallback: '/mascot/cyber-cat-crying.png',
+    alt: 'Pleading Emotional Kira',
+  },
+  heart: {
+    src: '/mascot/cyber-cat-smug.png',
+    fallback: '/mascot/cyber-cat-smug.png',
+    alt: 'Glowing Heart Loving Kira',
+  },
+  demon: {
+    src: '/mascot/cyber-cat-psycho.png',
+    fallback: '/mascot/cyber-cat-psycho.png',
+    alt: 'Sinister Grinning Demon Kira',
+  },
+  error: {
+    src: '/mascot/cyber-cat-panic.png',
+    fallback: '/mascot/cyber-cat-panic.png',
+    alt: 'ERROR Screen Defeated Kira',
+  },
+  shocked: {
+    src: '/mascot/cyber-cat-panic.png',
+    fallback: '/mascot/cyber-cat-panic.png',
+    alt: 'Floating Shocked Exclamation Kira',
+  },
+  fire: {
+    src: '/mascot/cyber-cat-panic.png',
+    fallback: '/mascot/cyber-cat-panic.png',
+    alt: 'Burning Routine Fire Kira',
+  },
+  stargaze: {
+    src: '/mascot/cyber-cat-smug.png',
+    fallback: '/mascot/cyber-cat-smug.png',
+    alt: 'Stargazing Reaching Kira',
+  },
+  crush: {
+    src: '/mascot/cyber-cat-smug.png',
+    fallback: '/mascot/cyber-cat-smug.png',
+    alt: 'Cute Confident Kira',
+  },
+  bride: {
+    src: '/mascot/cyber-cat-smug.png',
+    fallback: '/mascot/cyber-cat-smug.png',
+    alt: 'Dream Goal Kira',
+  },
+  anya: {
+    src: '/mascot/cyber-cat-happy.png',
+    fallback: '/mascot/cyber-cat-happy.png',
+    alt: 'Smiling Kira',
+  },
+  studying: {
+    src: '/mascot/cyber-cat-sleepy.png',
+    fallback: '/mascot/cyber-cat-sleepy.png',
+    alt: 'Late Night Laptop Studying Kira',
+  },
   // Legacy fallbacks:
   jealous: {
     src: '/mascot/cyber-cat-smug.png',
@@ -123,6 +178,61 @@ export const MascotCharacter: React.FC<MascotCharacterProps> = ({
       themeColor: '#22D3EE',
       auraBorder: 'border-cyan-300/80 shadow-[0_0_28px_rgba(34,211,238,0.6)]',
       glow: 'from-cyan-400 via-teal-400 to-sky-400',
+    },
+    pleading: {
+      themeColor: '#38BDF8',
+      auraBorder: 'border-sky-400/80 shadow-[0_0_28px_rgba(56,189,248,0.6)]',
+      glow: 'from-sky-500 via-blue-500 to-indigo-500',
+    },
+    heart: {
+      themeColor: '#F43F5E',
+      auraBorder: 'border-rose-400/90 shadow-[0_0_32px_rgba(244,63,94,0.7)]',
+      glow: 'from-rose-500 via-pink-500 to-purple-500',
+    },
+    demon: {
+      themeColor: '#A855F7',
+      auraBorder: 'border-purple-500/90 shadow-[0_0_32px_rgba(168,85,247,0.75)]',
+      glow: 'from-purple-600 via-fuchsia-600 to-indigo-600',
+    },
+    error: {
+      themeColor: '#EF4444',
+      auraBorder: 'border-red-500/90 shadow-[0_0_30px_rgba(239,68,68,0.8)]',
+      glow: 'from-red-600 via-rose-600 to-slate-800',
+    },
+    shocked: {
+      themeColor: '#00F0FF',
+      auraBorder: 'border-cyan-400/90 shadow-[0_0_30px_rgba(0,240,255,0.7)]',
+      glow: 'from-cyan-400 via-sky-500 to-blue-600',
+    },
+    fire: {
+      themeColor: '#F97316',
+      auraBorder: 'border-amber-500/90 shadow-[0_0_32px_rgba(249,115,22,0.8)]',
+      glow: 'from-orange-500 via-red-500 to-amber-500',
+    },
+    stargaze: {
+      themeColor: '#818CF8',
+      auraBorder: 'border-indigo-400/80 shadow-[0_0_28px_rgba(129,140,248,0.6)]',
+      glow: 'from-indigo-600 via-purple-600 to-sky-400',
+    },
+    crush: {
+      themeColor: '#38BDF8',
+      auraBorder: 'border-sky-400/80 shadow-[0_0_28px_rgba(56,189,248,0.6)]',
+      glow: 'from-sky-400 via-teal-400 to-blue-500',
+    },
+    bride: {
+      themeColor: '#F472B6',
+      auraBorder: 'border-pink-400/80 shadow-[0_0_30px_rgba(244,114,182,0.65)]',
+      glow: 'from-pink-500 via-rose-400 to-purple-400',
+    },
+    anya: {
+      themeColor: '#FB7185',
+      auraBorder: 'border-rose-300/80 shadow-[0_0_28px_rgba(251,113,133,0.6)]',
+      glow: 'from-rose-400 via-pink-400 to-amber-300',
+    },
+    studying: {
+      themeColor: '#F59E0B',
+      auraBorder: 'border-amber-400/80 shadow-[0_0_26px_rgba(245,158,11,0.55)]',
+      glow: 'from-amber-500 via-yellow-500 to-orange-400',
     },
     // Legacy fallbacks
     jealous: {

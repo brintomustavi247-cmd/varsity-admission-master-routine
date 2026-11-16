@@ -1,4 +1,5 @@
 import * as webpush from 'web-push';
+import { getRandomRoast } from './roasts-data.js';
 
 const VAPID_PUBLIC_KEY =
   process.env.VAPID_PUBLIC_KEY ||
@@ -13,6 +14,30 @@ webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 const FIRESTORE_BASE =
   'https://firestore.googleapis.com/v1/projects/varsity-admission-2026/databases/(default)/documents';
 const API_KEY = 'AIzaSyBggHyuB4VJRBM-fO_F94QGSDrKNFitMos';
+
+const HOST = 'https://varsity-admission-master-routine.vercel.app';
+
+const MOOD_MAP = {
+  pleading: '/mascot/cyber-cat-crying.png',
+  crying: '/mascot/cyber-cat-crying.png',
+  sleepy: '/mascot/cyber-cat-sleepy.png',
+  exhausted: '/mascot/cyber-cat-sleepy.png',
+  panic: '/mascot/cyber-cat-panic.png',
+  shocked: '/mascot/cyber-cat-panic.png',
+  error: '/mascot/cyber-cat-panic.png',
+  fire: '/mascot/cyber-cat-panic.png',
+  smug: '/mascot/cyber-cat-smug.png',
+  happy: '/mascot/cyber-cat-happy.png',
+  heart: '/mascot/cyber-cat-smug.png',
+  crush: '/mascot/cyber-cat-smug.png',
+  bride: '/mascot/cyber-cat-smug.png',
+  stargaze: '/mascot/cyber-cat-smug.png',
+  anya: '/mascot/cyber-cat-happy.png',
+  studying: '/mascot/cyber-cat-sleepy.png',
+  psycho: '/mascot/cyber-cat-psycho.png',
+  demon: '/mascot/cyber-cat-psycho.png',
+  sassy: '/mascot/cyber-cat-sassy.png',
+};
 
 export default async function handler(req, res) {
   // Allow GET from Vercel Cron or POST from admin
@@ -39,7 +64,6 @@ export default async function handler(req, res) {
 
     // Determine reminder type from current UTC time or query param
     // 17:40 UTC = 23:40 BST (11:40 PM Bangladesh Time)
-    // 14:00 UTC = 20:00 BST (8:00 PM Bangladesh Time)
     const now = new Date();
     const utcHours = now.getUTCHours();
     const utcMinutes = now.getUTCMinutes();
@@ -48,22 +72,31 @@ export default async function handler(req, res) {
       req.query?.type === 'ultimatum' ||
       (utcHours === 17 && utcMinutes >= 35 && utcMinutes <= 55);
 
-    const title = isUltimatum
-      ? 'রাত ১১টা ৪০ বাজার আলটিমেটাম! 🕛⏰'
-      : 'পড়ার টেবিলে যাওয়ার সময় হয়ে গেছে! 📚';
-    const body = isUltimatum
-      ? 'রাত ১২টা বাজতে আর মাত্র ২০ মিনিট বাকি! আজকের টাস্ক এখনো শেষ করোনি? ১২টা বাজলেই আজকের AURA ধুলোয় মিশে যাবে! জলদি টেবিলে বসো! 😼'
-      : 'আজকের পড়ার কোনো টাস্ক বাকি থাকলে এখনই শেষ করে ফেলো। ফ্রেন্ডরা অলরেডি এগিয়ে যাচ্ছে!';
-    const mood = isUltimatum ? 'panic' : 'exhausted';
-    const reactionIcon = `/mascot/cyber-cat-${mood}.png`;
+    let title, body, mood;
+
+    if (isUltimatum) {
+      title = 'রাত ১১টা ৪০ বাজার আলটিমেটাম! 🕛⏰';
+      body = 'রাত ১২টা বাজতে আর মাত্র ২০ মিনিট বাকি! আজকের টাস্ক এখনো শেষ করোনি? ১২টা বাজলেই আজকের AURA ধুলোয় মিশে যাবে! জলদি টেবিলে বসো! 😼';
+      mood = 'panic';
+    } else {
+      // Pick a random roast from the 80 roasts list!
+      const roast = getRandomRoast();
+      title = roast.title;
+      body = roast.body;
+      mood = roast.mood || 'sassy';
+    }
+
+    const relIcon = MOOD_MAP[mood] || '/mascot/cyber-cat-sassy.png';
+    const absoluteIcon = `${HOST}${relIcon}`;
+    const absoluteBadge = `${HOST}/icons/badge-cyber-cat.png`;
 
     const payload = JSON.stringify({
       title,
       body,
-      icon: reactionIcon,
-      image: reactionIcon,
-      badge: '/icons/badge-cyber-cat.png',
-      tag: isUltimatum ? `ultimatum-1140-${Date.now()}` : `evening-8pm-${Date.now()}`,
+      icon: absoluteIcon,
+      image: absoluteIcon,
+      badge: absoluteBadge,
+      tag: isUltimatum ? `ultimatum-1140-${Date.now()}` : `random-roast-${Date.now()}`,
       data: { url: '/?tab=routine' },
     });
 
@@ -98,11 +131,11 @@ export default async function handler(req, res) {
       success: true,
       sent: successCount,
       failed: failedCount,
-      total: documents.length,
-      reminderType: isUltimatum ? 'ultimatum-1140' : 'evening-8pm',
+      sampleTitle: title,
+      totalRegistered: documents.length,
     });
   } catch (err) {
-    console.error('Cron reminder failed:', err);
-    return res.status(500).json({ error: err.message });
+    console.error('Cron reminders failed:', err);
+    return res.status(500).json({ error: err.message || 'Cron job failed' });
   }
 }

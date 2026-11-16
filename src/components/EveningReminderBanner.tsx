@@ -90,7 +90,7 @@ export function EveningReminderBanner({
                   animate={!prefersReducedMotion}
                 />
                 <div className="text-[10px] text-center font-black text-cyan-300 font-aura tracking-widest mt-1 drop-shadow-[0_0_8px_rgba(6,182,212,0.8)]">
-                  AURA CAT
+                  কিরা 😼
                 </div>
               </div>
 

@@ -7,24 +7,33 @@ import {
 
 export function getMascotReactionIcon(mood?: MascotMood): string {
   switch (mood) {
-    case 'psycho':
-      return '/mascot/cyber-cat-psycho.png';
+    case 'pleading':
     case 'crying':
       return '/mascot/cyber-cat-crying.png';
-    case 'smug':
-    case 'jealous':
-      return '/mascot/cyber-cat-smug.png';
+    case 'sleepy':
+    case 'exhausted':
+    case 'studying':
+      return '/mascot/cyber-cat-sleepy.png';
     case 'panic':
+    case 'shocked':
+    case 'error':
+    case 'fire':
     case 'doodie':
       return '/mascot/cyber-cat-panic.png';
-    case 'exhausted':
-    case 'roast':
-      return '/mascot/cyber-cat-exhausted.png';
-    case 'sleepy':
-      return '/mascot/cyber-cat-sleepy.png';
+    case 'smug':
     case 'happy':
-      return '/mascot/cyber-cat-happy.png';
+    case 'heart':
+    case 'crush':
+    case 'bride':
+    case 'stargaze':
+    case 'anya':
+    case 'jealous':
+      return '/mascot/cyber-cat-smug.png';
+    case 'psycho':
+    case 'demon':
+      return '/mascot/cyber-cat-psycho.png';
     case 'sassy':
+    case 'roast':
     default:
       return '/mascot/cyber-cat-sassy.png';
   }
@@ -479,4 +488,55 @@ export function scheduleCountdownNotification(
   }, 1000);
 
   return () => window.clearInterval(intervalId);
+}
+
+/**
+ * Automatically schedule a spontaneous background roast when user minimizes or leaves the app,
+ * firing 15-35 minutes later while they are scrolling other apps (Facebook, TikTok, etc.)
+ */
+export function scheduleBackgroundRoastOnExit(
+  dayNumber: number,
+  remainingTasks: number
+): void {
+  if (remainingTasks <= 0) return;
+  if (getNotificationPermission() !== 'granted') return;
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
+  const now = Date.now();
+  const lastScheduled = Number(sessionStorage.getItem('last_bg_roast_scheduled') || '0');
+  // Avoid re-scheduling if already scheduled within 15 mins
+  if (now - lastScheduled < 15 * 60 * 1000) return;
+
+  const roast = getRandomSavageNotification();
+  const origin = window.location.origin;
+  const reactionIcon = getMascotReactionIcon(roast.mood);
+  const absoluteIcon = origin ? new URL(reactionIcon, origin).href : reactionIcon;
+  const absoluteBadge = origin ? new URL('/icons/badge-cyber-cat.png', origin).href : '/icons/badge-cyber-cat.png';
+
+  // Random delay between 15 to 35 minutes (or 2-5 minutes in testing if quick)
+  const randomMinutes = Math.floor(Math.random() * (35 - 15 + 1)) + 15;
+  const delayMs = randomMinutes * 60 * 1000;
+
+  navigator.serviceWorker.ready.then((reg) => {
+    try {
+      const worker = reg.active || navigator.serviceWorker.controller;
+      worker?.postMessage({
+        type: 'SCHEDULE_NOTIFICATION',
+        title: roast.title,
+        delayMs,
+        options: {
+          body: `${roast.body} (Day ${String(dayNumber).padStart(2, '0')}-এর ${remainingTasks}টি টাস্ক বাকি!)`,
+          icon: absoluteIcon,
+          image: absoluteIcon,
+          badge: absoluteBadge,
+          tag: `spontaneous-roast-${now}`,
+          renotify: true,
+          data: { url: '/?tab=routine' },
+        },
+      });
+      sessionStorage.setItem('last_bg_roast_scheduled', String(now));
+    } catch {
+      // Ignore
+    }
+  }).catch(() => {});
 }

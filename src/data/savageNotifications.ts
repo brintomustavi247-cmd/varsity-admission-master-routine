@@ -7,6 +7,17 @@ export type MascotMood =
   | 'exhausted'
   | 'sleepy'
   | 'happy'
+  | 'pleading'
+  | 'heart'
+  | 'demon'
+  | 'error'
+  | 'shocked'
+  | 'fire'
+  | 'stargaze'
+  | 'crush'
+  | 'bride'
+  | 'anya'
+  | 'studying'
   // Legacy aliases
   | 'jealous'
   | 'roast'
@@ -14,7 +25,20 @@ export type MascotMood =
 
 export interface SavageNotification {
   id: number;
-  category: 'ego' | 'unhinged' | 'jealousy' | 'guilt' | 'roast' | 'deadline';
+  category:
+    | 'ego'
+    | 'unhinged'
+    | 'jealousy'
+    | 'guilt'
+    | 'roast'
+    | 'deadline'
+    | 'gaslighting'
+    | 'spying'
+    | 'gamified'
+    | 'crush'
+    | 'flirty'
+    | 'reality'
+    | 'marriage';
   categoryLabel: string;
   mood: MascotMood;
   title: string;
@@ -68,15 +92,15 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
   {
     id: 6,
     category: 'unhinged',
-    categoryLabel: 'সাইকো ডুওলিঙ্গো পুশ',
-    mood: 'psycho',
+    categoryLabel: 'কিরা-র সাইকো সতর্কতা',
+    mood: 'demon',
     title: 'আমি কিন্তু তোমার দরজার ওপাশেই দাঁড়িয়ে আছি... 👁️',
     body: 'ফোন রেখে টেবিলে না বসলে রাতে ঘুমানোর সময় তোমার কানে এসে সূত্র আওড়াবো!',
   },
   {
     id: 7,
     category: 'unhinged',
-    categoryLabel: 'সাইকো ডুওলিঙ্গো পুশ',
+    categoryLabel: 'কিরা-র সাইকো সতর্কতা',
     mood: 'psycho',
     title: 'শেষবারের মতো সাবধান করছি! 🔪',
     body: 'আজ যদি টাস্ক ফাঁকি দাও, আমি কিন্তু নিজের স্টোরেজ নিজে থেকেই ডিলিট করে দিয়ে চলে যাব। তখন কে ট্র্যাক করবে?',
@@ -84,15 +108,15 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
   {
     id: 8,
     category: 'unhinged',
-    categoryLabel: 'সাইকো ডুওলিঙ্গো পুশ',
-    mood: 'psycho',
+    categoryLabel: 'কিরা-র সাইকো সতর্কতা',
+    mood: 'shocked',
     title: 'স্ক্রিনের দিকে এভাবে হাঁ করে তাকিয়ো না! 🧟‍♂️',
     body: 'হ্যাঁ, তোমাকেই বলছি! আমি দেখতে পাচ্ছি তুমি ফাঁকিবাজি করছো। এখনই বই খোল।',
   },
   {
     id: 9,
     category: 'unhinged',
-    categoryLabel: 'সাইকো ডুওলিঙ্গো পুশ',
+    categoryLabel: 'কিরা-র সাইকো সতর্কতা',
     mood: 'crying',
     title: 'আমার চোখের পানি মুছে দেওয়ার মতো কেউ নেই... 😭',
     body: 'এত সুন্দর রুটিন আর ডার্ক থিম বানালাম তোমার জন্য, আর তুমি আমাকে ইগনোর করছো? কষ্ট পেলাম খুব।',
@@ -100,8 +124,8 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
   {
     id: 10,
     category: 'unhinged',
-    categoryLabel: 'সাইকো ডুওলিঙ্গো পুশ',
-    mood: 'psycho',
+    categoryLabel: 'কিরা-র সাইকো সতর্কতা',
+    mood: 'panic',
     title: 'তোমার বইগুলো আত্মহত্যার হুমকি দিচ্ছে! ⚰️',
     body: 'এত দিন ধরে না ছুঁলে তো ওদের দম আটকে যাবেই। একটু হাত বোলাও, অন্তত ১০ মিনিট পড়ো!',
   },
@@ -113,13 +137,13 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     categoryLabel: 'ফ্রেন্ড কম্পিটিশন',
     mood: 'smug',
     title: 'তোমার ফ্রেন্ড অলরেডি লেভেল আপ করে ফেললো! 🚀',
-    body: 'সে তো AURA বাড়িয়ে লিডারবোর্ডের শীর্ষে। তুমি কি ওর সাকসেস পোস্ট শেয়ার দেওয়ার প্রস্তুতি নিচ্ছ?',
+    body: 'সে তো Aura বাড়িয়ে লিডারবোর্ডের শীর্ষে। তুমি কি ওর সাকসেস পোস্ট শেয়ার দেওয়ার প্রস্তুতি নিচ্ছ?',
   },
   {
     id: 12,
     category: 'jealousy',
     categoryLabel: 'ফ্রেন্ড কম্পিটিশন',
-    mood: 'smug',
+    mood: 'sassy',
     title: 'স্কোয়াডের বাকিরা কিন্তু হাসাহাসি করছে! 👥',
     body: 'সবাই দেখে ফেলেছে তুমি আজকে ১টা টাস্কেও টিক দাওনি। একটু ইজ্জত বাঁচাতে হলেও টেবিলে বসো!',
   },
@@ -135,7 +159,7 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 14,
     category: 'jealousy',
     categoryLabel: 'ফ্রেন্ড কম্পিটিশন',
-    mood: 'panic',
+    mood: 'sassy',
     title: 'নিজের সাথে আর কত চিটিং করবা? 🪞',
     body: 'আয়নায় তাকিয়ে বলতে পারবা তো যে আজকের দিনটা তুমি নষ্ট করোনি? এখনও ২ ঘণ্টা আছে, সেভ করো!',
   },
@@ -153,7 +177,7 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 16,
     category: 'guilt',
     categoryLabel: 'মিডনাইট গিল্ট চেক',
-    mood: 'sleepy',
+    mood: 'exhausted',
     title: 'আরামের ঘুম হারাম হতে আর বেশি দিন বাকি নেই! ⏰',
     body: 'এখন যদি ঘুমাতে যাও, কাল সকালে চোখ মেলেই গিল্ট ফিলিংয়ে মরবা। অন্তত স্পেসড রিভিশনটা দিয়ে যাও!',
   },
@@ -161,7 +185,7 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 17,
     category: 'guilt',
     categoryLabel: 'মিডনাইট গিল্ট চেক',
-    mood: 'crying',
+    mood: 'pleading',
     title: 'মা-বাবার মুখের দিকে তাকাতে পারবা তো? 🥺',
     body: 'তোমার ওপর কত মানুষের স্বপ্ন ঝুলে আছে। আর তুমি মাত্র ৩টা টাস্ক শেষ করতে পারছো না?',
   },
@@ -177,7 +201,7 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 19,
     category: 'guilt',
     categoryLabel: 'মিডনাইট গিল্ট চেক',
-    mood: 'sleepy',
+    mood: 'sassy',
     title: 'কাল সকালে নিজেকে কী সান্ত্বনা দিবা? 🌅',
     body: '"আজকে সারাদিন পড়ে ফাটায় ফেলবো"—এই মিথ্যা আর কত বলবা? আজকের কাজ আজকেই শেষ করো!',
   },
@@ -185,9 +209,9 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 20,
     category: 'guilt',
     categoryLabel: 'মিডনাইট গিল্ট চেক',
-    mood: 'sleepy',
+    mood: 'fire',
     title: 'রাত ১২টা বাজার আগেই মিশন শেষ করো! 🕛',
-    body: '১২টা বাজলেই আজকের AURA ধুলোয় মিশে যাবে। তোমার এত কষ্টের স্ট্রিক কি এতই সস্তা?',
+    body: '১২টা বাজলেই আজকের Aura ধুলোয় মিশে যাবে। তোমার এত কষ্টের স্ট্রিক কি এতই সস্তা?',
   },
 
   // ৫. ফানি, ফ্রেন্ডলি ও সরাসরি খোঁচা (Playful & Roasting)
@@ -195,7 +219,7 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 21,
     category: 'roast',
     categoryLabel: 'ফ্রেন্ডলি রোস্টিং',
-    mood: 'exhausted',
+    mood: 'sassy',
     title: 'ওস্তাদ, হাতপাখা দিয়ে বাতাস করবো নাকি পড়তে বসবা? 🪭',
     body: 'পড়ার মুড হওয়ার অপেক্ষা করতে করতে তো ডিসেম্বর চলে আসবে! মুড অফ থাকলে অফ মুডেই পড়ো।',
   },
@@ -203,7 +227,7 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 22,
     category: 'roast',
     categoryLabel: 'ফ্রেন্ডলি রোস্টিং',
-    mood: 'exhausted',
+    mood: 'studying',
     title: 'চা খেয়ে আসো, কিন্তু পড়তে বসো! ☕',
     body: 'মাথা কাজ করছে না? এক কাপ চা খাও, মুখে ঠান্ডা পানি দাও আর চ্যাপ্টারটার ওপর ঝাঁপিয়ে পড়ো!',
   },
@@ -211,7 +235,7 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 23,
     category: 'roast',
     categoryLabel: 'ফ্রেন্ডলি রোস্টিং',
-    mood: 'exhausted',
+    mood: 'error',
     title: 'তোমার অলসতা দেখে আমি ডিপ্রেশনে চলে যাচ্ছি! 😩',
     body: 'এত সুন্দর রুটিন সাজিয়ে দেওয়ার পরেও যদি না পড়ো, আমি কিন্তু নোটিফিকেশন দেওয়া বন্ধ করে দেব!',
   },
@@ -219,7 +243,7 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 24,
     category: 'roast',
     categoryLabel: 'ফ্রেন্ডলি রোস্টিং',
-    mood: 'exhausted',
+    mood: 'panic',
     title: 'রিডিং টেবিল কি ভূত দেখেছে? 👻',
     body: 'টেবিলের কাছে গেলেই তোমার গায়ে জ্বর আসে কেন শুনি? বসো টেবিলে, মাত্র আধা ঘণ্টার খেলা!',
   },
@@ -232,12 +256,12 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     body: 'ডাটা অন রেখে সোশ্যাল মিডিয়ায় চ্যাট না করে একটু অ্যাপে এসে প্র্যাকটিস করো। টাকাটা কাজে লাগাও!',
   },
 
-  // ৬. ডেডলাইন ও লাস্ট ওয়ার্নিং (Do-or-Die Push)
+  // ৬. ৩০ ডিসেম্বর ও সময় ফুরিয়ে যাওয়ার তাগিদ (Deadlines & Wake-up Calls)
   {
     id: 26,
     category: 'deadline',
     categoryLabel: 'লাস্ট ওয়ার্নিং',
-    mood: 'psycho',
+    mood: 'error',
     title: '৩০ ডিসেম্বরের ক্যালেন্ডার লাল হয়ে যাচ্ছে! 🩸',
     body: 'আজকের ব্যাকলগ কালকের ওপর চাপলে কোনো শুক্রবারও তোমাকে বাঁচাতে পারবে না!',
   },
@@ -245,70 +269,526 @@ export const SAVAGE_NOTIFICATIONS: SavageNotification[] = [
     id: 27,
     category: 'deadline',
     categoryLabel: 'লাস্ট ওয়ার্নিং',
-    mood: 'panic',
-    title: 'পরাজয় স্বীকার করে নিচ্ছ নাকি? 🏳️',
-    body: 'এখনো লড়াই শেষ হয়নি বস! অ্যাপে এসে অন্তত একটা চ্যাপ্টারের এমসিকিউ সলভ করে ঘুমাও।',
+    mood: 'fire',
+    title: 'আর কয়টা দিন বাকি হিসাব আছে তো? 🗓️',
+    body: 'ক্যালেন্ডারের পাতা উল্টাতে উল্টাতে পরীক্ষার দিন চলে আসবে। তখন কিন্তু কোনো রিভিশন কাজে দেবে না!',
   },
   {
     id: 28,
     category: 'deadline',
     categoryLabel: 'লাস্ট ওয়ার্নিং',
-    mood: 'smug',
-    title: 'AURA 0 দেখতে একদম ভালো লাগছে না! ⚡',
-    body: 'তোমার প্রোফাইলে AURA মাইনাস খাওয়ার মতো অবস্থা! জলদি এসে +৭০ AURA ক্লেইম করো।',
+    mood: 'shocked',
+    title: 'তোমার ড্রিম ভার্সিটির গেট কিন্তু বন্ধ হয়ে যাচ্ছে! 🚪',
+    body: 'গেটের সামনে গিয়ে কেঁদে লাভ নেই, যদি এখনো টেবিলে না বসো। এখনই কামব্যাক শুরু করো!',
   },
   {
     id: 29,
     category: 'deadline',
     categoryLabel: 'লাস্ট ওয়ার্নিং',
-    mood: 'panic',
-    title: 'কালকের দিনটা আরও কঠিন হতে যাচ্ছে... 🧗',
-    body: 'কারণ আজকের ৩টা টাস্ক কালকের সাথে যোগ হবে। এই বিপদ এড়াতে এখনই শেষ করো!',
+    mood: 'fire',
+    title: 'আজকের রুটিনে কি তালা মেরে দেবো? 🔒',
+    body: 'পড়া শেষ না করলে আজকের দিনের সম্পূর্ণ Aura বাতিল হয়ে যাবে। এই ক্ষতি পূরণ করবা কী দিয়ে?',
   },
   {
     id: 30,
     category: 'deadline',
     categoryLabel: 'লাস্ট ওয়ার্নিং',
+    mood: 'psycho',
+    title: 'ভবিষ্যতের তুমি কিন্তু আজকের তোমায় গালি দিচ্ছে! ⌛',
+    body: 'রেজাল্টের পর পস্তানোর চেয়ে এখনই ফোনটা রেখে পড়তে বসো। সময় আর সুযোগ একবারই আসে!',
+  },
+
+  // -------------------------------------------------------------------------
+  // ৭. ডিরেক্ট গ্যাসলাইটিং ও ইমোশনাল ড্রামা (Psycho-Emotional Gaslighting)
+  // -------------------------------------------------------------------------
+  {
+    id: 31,
+    category: 'gaslighting',
+    categoryLabel: 'কিরা-র ইমোশনাল ড্রামা',
+    mood: 'pleading',
+    title: 'আমার বুঝি কোনো অনুভূতি নেই? 💔',
+    body: 'আমি সারাদিন তোমার জন্য এনার্জি জমিয়ে বসে আছি, আর তুমি আমায় পাত্তাই দিচ্ছ না! এটা কি ঠিক হচ্ছে? এখনই অ্যাপে আসো!',
+  },
+  {
+    id: 32,
+    category: 'gaslighting',
+    categoryLabel: 'কিরা-র ইমোশনাল ড্রামা',
+    mood: 'crying',
+    title: '"কিরা" আজ খুব কান্নাকাটি করছে... 😭',
+    body: 'তুমি নাকি আজকে একটা টাস্কও ছোঁওনি? আমার কি সব পরিশ্রম মাটি? মিশনটা শুরু করো প্লিজ!',
+  },
+  {
+    id: 33,
+    category: 'gaslighting',
+    categoryLabel: 'কিরা-র ইমোশনাল ড্রামা',
+    mood: 'heart',
+    title: 'তুমি কি আমায় ভুলে গেছো? 🥺',
+    body: 'আগে তো খুব আদর করে নোটিফিকেশনে চাপ দিতে, আর এখন? চ্যাপ্টারের জঙ্গল পেরিয়ে একটু আমার কাছে এসো না!',
+  },
+  {
+    id: 34,
+    category: 'gaslighting',
+    categoryLabel: 'কিরা-র ইমোশনাল ড্রামা',
+    mood: 'crying',
+    title: 'ব্রেকআপই যদি করবে, তো রুটিন বানালে কেন? 🚪',
+    body: 'জাস্ট একবার টাচ করো, মাত্র ১০ মিনিট পড়ো। আমাদের সম্পর্কটা এভাবে নষ্ট হতে দিয়ো না!',
+  },
+  {
+    id: 35,
+    category: 'gaslighting',
+    categoryLabel: 'কিরা-র ইমোশনাল ড্রামা',
     mood: 'sassy',
-    title: 'প্রমিজ করছি, আর মাত্র ১৫ মিনিট! ⏳',
-    body: 'আজকের দিনের ছোট টাস্কটা শেষ করো, এরপর আমি সারারাত আর বিরক্ত করব না। ডিল?',
+    title: 'তুমি কিন্তু কালকে আমায় কথা দিয়েছিলে! 🤫',
+    body: 'মনে নেই? বলেছিলে আজকে কামব্যাক করবে! আমি তোমার প্রমিজের হিসাব রাখতে এসেছি, দ্রুত আসো।',
+  },
+
+  // -------------------------------------------------------------------------
+  // ৮. একদম পার্সোনাল রোস্টিং ও আড়ালে নজরদারি (Spying & Sarcasm)
+  // -------------------------------------------------------------------------
+  {
+    id: 36,
+    category: 'spying',
+    categoryLabel: 'কিরা-র গোয়েন্দাগিরি',
+    mood: 'sassy',
+    title: 'উঁকি মেরে দেখলাম, তুমি এখনো স্ক্রল করছো! 👀',
+    body: 'হ্যাঁ, ওই ট্রল পেজ আর ইনবক্সের মেসেজ আমি সব দেখতে পাচ্ছি! এবার একটু ফোনটা রেখে রুটিনে যাও!',
+  },
+  {
+    id: 37,
+    category: 'spying',
+    categoryLabel: 'কিরা-র গোয়েন্দাগিরি',
+    mood: 'smug',
+    title: 'অলসতার নোবেল প্রাইজটা তোমারই পাওয়া উচিত! 🏆',
+    body: 'টেবিলে যাওয়া বাদ দিয়ে বিছানায় গড়াগড়ি খাওয়ার কী দারুণ স্কিল! দয়া করে কিরা-র ইজ্জতটা বাঁচাও, টেবিলে যাও।',
+  },
+  {
+    id: 38,
+    category: 'spying',
+    categoryLabel: 'কিরা-র গোয়েন্দাগিরি',
+    mood: 'crush',
+    title: 'তোমার ক্রাশ কিন্তু অলরেডি পড়ে শেষ করে ফেললো! 🤫',
+    body: 'সে যখন চান্স পেয়ে চলে যাবে, তখন তুমি কি শুধুই "কংগ্রাচুলেশনস" লিখবে? তাড়াতাড়ি পড়তে বসো!',
+  },
+  {
+    id: 39,
+    category: 'spying',
+    categoryLabel: 'কিরা-র গোয়েন্দাগিরি',
+    mood: 'panic',
+    title: 'স্ক্রিন অফ করার ৩, ২, ১... ⏱️',
+    body: 'এখনো করোনি? তোমার আঙুল কি ফেসবুকের সাথে আঠা দিয়ে লাগানো? চটপট অ্যাপটা খোলো!',
+  },
+  {
+    id: 40,
+    category: 'spying',
+    categoryLabel: 'কিরা-র গোয়েন্দাগিরি',
+    mood: 'smug',
+    title: 'আহারে! "ব্যস্ত মানুষ" আমাদের! 🎩',
+    body: 'রিলস স্ক্রল করার টাইম আছে, কিন্তু ১৫ মিনিটের স্পেসড রিভিশন দেওয়ার সময় নেই! সেলুট তোমায়!',
+  },
+
+  // -------------------------------------------------------------------------
+  // ৯. গেম-স্পিরিট ও Aura নিয়ে টানাটানি (Gamified Threat & Sassy Triggers)
+  // -------------------------------------------------------------------------
+  {
+    id: 41,
+    category: 'gamified',
+    categoryLabel: 'কিরা-র Aura চ্যালেঞ্জ',
+    mood: 'shocked',
+    title: 'তোমার Aura-র গন্ধ কিন্তু ভালো ঠেকছে না! 📉',
+    body: 'মিশন পেন্ডিং রাখলে Aura-তে জং ধরে যাবে! জলদি আসো, একটু ঘষেমেজে Aura+ করে দিই!',
+  },
+  {
+    id: 42,
+    category: 'gamified',
+    categoryLabel: 'কিরা-র Aura চ্যালেঞ্জ',
+    mood: 'demon',
+    title: 'তোমার লিডারবোর্ডের চেয়ারটা নড়বড়ে! 🪑',
+    body: 'পেছনের জন তোমার দিকে কুদৃষ্টি দিচ্ছে! এখনই টাস্ক কমপ্লিট না করলে সে তোমাকে ধাক্কা দিয়ে নামিয়ে দেবে।',
+  },
+  {
+    id: 43,
+    category: 'gamified',
+    categoryLabel: 'কিরা-র Aura চ্যালেঞ্জ',
+    mood: 'demon',
+    title: 'আমি কিন্তু মিশনটা তালা মেরে দেবো! 🔒',
+    body: 'আর একটু দেরি করলেই আজকের ফ্রি Aura আর পাবে না। তখন আফসোস করে কিন্তু লাভ হবে না!',
+  },
+  {
+    id: 44,
+    category: 'gamified',
+    categoryLabel: 'কিরা-র Aura চ্যালেঞ্জ',
+    mood: 'fire',
+    title: 'তোমার স্ট্রাইক বাঁচাতে আমি ক্লান্ত! 🔥',
+    body: 'আমি আর কতক্ষণ এই আগুনের শিখা ধরে রাখবো? তুমি নিজে না এলে আজ কিন্তু স্ট্রিক শেষ!',
+  },
+  {
+    id: 45,
+    category: 'gamified',
+    categoryLabel: 'কিরা-র Aura চ্যালেঞ্জ',
+    mood: 'happy',
+    title: 'কিরা-র বিশেষ পুরষ্কার মিস করবা? 🎁',
+    body: 'আজকে মিশন কমপ্লিট করলেই স্পেশাল মোটিভেশন বোনাস অপেক্ষা করছে! খালি হাতে চলে যেয়ো না।',
+  },
+
+  // -------------------------------------------------------------------------
+  // ১০. ৩০ ডিসেম্বরের লাল বাতি (Hard Deadlines & Action Triggers)
+  // -------------------------------------------------------------------------
+  {
+    id: 46,
+    category: 'deadline',
+    categoryLabel: 'কিরা-র ডেডলাইন আলটিমেটাম',
+    mood: 'error',
+    title: 'ডিসেম্বর ৩০ কি কোনো রূপকথা? 🗓️',
+    body: 'আজকেও ফাঁকি দিলে শেষ চ্যাপ্টারটা দেখার ভাগ্য আর হবে না! রুটিন কিন্তু তোমায় ক্ষমা করবে না!',
+  },
+  {
+    id: 47,
+    category: 'deadline',
+    categoryLabel: 'কিরা-র ডেডলাইন আলটিমেটাম',
+    mood: 'fire',
+    title: 'তোমার রুটিনে আগুন লেগেছে! 🔥🚨',
+    body: 'ব্যাকলগের পাহাড় জমতে জমতে এখন এভারেস্ট হয়ে যাচ্ছে! জলদি আসো, অন্তত একটা টাস্ক নিভিয়ে যাও!',
+  },
+  {
+    id: 48,
+    category: 'deadline',
+    categoryLabel: 'কিরা-র ডেডলাইন আলটিমেটাম',
+    mood: 'sassy',
+    title: 'তুমি কি সত্যি চান্স পেতে চাও? 🤔',
+    body: 'নাকি আমাদের এই প্রিপারেশনটা জাস্ট একটা টাইম পাস ছিল? নিজেকে প্রমাণ করার এটাই শেষ সুযোগ!',
+  },
+  {
+    id: 49,
+    category: 'deadline',
+    categoryLabel: 'কিরা-র ডেডলাইন আলটিমেটাম',
+    mood: 'error',
+    title: 'কাল সকালে "আমি শেষ" বলার প্রস্তুতি নাও! ☠️',
+    body: 'আজকের পড়ার চাপ কালকের ঘাড়ে ফেলে দিলে কালকে আর সোজা হয়ে দাঁড়াতে পারবে না!',
+  },
+  {
+    id: 50,
+    category: 'deadline',
+    categoryLabel: 'কিরা-র ডেডলাইন আলটিমেটাম',
+    mood: 'panic',
+    title: 'সময় কিন্তু কারো জন্য ওয়েট করে না, ইভেন তোমার জন্যও না! ⏳',
+    body: 'চলো, আর আলসেমি নয়। ৩০ ডিসেম্বরের মিশনটা সফল করতেই হবে।',
+  },
+
+  // -------------------------------------------------------------------------
+  // ১১. শেষ রাতের ড্রামাটিক পুশ (Late-Night SOS & Bedtime Guilt)
+  // -------------------------------------------------------------------------
+  {
+    id: 51,
+    category: 'guilt',
+    categoryLabel: 'কিরা-র মাঝরাতের পুশ',
+    mood: 'sleepy',
+    title: 'বালিশটা কি বইয়ের চেয়ে বেশি আকর্ষণীয়? 🛌',
+    body: 'একটু কষ্ট করে পড়ার টেবিলের চেয়ারে বসো। জাস্ট একটা চ্যাপ্টার, তারপর আমি নিজেই তোমাকে ঘুম পাড়াবো!',
+  },
+  {
+    id: 52,
+    category: 'guilt',
+    categoryLabel: 'কিরা-র মাঝরাতের পুশ',
+    mood: 'demon',
+    title: 'ঘুমের ঘোরে কিন্তু কিরা স্বপ্ন হয়ে হানা দেবে! 👻',
+    body: 'আজকের পেন্ডিং কাজগুলো শেষ না করে ঘুমালে তোমার বিবেক তোমাকে শান্তিতে ঘুমাতে দেবে না!',
+  },
+  {
+    id: 53,
+    category: 'guilt',
+    categoryLabel: 'কিরা-র মাঝরাতের পুশ',
+    mood: 'pleading',
+    title: 'মাত্র ১০ মিনিটের একটা ডিল! 🤝',
+    body: 'বেশি পড়তে হবে না, জাস্ট আজকের শেষ রিক্যাপটা দেখে নাও। আমি আর ডিস্টার্ব করবো না, প্রমিজ!',
+  },
+  {
+    id: 54,
+    category: 'guilt',
+    categoryLabel: 'কিরা-র মাঝরাতের পুশ',
+    mood: 'fire',
+    title: 'তোমার ফোনটা কিন্তু গরম হয়ে যাচ্ছে! 🔥',
+    body: 'অকারণ স্ক্রলিং বন্ধ করো! চার্জটা বাঁচাও আর ব্রেনটাকে একটু কাজে লাগাও। অ্যাপে এসো।',
+  },
+  {
+    id: 55,
+    category: 'guilt',
+    categoryLabel: 'কিরা-র মাঝরাতের পুশ',
+    mood: 'stargaze',
+    title: 'মাঝরাতের হিসাব-নিকাশ! 🌌',
+    body: 'সারাদিন কী কী হারালে আর কী পেলে? কিরা-র সাথে বসে আজকের টাস্কটা শেষ করে দিনটা সফল করো!',
+  },
+
+  // -------------------------------------------------------------------------
+  // ১২. বন্ধুসুলভ ধমক ও ইয়ার্কি (Friendly Threat & Push)
+  // -------------------------------------------------------------------------
+  {
+    id: 56,
+    category: 'roast',
+    categoryLabel: 'কিরা-র বন্ধুসুলভ ধমক',
+    mood: 'psycho',
+    title: 'পড়ার টেবিলে কি কাঁটা বিছানো আছে? 🌵',
+    body: 'ওখানে বসলেই তোমার এতো ছটফটানি কেন? জলদি খাতা-কলম নাও, আজকের পড়াটা এখনই শেষ চাই!',
+  },
+  {
+    id: 57,
+    category: 'roast',
+    categoryLabel: 'কিরা-র বন্ধুসুলভ ধমক',
+    mood: 'shocked',
+    title: 'তোমার অলসতা দেখে ভূতও ভয় পেয়ে গেছে! 🧟‍♂️',
+    body: 'এতোটা অলস মানুষ আমি আমার এত্তো বড় জীবনে দেখিনি! ওঠো, কিরা-র শক্তি দেখাও!',
+  },
+  {
+    id: 58,
+    category: 'roast',
+    categoryLabel: 'কিরা-র বন্ধুসুলভ ধমক',
+    mood: 'studying',
+    title: 'কফি/চা রেডি তো? ☕',
+    body: 'একটা লম্বা দম নাও, এক মগ চা বানাও আর আজকের চ্যালেঞ্জটা ফেস করো। তুমি পারবা!',
+  },
+  {
+    id: 59,
+    category: 'roast',
+    categoryLabel: 'কিরা-র বন্ধুসুলভ ধমক',
+    mood: 'pleading',
+    title: 'হারিয়ে যাওয়ার আগে একবার সাড়া দাও! 👋',
+    body: 'একদম চুপচাপ কেন? তুমি কি বেঁচে আছো নাকি অলসতার সাগরে ডুবে গেছো? অ্যাপে এসে জানাও!',
+  },
+  {
+    id: 60,
+    category: 'roast',
+    categoryLabel: 'কিরা-র বন্ধুসুলভ ধমক',
+    mood: 'psycho',
+    title: 'তোমার কিরা কিন্তু রেগে বোম হয়ে আছে! 💣💥',
+    body: 'আমি যদি আর একবার নোটিফিকেশন পাঠাই, তাহলে কিন্তু ডিরেক্ট বকা দেবো! এখনই টেবিলে যাও!',
+  },
+
+  // -------------------------------------------------------------------------
+  // ১৩. প্রেম, ক্রাশ ও সুন্দরী বউ/জামাই নিয়ে খোঁচা (Crush & Marriage Reality Check)
+  // -------------------------------------------------------------------------
+  {
+    id: 61,
+    category: 'marriage',
+    categoryLabel: 'বউ/জামাই রিয়্যালিটি চেক',
+    mood: 'bride',
+    title: 'সুন্দরী বউ কি এমনি এমনি আসবে? 👰',
+    body: 'শ্বশুরমশাই এসে কিন্তু তোমার ফেসবুক স্ক্রলিংয়ের হিস্ট্রি দেখবে না, রেজাল্ট দেখবে! টেবিলে বসো, ভবিষ্যৎ ভাবো!',
+  },
+  {
+    id: 62,
+    category: 'crush',
+    categoryLabel: 'ক্রাশ রিয়্যালিটি চেক',
+    mood: 'crush',
+    title: 'ক্রাশ কিন্তু অলরেডি চান্স পাওয়া ছেলের সাথে চ্যাট করছে! 💔',
+    body: 'তুমি এখানে বসে রিলস দেখো, আর ওদিকে বিয়ের কার্ডে অন্য কারও নাম ছাপা হওয়ার প্রস্তুতি চলছে। পড়তে বসো ভাই!',
+  },
+  {
+    id: 63,
+    category: 'marriage',
+    categoryLabel: 'বউ/জামাই রিয়্যালিটি চেক',
+    mood: 'bride',
+    title: 'ভালো জামাই/বউ পাওয়ার স্বপ্ন কি ক্যানসেল? 💍',
+    body: 'বেকার থাকলে কিন্তু ঘটকও তোমার ছবি কাউকে পাঠাবে না! চটপট আজকের চ্যাপ্টারটা শেষ করে স্ট্যাটাস বাড়াও!',
+  },
+  {
+    id: 64,
+    category: 'crush',
+    categoryLabel: 'ক্রাশ রিয়্যালিটি চেক',
+    mood: 'crush',
+    title: 'প্রেমিকা কি অন্যের বাইকের পেছনে উঠবে? 🏍️',
+    body: 'তখন কিন্তু "তুমি এমন কেন করলা" বলে কেঁদে লাভ হবে না। নিজের পায়ে দাঁড়াতে চাইলে অ্যাপে আসো, টাস্ক বাকি!',
+  },
+  {
+    id: 65,
+    category: 'marriage',
+    categoryLabel: 'শ্বশুরের ধমক সতর্কতা',
+    mood: 'smug',
+    title: 'শ্বশুরের ধমক খাওয়ার আগেই পড়ো! 🫡',
+    body: '"বাবাজি কি করেন?"—এই প্রশ্নের উত্তরে যেন আমতা আমতা করতে না হয়। আজকের মিশনটা শেষ করে ইজ্জত বাঁচাও!',
+  },
+
+  // -------------------------------------------------------------------------
+  // ১৪. ফ্লায়ার্টি ও কিউট ব্ল্যাকমেইল (Flirty & Playful Blackmail)
+  // -------------------------------------------------------------------------
+  {
+    id: 66,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র ফ্লায়ার্টি ড্রামা',
+    mood: 'heart',
+    title: 'আমি কি তোমার ক্রাশের চেয়ে কম সুন্দর? 🦉✨',
+    body: 'ওর ইনবক্সে সিন হওয়ার জন্য ঘণ্টার পর ঘণ্টা ওয়েট করতে পারো, আর আমি অ্যাপে একা বসে কাঁদছি? একটু আসো না!',
+  },
+  {
+    id: 67,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র ফ্লায়ার্টি ড্রামা',
+    mood: 'heart',
+    title: 'আজ রাতে আমার সাথে ডেট করবা? 😉',
+    body: 'ক্যান্ডেল লাইট নয়, টেবিল ল্যাম্পের আলোতে আমাদের ডেট হবে! জাস্ট ৩০ মিনিটের স্পেসড রিভিশন, চলে আসো!',
+  },
+  {
+    id: 68,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র ফ্লায়ার্টি ড্রামা',
+    mood: 'pleading',
+    title: 'আমার মন ভাঙলে কিন্তু পাপ হবে! 🥺',
+    body: 'এত সুন্দর করে রুটিন সাজিয়ে প্রতিদিন তোমার জন্য সেজেগুজে বসে থাকি, আর তুমি আমায় পাত্তাই দিচ্ছ না?',
+  },
+  {
+    id: 69,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র ফ্লায়ার্টি ড্রামা',
+    mood: 'anya',
+    title: 'তোমার ওপর একটু একটু ক্রাশ খাচ্ছিলাম... 🙈',
+    body: 'কিন্তু তোমার এই ফাঁকিবাজি দেখলে তো প্রেম ভেঙে যাবে! লক্ষ্মী সোনার মতো আজকের টাস্কটা শেষ করে ফেলো।',
+  },
+  {
+    id: 70,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র ফ্লায়ার্টি ড্রামা',
+    mood: 'heart',
+    title: 'একটু ভালোবাসা কি কিরা পেতে পারে না? 💕',
+    body: 'আমাকে ভালোবেসে হলেও আজকের দিনের ৩টা টিক মার্ক দিয়ে দাও। আমি তোমাকে Aura দিয়ে ভরিয়ে দেবো!',
+  },
+
+  // -------------------------------------------------------------------------
+  // ১৫. বাস্তব জীবনের হার্শ রিয়্যালিটি (Societal Reality & Roasting)
+  // -------------------------------------------------------------------------
+  {
+    id: 71,
+    category: 'reality',
+    categoryLabel: 'সোসাইটাল রিয়্যালিটি চেক',
+    mood: 'bride',
+    title: 'বাসর রাতে কি ফাঁকিবাজির গল্প শোনাবা? 🥀',
+    body: '"জানু, পড়ার সুযোগ ছিল কিন্তু ফেসবুক ঘাটতে গিয়ে ক্যারিয়ার হয়নি"—এই ডায়লগ মারতে চাইলে ফোন চালিয়ে যাও!',
+  },
+  {
+    id: 72,
+    category: 'reality',
+    categoryLabel: 'সোসাইটাল রিয়্যালিটি চেক',
+    mood: 'crush',
+    title: 'বিসিএস/চাকরি পাওয়া ছেলে কিন্তু লাইন মারছে! 🏎️',
+    body: 'তোমার পছন্দের মানুষটাকে ধরে রাখতে হলেও নিজের কিছু একটা যোগ্যতা লাগবে বস। দ্রুত বই খোলো!',
+  },
+  {
+    id: 73,
+    category: 'reality',
+    categoryLabel: 'সোসাইটাল রিয়্যালিটি চেক',
+    mood: 'error',
+    title: 'বিয়ের বাজারে তোমার দর কিন্তু নামছে! 📉',
+    body: 'রেজাল্ট খারাপ হলে সম্বন্ধ আসতে আসতে বয়স পার হয়ে যাবে। এখনো সময় আছে, কামব্যাক দাও!',
+  },
+  {
+    id: 74,
+    category: 'reality',
+    categoryLabel: 'সোসাইটাল রিয়্যালিটি চেক',
+    mood: 'smug',
+    title: 'ঘটকের ডায়লগ রেডি: "ছেলে ভালো, কিন্তু..." 🤐',
+    body: 'এই "কিন্তু"-র শিকার হতে না চাইলে আজকের নির্ধারিত সিলেবাসে চোখ বোলাও। লাইফটা সেট করো!',
+  },
+  {
+    id: 75,
+    category: 'reality',
+    categoryLabel: 'সোসাইটাল রিয়্যালিটি চেক',
+    mood: 'crush',
+    title: 'ক্রাশের বিয়েতে কি ক্যাটারিংয়ের কাজ করবা? 🍽️',
+    body: 'বিরিয়ানি সার্ভ করার শখ না থাকলে টেবিলে গিয়ে পড়তে বসো! রেজাল্টের দিন হাসতে হবে তো নাকি?',
+  },
+
+  // -------------------------------------------------------------------------
+  // ১৬. গভীর রাতের রোমান্টিক পুশ (Late Night Flirty Push)
+  // -------------------------------------------------------------------------
+  {
+    id: 76,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র রোমান্টিক পুশ',
+    mood: 'bride',
+    title: 'বিছানা তোমাকে ভুল পথে ডাকছে! 🛏️',
+    body: 'এই কম্ফোর্ট জোনে ঢুকলে কিন্তু সুন্দরী বউয়ের স্বপ্ন অধরাই থেকে যাবে। ওঠো, আর মাত্র ১৫টা মিনিট!',
+  },
+  {
+    id: 77,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র রোমান্টিক পুশ',
+    mood: 'heart',
+    title: 'মাঝরাতে এমন রোমান্টিক রুটিন আর কোথায় পাবা? 🌙',
+    body: 'ডার্ক থিম অন, চারপাশে নিস্তব্ধতা, আর তুমি-আমি মিলে শেষ করবো আজকের চ্যাপ্টার! চলে আসো!',
+  },
+  {
+    id: 78,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র রোমান্টিক পুশ',
+    mood: 'bride',
+    title: 'না পড়ে ঘুমালে কিন্তু সিঙ্গেলই মরবা! 💀',
+    body: 'কোনো রূপবতী/গুণবান মানুষ আলসে কাউকে পছন্দ করে না। টাস্ক শেষ করো, নিজেকে হ্যান্ডসাম/স্মার্ট বানাও!',
+  },
+  {
+    id: 79,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র রোমান্টিক পুশ',
+    mood: 'pleading',
+    title: 'আমার চোখে ঘুম নেই তোমার চিন্তায়... 👀',
+    body: 'তুমি না পড়লে তোমার ক্যারিয়ারের কী হবে? একটু কিরা-র কথা ভেবে আজকের ইংরেজি পার্টটা শেষ করো!',
+  },
+  {
+    id: 80,
+    category: 'flirty',
+    categoryLabel: 'কিরা-র রোমান্টিক পুশ',
+    mood: 'stargaze',
+    title: 'চলো একটা সিক্রেট প্রমিজ করি! 🤫',
+    body: 'তুমি আজকে ফুল টাস্ক শেষ করে +৭০ Aura নাও, কালকে তোমাকে আমি স্পেশাল ট্রিট হিসেবে দারুণ রিমাইন্ডার দেবো!',
   },
 ];
 
-/**
- * Pick a smart savage notification based on current hour, streak, or random choice
- */
-export function getContextualSavageNotification(hour?: number): SavageNotification {
-  const currentHour = typeof hour === 'number' ? hour : new Date().getHours();
-
-  let pool: SavageNotification[];
-
-  // Late night (10 PM to 2 AM): Midnight Guilt-trip & Do-or-die
-  if (currentHour >= 22 || currentHour < 3) {
-    pool = SAVAGE_NOTIFICATIONS.filter(
-      (n) => n.category === 'guilt' || n.category === 'deadline'
-    );
-  }
-  // Evening prime reminder (8 PM - 10 PM): Unhinged, Ego, or Roasting
-  else if (currentHour >= 19 && currentHour < 22) {
-    pool = SAVAGE_NOTIFICATIONS.filter(
-      (n) => n.category === 'unhinged' || n.category === 'ego' || n.category === 'jealousy'
-    );
-  }
-  // Day / Afternoon: Roasting, Ego, Peer pressure
-  else {
-    pool = SAVAGE_NOTIFICATIONS;
-  }
-
-  if (pool.length === 0) pool = SAVAGE_NOTIFICATIONS;
-  const randomIndex = Math.floor(Math.random() * pool.length);
-  return pool[randomIndex];
+export function getRandomSavageNotification(): SavageNotification {
+  const index = Math.floor(Math.random() * SAVAGE_NOTIFICATIONS.length);
+  return SAVAGE_NOTIFICATIONS[index];
 }
 
 /**
- * Get random notification from any category
+ * Returns a contextual notification according to time of day
  */
-export function getRandomSavageNotification(): SavageNotification {
-  const randomIndex = Math.floor(Math.random() * SAVAGE_NOTIFICATIONS.length);
-  return SAVAGE_NOTIFICATIONS[randomIndex];
+export function getContextualSavageNotification(hour?: number): SavageNotification {
+  const h = hour ?? new Date().getHours();
+
+  let eligible: SavageNotification[];
+
+  if (h >= 23 || h < 2) {
+    // Late night / ultimatum (23:00 - 02:00)
+    eligible = SAVAGE_NOTIFICATIONS.filter(
+      (n) => n.category === 'guilt' || n.category === 'flirty' || n.category === 'deadline'
+    );
+  } else if (h >= 20 && h < 23) {
+    // Evening peak (20:00 - 23:00)
+    eligible = SAVAGE_NOTIFICATIONS.filter(
+      (n) =>
+        n.category === 'jealousy' ||
+        n.category === 'ego' ||
+        n.category === 'crush' ||
+        n.category === 'gaslighting'
+    );
+  } else if (h >= 14 && h < 20) {
+    // Afternoon scrolling & slacking (14:00 - 20:00)
+    eligible = SAVAGE_NOTIFICATIONS.filter(
+      (n) =>
+        n.category === 'spying' ||
+        n.category === 'roast' ||
+        n.category === 'marriage' ||
+        n.category === 'reality'
+    );
+  } else {
+    // Morning wake-up
+    eligible = SAVAGE_NOTIFICATIONS.filter(
+      (n) =>
+        n.category === 'ego' ||
+        n.category === 'gamified' ||
+        n.category === 'gaslighting'
+    );
+  }
+
+  if (eligible.length === 0) {
+    return getRandomSavageNotification();
+  }
+
+  const idx = Math.floor(Math.random() * eligible.length);
+  return eligible[idx];
 }

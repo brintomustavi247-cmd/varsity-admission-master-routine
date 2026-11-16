@@ -69,10 +69,12 @@ import { SyllabusView } from './components/SyllabusView';
 import { SquadView } from './components/SquadView';
 import { StrategyView } from './components/StrategyView';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
+import { KiraPermissionModal } from './components/KiraPermissionModal';
 import {
   checkAndSend1140Notification,
   checkAndSendDailyReminder,
   checkAndSendRandomMomentRoast,
+  scheduleBackgroundRoastOnExit,
   registerPeriodicBackgroundSync,
   syncRoutineStateToSW,
   subscribeToWebPush,
@@ -636,6 +638,23 @@ export default function App() {
     currentHour,
     forcePreviewReminder,
   ]);
+
+  // When user leaves or minimizes the app to scroll Facebook/Reels, arm Service Worker
+  // with a spontaneous roast 15-35 minutes later to pull them back to study!
+  useEffect(() => {
+    if (!reminderEnabled || !dailyMissionDay || dailyMissionRemaining <= 0) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        scheduleBackgroundRoastOnExit(dailyMissionDay.d, dailyMissionRemaining);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [reminderEnabled, dailyMissionDay, dailyMissionRemaining]);
 
   const persistProgress = useCallback(
     async (
@@ -1501,6 +1520,11 @@ export default function App() {
         onReplay={() => playMissionFanfare(soundEnabled)}
       />
       <FloatingXpToast xpToast={xpToast} />
+
+      {/* Irresistible Emotional Kira Notification Permission Dialog */}
+      <KiraPermissionModal
+        onPermissionGranted={() => setReminderEnabled(true)}
+      />
 
       {statusToast && (
         <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 text-xs sm:text-sm font-bold shadow-lg whitespace-nowrap">
