@@ -3,9 +3,19 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "crons": [
+    {
+      "path": "/api/cron-reminders?type=ultimatum",
+      "schedule": "40 17 * * *"
+    },
+    {
+      "path": "/api/cron-reminders?type=evening",
+      "schedule": "0 14 * * *"
+    }
+  ],
   "rewrites": [
     {
-      "source": "/((?!assets/|icons/|mascot/|sw.js|favicon.ico|manifest.webmanifest|manifest.json).*)",
+      "source": "/((?!api/|assets/|icons/|mascot/|sw.js|favicon.ico|manifest.webmanifest|manifest.json).*)",
       "destination": "/index.html"
     }
   ]

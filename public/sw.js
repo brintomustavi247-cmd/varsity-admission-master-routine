@@ -1,4 +1,4 @@
-const CACHE_NAME = 'varsity-routine-v12';
+const CACHE_NAME = 'varsity-routine-v13';
 const STATIC_ASSETS = [
   '/icons/mascot-notification.png',
   '/icons/badge-cyber-cat.png',
@@ -201,6 +201,8 @@ self.addEventListener('push', (event) => {
         badge: getAbsoluteUrl('/icons/badge-cyber-cat.png'),
         tag: data.tag || 'admission-routine-alert',
         renotify: true,
+        vibrate: [200, 100, 200, 100, 200],
+        requireInteraction: true,
         data: { url: data.url || '/?tab=routine' },
       })
     );

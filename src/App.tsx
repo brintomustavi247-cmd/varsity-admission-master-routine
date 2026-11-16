@@ -75,6 +75,7 @@ import {
   checkAndSendRandomMomentRoast,
   registerPeriodicBackgroundSync,
   syncRoutineStateToSW,
+  subscribeToWebPush,
 } from './lib/notifications';
 
 type TabId = 'routine' | 'syllabus' | 'squad' | 'strategy';
@@ -586,9 +587,12 @@ export default function App() {
     (forcePreviewReminder ||
       (isAfter8PM && reminderDismissedKey !== currentAlertKey));
 
-  // Register Periodic Background Sync on mount
+  // Register Periodic Background Sync & Web Push on mount
   useEffect(() => {
     registerPeriodicBackgroundSync();
+    if (Notification.permission === 'granted') {
+      subscribeToWebPush();
+    }
   }, []);
 
   // Automated Notification Engine:

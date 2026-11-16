@@ -43,12 +43,126 @@ export function getNotificationPermission(): NotificationPermission {
   return Notification.permission;
 }
 
+export const VAPID_PUBLIC_KEY =
+  'BNfQOVho312R5IsfD6bz-dh0L3j3_MYERmWt1tbtGu0GUpVQqFKlf8UQ720MUAgiubkQkYH7N6bSRZ0N-10oxuQ';
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+export async function savePushSubscriptionToFirestore(
+  subscription: PushSubscription
+): Promise<boolean> {
+  try {
+    const rawEndpoint = subscription.endpoint;
+    const endpointHash = btoa(rawEndpoint).replace(/[/+=]/g, '').slice(-40);
+    const docId = `sub_${endpointHash}`;
+
+    const url = `https://firestore.googleapis.com/v1/projects/varsity-admission-2026/databases/(default)/documents/pushSubscriptions/${docId}?key=AIzaSyBggHyuB4VJRBM-fO_F94QGSDrKNFitMos`;
+
+    const body = {
+      fields: {
+        endpoint: { stringValue: subscription.endpoint },
+        subscription: { stringValue: JSON.stringify(subscription) },
+        updatedAt: { timestampValue: new Date().toISOString() },
+      },
+    };
+
+    const res = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    return res.ok;
+  } catch (err) {
+    console.warn('Failed to save subscription to Firestore:', err);
+    return false;
+  }
+}
+
+export async function subscribeToWebPush(): Promise<PushSubscription | null> {
+  if (
+    typeof window === 'undefined' ||
+    !('serviceWorker' in navigator) ||
+    !('PushManager' in window)
+  ) {
+    return null;
+  }
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as unknown as BufferSource,
+      });
+    }
+
+    if (sub) {
+      localStorage.setItem('fcm_webpush_subscription', JSON.stringify(sub));
+      await savePushSubscriptionToFirestore(sub);
+    }
+
+    return sub;
+  } catch (err) {
+    console.warn('subscribeToWebPush error:', err);
+    return null;
+  }
+}
+
+export async function sendServerPushTest(
+  delaySeconds: number = 5,
+  customQuote?: SavageNotification
+): Promise<{ success: boolean; error?: string }> {
+  const quote = customQuote || getRandomSavageNotification();
+  const sub = await subscribeToWebPush();
+
+  if (!sub) {
+    return {
+      success: false,
+      error: 'পুশ পারমিশন পাওয়া যায়নি। ব্রাউজার সেটিংসে নোটিফিকেশন Allow করুন।',
+    };
+  }
+
+  try {
+    const res = await fetch('/api/send-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subscription: sub,
+        title: quote.title,
+        body: quote.body,
+        mood: quote.mood,
+        delaySeconds,
+        tag: `server-test-${Date.now()}`,
+      }),
+    });
+
+    const data = await res.json();
+    return { success: res.ok, error: data.error };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, error: msg };
+  }
+}
+
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
   if (!isNotificationSupported()) return 'denied';
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       await registerPeriodicBackgroundSync();
+      await subscribeToWebPush();
       await sendPhoneNotification({
         title: '🔔 দৈনিক নোটিফিকেশন চালু হয়েছে!',
         body: 'আজকের পড়ার কোনো টাস্ক বাকি থাকলে প্রতিদিন ফোনে সরাসরি রিমাইন্ডার পৌঁছে যাবে।',

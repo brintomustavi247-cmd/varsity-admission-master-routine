@@ -27,6 +27,7 @@ import {
   scheduleCountdownNotification,
   sendPhoneNotification,
   sendSavageTestNotification,
+  sendServerPushTest,
 } from '../lib/notifications';
 import {
   getRandomSavageNotification,
@@ -131,6 +132,36 @@ export function ProfileSettingsSheet({
       setTestSent(false);
       setSavagePreview(getRandomSavageNotification());
     }, 2500);
+  };
+
+  const [serverPushCountdown, setServerPushCountdown] = useState<number | null>(null);
+  const [serverPushStatus, setServerPushStatus] = useState<string | null>(null);
+
+  const handleCloudServerPushTest = async () => {
+    if (serverPushCountdown !== null) return;
+    setServerPushStatus('সার্ভার থেকে পুশ শিডিউল হচ্ছে...');
+    setServerPushCountdown(5);
+
+    // Call server push with 5s delay
+    const res = await sendServerPushTest(5, savagePreview);
+    if (!res.success) {
+      setServerPushStatus(res.error || 'সার্ভার পুশ পাঠানো যায়নি।');
+      setServerPushCountdown(null);
+      return;
+    }
+
+    setServerPushStatus('🚀 ৫ সেকেন্ডে ক্লাউড পুশ আসছে! এখনই পাওয়ার বাটন চেপে স্ক্রিন লক করুন!');
+    let current = 5;
+    const interval = setInterval(() => {
+      current -= 1;
+      setServerPushCountdown(current);
+      if (current <= 0) {
+        clearInterval(interval);
+        setServerPushCountdown(null);
+        setServerPushStatus('✅ ক্লাউড পুশ ডেলিভার করা হয়েছে!');
+        setTimeout(() => setServerPushStatus(null), 6000);
+      }
+    }, 1000);
   };
 
   const handleShufflePreview = () => {
@@ -416,8 +447,15 @@ export function ProfileSettingsSheet({
                       💡 <strong>ব্যাকগ্রাউন্ড নোটিফিকেশন:</strong> ফোন লক থাকা অবস্থায় পুশ পেতে অ্যাপটি ফোনে ইনস্টল (PWA) করে ফোনের সেটিংসে ব্যাটারি <em>'No restrictions'</em> রাখুন।
                     </div>
 
+                    {/* Server Push Live Status Message */}
+                    {serverPushStatus && (
+                      <div className="p-2.5 rounded-xl bg-gradient-to-r from-cyan-950/90 via-sky-900/90 to-blue-950/90 border border-cyan-400/50 text-cyan-200 text-xs font-bold shadow-lg animate-pulse text-center">
+                        {serverPushStatus}
+                      </div>
+                    )}
+
                     {/* Notification Permission / Action Buttons */}
-                    <div className="flex items-center justify-between pt-1 border-t border-sky-200/60 dark:border-sky-900/60 gap-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-1 border-t border-sky-200/60 dark:border-sky-900/60 gap-2">
                       {notifPermission === 'granted' ? (
                         <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -440,6 +478,21 @@ export function ProfileSettingsSheet({
                       <div className="flex items-center gap-1.5 flex-wrap justify-end">
                         {notifPermission === 'granted' && (
                           <>
+                            {/* Real Cloud Push 5-Second Screen-Lock Test Button */}
+                            <button
+                              type="button"
+                              onClick={handleCloudServerPushTest}
+                              disabled={serverPushCountdown !== null}
+                              title="সার্ভার থেকে পুশ আসবে, এখনই স্ক্রিন লক করে টেস্ট করুন"
+                              className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-500 hover:to-teal-500 text-white text-[11px] font-extrabold shadow-sm transition-all flex items-center gap-1 cursor-pointer disabled:opacity-75 font-mono-num"
+                            >
+                              <span>
+                                {serverPushCountdown !== null
+                                  ? `🔒 লক টেস্ট: ${serverPushCountdown}s`
+                                  : '⚡ ফোন লক করে ৫সে. টেস্ট'}
+                              </span>
+                            </button>
+
                             <button
                               type="button"
                               onClick={handleSendTestNotification}
@@ -448,19 +501,6 @@ export function ProfileSettingsSheet({
                             >
                               <Send className="w-3 h-3" />
                               <span>{testSent ? 'পাঠানো হয়েছে!' : 'এখনই পাঠান'}</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={handleStartCountdown}
-                              disabled={countdownSec !== null}
-                              className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-sky-700 hover:from-cyan-500 hover:to-sky-600 text-white text-[11px] font-bold shadow-xs transition-all flex items-center gap-1 cursor-pointer disabled:opacity-75 font-mono-num"
-                            >
-                              <span>
-                                {countdownSec !== null
-                                  ? `অটো পুশ: ${countdownSec}s`
-                                  : '⏱️ ৬০সে. অটো টেস্ট'}
-                              </span>
                             </button>
                           </>
                         )}

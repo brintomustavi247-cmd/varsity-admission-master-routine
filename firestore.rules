@@ -122,5 +122,9 @@ service cloud.firestore {
         ]);
       allow delete: if false;
     }
+
+    match /pushSubscriptions/{subId} {
+      allow read, write: if true;
+    }
   }
 }
