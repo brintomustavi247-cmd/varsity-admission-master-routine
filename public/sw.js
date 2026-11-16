@@ -1,4 +1,4 @@
-const CACHE_NAME = 'varsity-routine-v14';
+const CACHE_NAME = 'varsity-routine-v15';
 const STATIC_ASSETS = [
   '/icons/mascot-notification.png',
   '/icons/badge-cyber-cat.png',
@@ -15,6 +15,23 @@ const STATIC_ASSETS = [
   '/mascot/cyber-cat-exhausted.png',
   '/mascot/cyber-cat-sleepy.png',
   '/mascot/cyber-cat-happy.png',
+  '/mascot/cyber-cat-fist.png',
+  '/mascot/cyber-cat-flirty.png',
+  '/mascot/kira-pleading.png',
+  '/mascot/kira-heart.png',
+  '/mascot/kira-demon.png',
+  '/mascot/kira-error.png',
+  '/mascot/kira-shocked.png',
+  '/mascot/kira-fire.png',
+  '/mascot/kira-stargaze.png',
+  '/mascot/kira-crush.png',
+  '/mascot/kira-bride.png',
+  '/mascot/kira-anya.png',
+  '/mascot/kira-flowers.png',
+  '/mascot/kira-grumpy-desk.png',
+  '/mascot/kira-late-night.png',
+  '/mascot/kira-sprout.png',
+  '/mascot/kira-sad-floor.png',
   '/favicon.ico',
   '/manifest.webmanifest'
 ];

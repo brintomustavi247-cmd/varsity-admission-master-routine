@@ -8,32 +8,58 @@ import {
 export function getMascotReactionIcon(mood?: MascotMood): string {
   switch (mood) {
     case 'pleading':
+      return '/mascot/kira-pleading.png';
+    case 'heart':
+      return '/mascot/kira-heart.png';
+    case 'demon':
+      return '/mascot/kira-demon.png';
+    case 'error':
+      return '/mascot/kira-error.png';
+    case 'shocked':
+      return '/mascot/kira-shocked.png';
+    case 'fire':
+      return '/mascot/kira-fire.png';
+    case 'stargaze':
+      return '/mascot/kira-stargaze.png';
+    case 'crush':
+      return '/mascot/kira-crush.png';
+    case 'bride':
+      return '/mascot/kira-bride.png';
+    case 'anya':
+      return '/mascot/kira-anya.png';
+    case 'flowers':
+      return '/mascot/kira-flowers.png';
+    case 'grumpy-desk':
+    case 'studying':
+      return '/mascot/kira-grumpy-desk.png';
+    case 'late-night':
+      return '/mascot/kira-late-night.png';
+    case 'sprout':
+      return '/mascot/kira-sprout.png';
+    case 'sad-floor':
+      return '/mascot/kira-sad-floor.png';
+    case 'fist':
+      return '/mascot/cyber-cat-fist.png';
+    case 'flirty':
+      return '/mascot/cyber-cat-flirty.png';
+    case 'happy':
+      return '/mascot/cyber-cat-happy.png';
     case 'crying':
       return '/mascot/cyber-cat-crying.png';
     case 'sleepy':
-    case 'exhausted':
-    case 'studying':
       return '/mascot/cyber-cat-sleepy.png';
-    case 'panic':
-    case 'shocked':
-    case 'error':
-    case 'fire':
-    case 'doodie':
-      return '/mascot/cyber-cat-panic.png';
     case 'smug':
-    case 'happy':
-    case 'heart':
-    case 'crush':
-    case 'bride':
-    case 'stargaze':
-    case 'anya':
     case 'jealous':
       return '/mascot/cyber-cat-smug.png';
+    case 'panic':
+    case 'doodie':
+      return '/mascot/cyber-cat-panic.png';
     case 'psycho':
-    case 'demon':
       return '/mascot/cyber-cat-psycho.png';
-    case 'sassy':
+    case 'exhausted':
     case 'roast':
+      return '/mascot/cyber-cat-exhausted.png';
+    case 'sassy':
     default:
       return '/mascot/cyber-cat-sassy.png';
   }
