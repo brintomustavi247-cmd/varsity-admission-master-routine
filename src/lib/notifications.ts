@@ -38,6 +38,18 @@ export function getMascotReactionIcon(mood?: MascotMood): string {
       return '/mascot/kira-sprout.png';
     case 'sad-floor':
       return '/mascot/kira-sad-floor.png';
+    case 'tsundere':
+      return '/mascot/kira-tsundere.png';
+    case 'psyduck':
+      return '/mascot/kira-psyduck.png';
+    case 'chill-cat':
+      return '/mascot/kira-chill-cat.png';
+    case 'help':
+      return '/mascot/kira-help.png';
+    case 'ice-bear':
+      return '/mascot/kira-ice-bear.png';
+    case 'burning-cat':
+      return '/mascot/kira-burning-cat.png';
     case 'fist':
       return '/mascot/cyber-cat-fist.png';
     case 'flirty':

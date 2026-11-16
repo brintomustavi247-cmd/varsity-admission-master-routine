@@ -139,6 +139,36 @@ const MOOD_IMAGE_MAP: Record<MascotMood, { src: string; fallback: string; alt: s
     fallback: '/mascot/kira-sad-floor.png',
     alt: 'Sad Dejected Floor Kira',
   },
+  tsundere: {
+    src: '/mascot/kira-tsundere.png',
+    fallback: '/mascot/kira-tsundere.png',
+    alt: 'Pouting Tsundere Anime Kira',
+  },
+  psyduck: {
+    src: '/mascot/kira-psyduck.png',
+    fallback: '/mascot/kira-psyduck.png',
+    alt: 'Confused Psyduck Math Chaos',
+  },
+  'chill-cat': {
+    src: '/mascot/kira-chill-cat.png',
+    fallback: '/mascot/kira-chill-cat.png',
+    alt: 'Chill Cat Sipping Warm Coffee',
+  },
+  help: {
+    src: '/mascot/kira-help.png',
+    fallback: '/mascot/kira-help.png',
+    alt: 'Crying Anime Girl Holding HELP Sign',
+  },
+  'ice-bear': {
+    src: '/mascot/kira-ice-bear.png',
+    fallback: '/mascot/kira-ice-bear.png',
+    alt: 'Ice Bear Sunglasses Starbucks Coffee Sigma Aura',
+  },
+  'burning-cat': {
+    src: '/mascot/kira-burning-cat.png',
+    fallback: '/mascot/kira-burning-cat.png',
+    alt: 'Cool Cat Typing While Room On Fire',
+  },
   // Legacy fallbacks:
   jealous: {
     src: '/mascot/cyber-cat-smug.png',
@@ -303,6 +333,36 @@ export const MascotCharacter: React.FC<MascotCharacterProps> = ({
       themeColor: '#64748B',
       auraBorder: 'border-slate-400/70 shadow-[0_0_24px_rgba(100,116,139,0.5)]',
       glow: 'from-slate-600 via-slate-700 to-indigo-950',
+    },
+    tsundere: {
+      themeColor: '#F43F5E',
+      auraBorder: 'border-rose-400/80 shadow-[0_0_28px_rgba(244,63,94,0.6)]',
+      glow: 'from-rose-500 via-red-500 to-pink-500',
+    },
+    psyduck: {
+      themeColor: '#0EA5E9',
+      auraBorder: 'border-sky-400/80 shadow-[0_0_28px_rgba(14,165,233,0.6)]',
+      glow: 'from-sky-400 via-teal-500 to-amber-400',
+    },
+    'chill-cat': {
+      themeColor: '#F59E0B',
+      auraBorder: 'border-amber-300/80 shadow-[0_0_26px_rgba(245,158,11,0.55)]',
+      glow: 'from-amber-400 via-orange-400 to-sky-400',
+    },
+    help: {
+      themeColor: '#EC4899',
+      auraBorder: 'border-pink-500/80 shadow-[0_0_30px_rgba(236,72,153,0.7)]',
+      glow: 'from-pink-500 via-rose-600 to-red-500',
+    },
+    'ice-bear': {
+      themeColor: '#38BDF8',
+      auraBorder: 'border-sky-300/90 shadow-[0_0_32px_rgba(56,189,248,0.75)]',
+      glow: 'from-sky-300 via-cyan-400 to-blue-600',
+    },
+    'burning-cat': {
+      themeColor: '#F97316',
+      auraBorder: 'border-orange-500/90 shadow-[0_0_32px_rgba(249,115,22,0.8)]',
+      glow: 'from-orange-600 via-amber-500 to-red-600',
     },
     // Legacy fallbacks
     jealous: {

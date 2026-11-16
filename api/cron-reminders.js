@@ -18,6 +18,27 @@ const API_KEY = 'AIzaSyBggHyuB4VJRBM-fO_F94QGSDrKNFitMos';
 const HOST = 'https://varsity-admission-master-routine.vercel.app';
 
 const MOOD_MAP = {
+  // 6 New Iconic Reactions
+  tsundere: '/mascot/kira-tsundere.png',
+  psyduck: '/mascot/kira-psyduck.png',
+  'chill-cat': '/mascot/kira-chill-cat.png',
+  help: '/mascot/kira-help.png',
+  'ice-bear': '/mascot/kira-ice-bear.png',
+  'burning-cat': '/mascot/kira-burning-cat.png',
+
+  // Cyber Cat Expressions
+  sassy: '/mascot/cyber-cat-sassy.png',
+  psycho: '/mascot/cyber-cat-psycho.png',
+  crying: '/mascot/cyber-cat-crying.png',
+  smug: '/mascot/cyber-cat-smug.png',
+  panic: '/mascot/cyber-cat-panic.png',
+  exhausted: '/mascot/cyber-cat-exhausted.png',
+  sleepy: '/mascot/cyber-cat-sleepy.png',
+  happy: '/mascot/cyber-cat-happy.png',
+  flirty: '/mascot/cyber-cat-flirty.png',
+  fist: '/mascot/cyber-cat-fist.png',
+
+  // Anime & Meme Reactions
   pleading: '/mascot/kira-pleading.png',
   heart: '/mascot/kira-heart.png',
   demon: '/mascot/kira-demon.png',
@@ -34,16 +55,11 @@ const MOOD_MAP = {
   'late-night': '/mascot/kira-late-night.png',
   sprout: '/mascot/kira-sprout.png',
   'sad-floor': '/mascot/kira-sad-floor.png',
-  fist: '/mascot/cyber-cat-fist.png',
-  flirty: '/mascot/cyber-cat-flirty.png',
-  happy: '/mascot/cyber-cat-happy.png',
-  crying: '/mascot/cyber-cat-crying.png',
-  sleepy: '/mascot/cyber-cat-sleepy.png',
-  smug: '/mascot/cyber-cat-smug.png',
-  panic: '/mascot/cyber-cat-panic.png',
-  psycho: '/mascot/cyber-cat-psycho.png',
-  exhausted: '/mascot/cyber-cat-exhausted.png',
-  sassy: '/mascot/cyber-cat-sassy.png',
+
+  // Aliases
+  jealous: '/mascot/cyber-cat-smug.png',
+  roast: '/mascot/cyber-cat-exhausted.png',
+  doodie: '/mascot/cyber-cat-panic.png',
 };
 
 export default async function handler(req, res) {

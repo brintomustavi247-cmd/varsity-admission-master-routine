@@ -1,4 +1,4 @@
-const CACHE_NAME = 'varsity-routine-v15';
+const CACHE_NAME = 'varsity-routine-v17';
 const STATIC_ASSETS = [
   '/icons/mascot-notification.png',
   '/icons/badge-cyber-cat.png',
@@ -32,6 +32,12 @@ const STATIC_ASSETS = [
   '/mascot/kira-late-night.png',
   '/mascot/kira-sprout.png',
   '/mascot/kira-sad-floor.png',
+  '/mascot/kira-tsundere.png',
+  '/mascot/kira-psyduck.png',
+  '/mascot/kira-chill-cat.png',
+  '/mascot/kira-help.png',
+  '/mascot/kira-ice-bear.png',
+  '/mascot/kira-burning-cat.png',
   '/favicon.ico',
   '/manifest.webmanifest'
 ];

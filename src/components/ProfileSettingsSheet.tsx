@@ -31,6 +31,7 @@ import {
 } from '../lib/notifications';
 import {
   getRandomSavageNotification,
+  SAVAGE_NOTIFICATIONS,
   type SavageNotification,
 } from '../data/savageNotifications';
 import { MascotCharacter } from './MascotCharacter';
@@ -389,7 +390,7 @@ export function ProfileSettingsSheet({
                           <div className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                             <span>ডুওলিঙ্গো স্টাইল দৈনিক পুশ</span>
                             <span className="px-1.5 py-0.5 rounded-md bg-sky-500/20 dark:bg-cyan-400/20 text-sky-800 dark:text-cyan-300 border border-sky-400/40 text-[10px] font-black font-aura tracking-wider">
-                              80 ROASTS
+                              {SAVAGE_NOTIFICATIONS.length} ROASTS
                             </span>
                           </div>
                           <div className="text-[11px] text-slate-600 dark:text-slate-400">
