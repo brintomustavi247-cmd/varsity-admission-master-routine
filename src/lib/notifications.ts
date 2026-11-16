@@ -578,3 +578,87 @@ export function scheduleBackgroundRoastOnExit(
     }
   }).catch(() => {});
 }
+
+/**
+ * Triggers a Web Push notification to all other squad members via backend serverless push
+ * when any user completes a task in Routine or Syllabus.
+ */
+export async function notifySquadTaskCompletion(payload: {
+  completerUid: string;
+  completerName: string;
+  taskTitle: string;
+  taskType?: string;
+  countdownMinutes?: number;
+}): Promise<boolean> {
+  try {
+    const res = await fetch('/api/notify-squad-task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return res.ok;
+  } catch (err) {
+    console.warn('Failed to notify squad members:', err);
+    return false;
+  }
+}
+
+/**
+ * Schedules a 2-minute countdown reminder on the current user's phone when a peer completes a task.
+ * If the user doesn't catch up within 2 minutes, a savage alarm notification fires on their phone!
+ */
+export function scheduleSquadPeerCountdown(
+  completerName: string,
+  taskTitle: string,
+  countdownMinutes: number = 2
+): () => void {
+  if (typeof window === 'undefined') return () => {};
+
+  const delayMs = countdownMinutes * 60 * 1000;
+  const origin = window.location.origin;
+  const reactionIcon = getMascotReactionIcon('burning-cat');
+  const absoluteIcon = origin ? new URL(reactionIcon, origin).href : reactionIcon;
+  const absoluteBadge = origin ? new URL('/icons/badge-cyber-cat.png', origin).href : '/icons/badge-cyber-cat.png';
+
+  const title = `২ মিনিট কাউন্টডাউন শেষ! ⏳🚨`;
+  const body = `${completerName} ২ মিনিট আগে "${taskTitle}" শেষ করে ফেলেছে! তুমি কি এখনো শুরু করোনি? দ্রুত টেবিলে বসো! 😼`;
+
+  // 1. Arm Service Worker in background
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then((reg) => {
+      try {
+        const worker = reg.active || navigator.serviceWorker.controller;
+        worker?.postMessage({
+          type: 'SCHEDULE_NOTIFICATION',
+          title,
+          delayMs,
+          options: {
+            body,
+            icon: absoluteIcon,
+            image: absoluteIcon,
+            badge: absoluteBadge,
+            tag: `squad-countdown-${Date.now()}`,
+            renotify: true,
+            data: { url: '/?tab=routine' },
+          },
+        });
+      } catch {
+        // Ignore
+      }
+    }).catch(() => {});
+  }
+
+  // 2. Also arm a fallback window timer
+  const timeoutId = window.setTimeout(() => {
+    sendPhoneNotification({
+      title,
+      body,
+      mood: 'burning-cat',
+      tag: `squad-countdown-${Date.now()}`,
+    });
+  }, delayMs);
+
+  return () => {
+    window.clearTimeout(timeoutId);
+  };
+}

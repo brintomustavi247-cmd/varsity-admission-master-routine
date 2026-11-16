@@ -74,6 +74,8 @@ import {
   checkAndSend1140Notification,
   checkAndSendDailyReminder,
   checkAndSendRandomMomentRoast,
+  notifySquadTaskCompletion,
+  scheduleSquadPeerCountdown,
   scheduleBackgroundRoastOnExit,
   registerPeriodicBackgroundSync,
   syncRoutineStateToSW,
@@ -202,6 +204,10 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const xpToastTimer = useRef<number | null>(null);
   const statusToastTimer = useRef<number | null>(null);
+  const prevSquadRoutineMapRef = useRef<Map<string, Record<string, boolean>>>(
+    new Map()
+  );
+  const isFirstSquadLoadRef = useRef(true);
 
   const showXpToast = useCallback((text: string) => {
     if (xpToastTimer.current) window.clearTimeout(xpToastTimer.current);
@@ -489,6 +495,63 @@ export default function App() {
                 isPublicSquadMember: Boolean(d.isPublicSquadMember),
               });
             });
+
+            // Real-time detection: if any peer squad member newly completed a task
+            if (!isFirstSquadLoadRef.current) {
+              for (const member of members) {
+                if (member.uid === uid) continue;
+                const prevRoutine =
+                  prevSquadRoutineMapRef.current.get(member.uid) || {};
+                for (const key of Object.keys(member.routine || {})) {
+                  if (member.routine[key] && !prevRoutine[key]) {
+                    // New task completed by this member!
+                    const parts = key.split('_'); // e.g. ['d', '1', 'main']
+                    if (parts[0] === 'd' && parts[1]) {
+                      const dayId = Number(parts[1]);
+                      const field = parts[2];
+                      const matchedDay = ROUTINE_DATA.find((d) => d.d === dayId);
+                      const taskTitle = matchedDay
+                        ? field === 'main'
+                          ? matchedDay.main
+                          : field === 'eng'
+                          ? matchedDay.eng
+                          : matchedDay.rev
+                        : 'টাস্ক';
+                      const taskType =
+                        field === 'main'
+                          ? 'মূল অধ্যায়'
+                          : field === 'eng'
+                          ? (member.studyTrack === 'biology'
+                              ? 'জীববিজ্ঞান'
+                              : 'ইংরেজি')
+                          : 'স্পেসড রিভিশন';
+
+                      // 1. In-app status toast
+                      showStatusToast(
+                        `⚡ ${member.displayName} Day ${String(dayId).padStart(2, '0')}-এর ${taskType} শেষ করেছে!`
+                      );
+
+                      // 2. Schedule 2-minute countdown reminder on device
+                      scheduleSquadPeerCountdown(
+                        member.displayName,
+                        `Day ${String(dayId).padStart(2, '0')}: ${taskTitle}`,
+                        2
+                      );
+                    }
+                  }
+                }
+              }
+            } else {
+              isFirstSquadLoadRef.current = false;
+            }
+
+            // Sync snapshot state for next differential check
+            for (const member of members) {
+              prevSquadRoutineMapRef.current.set(member.uid, {
+                ...(member.routine || {}),
+              });
+            }
+
             setSquadMembers(members);
             setDataReady(true);
             setSyncError(null);
@@ -755,6 +818,28 @@ export default function App() {
         activeTrack === 'biology' ? 'জীববিজ্ঞান' : 'ইংরেজি';
 
       if (!wasDone) {
+        // Broadcast task completion to other squad members' phones with a 2-minute countdown
+        const taskTitle =
+          field === 'main'
+            ? day.main
+            : field === 'eng'
+            ? day.eng
+            : day.rev;
+        const taskType =
+          field === 'main'
+            ? 'মূল অধ্যায়'
+            : field === 'eng'
+            ? (activeTrack === 'biology' ? 'জীববিজ্ঞান' : 'ইংরেজি')
+            : 'স্পেসড রিভিশন';
+
+        notifySquadTaskCompletion({
+          completerUid: user.uid,
+          completerName: sanitizeDisplayName(user),
+          taskTitle,
+          taskType: `Day ${String(day.d).padStart(2, '0')} ${taskType}`,
+          countdownMinutes: 2,
+        });
+
         if (!wasDayDone && nowDayDone) {
           playMissionFanfare(soundEnabled);
           setCelebration({
@@ -819,6 +904,23 @@ export default function App() {
       const nextMetrics = computeMetrics(myRoutine, nextSyllabus, activeTrack);
 
       if (!wasDone) {
+        const stepName =
+          step === 't'
+            ? 'থিওরি'
+            : step === 'b'
+            ? 'প্রশ্ন ব্যাংক'
+            : step === 'r1'
+            ? 'রিভিশন ১'
+            : 'রিভিশন ২';
+
+        notifySquadTaskCompletion({
+          completerUid: user.uid,
+          completerName: sanitizeDisplayName(user),
+          taskTitle: chapName,
+          taskType: `সিলেবাস ${stepName}`,
+          countdownMinutes: 2,
+        });
+
         if (!wasChapDone && nowChapDone) {
           playMissionFanfare(soundEnabled);
           setCelebration({
