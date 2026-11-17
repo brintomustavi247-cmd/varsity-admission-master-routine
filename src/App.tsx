@@ -21,7 +21,6 @@ import {
   Globe,
   LogOut,
   Search,
-  Timer,
   Trash2,
   Upload,
   Users,
@@ -69,14 +68,8 @@ import { RoutineView } from './components/RoutineView';
 import { SyllabusView } from './components/SyllabusView';
 import { SquadView } from './components/SquadView';
 import { StrategyView } from './components/StrategyView';
-import { StudyTimerHub } from './components/StudyTimerHub';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { KiraPermissionModal } from './components/KiraPermissionModal';
-import {
-  loadStudySessions,
-  saveStudySessions,
-  getTodayStudyMinutes,
-} from './lib/studyTimerStorage';
 import {
   checkAndSend1140Notification,
   checkAndSendDailyReminder,
@@ -89,7 +82,7 @@ import {
   subscribeToWebPush,
 } from './lib/notifications';
 
-type TabId = 'routine' | 'syllabus' | 'timer' | 'squad' | 'strategy';
+type TabId = 'routine' | 'syllabus' | 'squad' | 'strategy';
 
 const LOCAL_LEGACY_KEY = 'admission_revised_v3';
 
@@ -207,9 +200,6 @@ export default function App() {
   >(null);
   const [forcePreviewReminder, setForcePreviewReminder] =
     useState<boolean>(false);
-  const [activeTimerRunning, setActiveTimerRunning] = useState(false);
-  const [activeTimerSec, setActiveTimerSec] = useState(0);
-  const [activeTimerSubject, setActiveTimerSubject] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const xpToastTimer = useRef<number | null>(null);
@@ -740,10 +730,6 @@ export default function App() {
       if (!user) return;
       const targetTrack = trackOverride ?? activeTrack;
       const metrics = computeMetrics(nextRoutine, nextSyllabus, targetTrack);
-      const userSessions = loadStudySessions();
-      const totalStudyMin = userSessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0);
-      const todayStudyMin = getTodayStudyMinutes(userSessions);
-      const studyAura = userSessions.reduce((sum, s) => sum + (s.auraEarned || 0), 0);
       const squadRef = doc(db, 'squadProgress', user.uid);
       try {
         await updateDoc(squadRef, {
@@ -754,10 +740,8 @@ export default function App() {
           syllabus: nextSyllabus,
           daysDone: metrics.daysDone,
           chapsDone: metrics.chapsDone,
-          xp: metrics.xp + studyAura,
+          xp: metrics.xp,
           streak: metrics.streak,
-          studyMinutes: totalStudyMin,
-          todayStudyMinutes: todayStudyMin,
           updatedAt: serverTimestamp(),
         });
       } catch (err) {
@@ -1033,7 +1017,6 @@ export default function App() {
     const payload = {
       routine: routineExport,
       syllabus: syllabusExport,
-      studySessions: loadStudySessions(),
       settings: { theme },
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
@@ -1085,10 +1068,6 @@ export default function App() {
             if (v?.r1 === true) nextSyllabus[syllabusStepKey(idx, 'r1')] = true;
             if (v?.r2 === true) nextSyllabus[syllabusStepKey(idx, 'r2')] = true;
           }
-        }
-
-        if (parsed.studySessions && Array.isArray(parsed.studySessions)) {
-          saveStudySessions(parsed.studySessions);
         }
 
         await persistProgress(nextRoutine, nextSyllabus);
@@ -1153,7 +1132,6 @@ export default function App() {
   const mobileTabTitle: Record<TabId, string> = {
     routine: 'রুটিন',
     syllabus: 'সিলেবাস',
-    timer: 'স্টাডি টাইমার',
     squad: `স্কোয়াড (${squadMembers.length})`,
     strategy: 'কৌশল',
   };
@@ -1365,16 +1343,15 @@ export default function App() {
           </div>
         </section>
 
-        {/* Desktop 5-Column Navigation Tabs */}
+        {/* Desktop 4-Column Navigation Tabs */}
         <nav
           aria-label="প্রধান নেভিগেশন"
-          className="hidden sm:grid rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 grid-cols-5 gap-1 shadow-[0_6px_20px_rgba(79,70,229,0.05)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)]"
+          className="hidden sm:grid rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 grid-cols-4 gap-1 shadow-[0_6px_20px_rgba(79,70,229,0.05)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.3)]"
         >
           {(
             [
               { id: 'routine', label: 'রুটিন', icon: '📅' },
               { id: 'syllabus', label: 'সিলেবাস', icon: '📚' },
-              { id: 'timer', label: 'টাইমার', icon: '⏱️' },
               {
                 id: 'squad',
                 label: `স্কোয়াড (${squadMembers.length})`,
@@ -1537,26 +1514,6 @@ export default function App() {
                 />
               )}
 
-              {activeTab === 'timer' && (
-                <StudyTimerHub
-                  currentUid={user.uid}
-                  userDisplayName={displayName}
-                  onSessionCompleteAura={async (aura) => {
-                    if (aura >= 0) {
-                      showXpToast(`+${aura} AURA অর্জিত! ⚡`);
-                    } else {
-                      showXpToast(`${aura} AURA পেনাল্টি কাটা হয়েছে! ⚠️`);
-                    }
-                    await persistProgress(myRoutine, mySyllabus);
-                  }}
-                  onActiveTimerChange={(active, sec, subj) => {
-                    setActiveTimerRunning(active);
-                    setActiveTimerSec(sec);
-                    setActiveTimerSubject(subj);
-                  }}
-                />
-              )}
-
               {activeTab === 'squad' && (
                 <SquadView
                   squadMembers={squadMembers}
@@ -1573,13 +1530,12 @@ export default function App() {
       {/* Fixed Mobile Bottom Navigation Bar */}
       <nav
         aria-label="মোবাইল নেভিগেশন"
-        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 grid grid-cols-5 items-center px-1"
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 grid grid-cols-4 items-center px-1"
       >
         {(
           [
             { id: 'routine', label: 'রুটিন', Icon: CalendarCheck2 },
             { id: 'syllabus', label: 'সিলেবাস', Icon: BookMarked },
-            { id: 'timer', label: 'টাইমার', Icon: Timer },
             {
               id: 'squad',
               label: `স্কোয়াড (${squadMembers.length})`,
@@ -1674,29 +1630,6 @@ export default function App() {
         onPermissionGranted={() => setReminderEnabled(true)}
       />
 
-      {/* Floating Active Focus Timer Pill (when browsing other tabs) */}
-      {activeTimerRunning && activeTab !== 'timer' && (
-        <button
-          type="button"
-          onClick={() => setActiveTab('timer')}
-          className="fixed bottom-20 sm:bottom-6 right-3 sm:right-6 z-40 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white shadow-xl shadow-indigo-500/30 flex items-center gap-2 text-xs font-bold transition-all cursor-pointer border border-cyan-300/40 active:scale-95 group"
-        >
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400" />
-          </span>
-          <Timer className="w-4 h-4 text-cyan-200" />
-          <span className="font-mono-num font-black tracking-tight text-white">
-            {String(Math.floor(activeTimerSec / 60)).padStart(2, '0')}:
-            {String(activeTimerSec % 60).padStart(2, '0')}
-          </span>
-          {activeTimerSubject && (
-            <span className="text-[11px] font-medium text-cyan-100 max-w-[80px] truncate hidden sm:inline">
-              · {activeTimerSubject}
-            </span>
-          )}
-        </button>
-      )}
 
       {statusToast && (
         <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 text-xs sm:text-sm font-bold shadow-lg whitespace-nowrap">
