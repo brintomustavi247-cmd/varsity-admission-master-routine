@@ -15,6 +15,8 @@ import {
   Clock,
   BookOpen,
   Coffee,
+  Flag,
+  Plus,
 } from 'lucide-react';
 import type {
   StudySession,
@@ -46,11 +48,11 @@ interface StudyTimerHubProps {
   onActiveTimerChange?: (active: boolean, remainingSec: number, subject: string) => void;
 }
 
-const PRESETS = [
-  { label: '২৫ মি. ফোকাস', minutes: 25 },
-  { label: '৪৫ মি. ডিপ স্টাডি', minutes: 45 },
-  { label: '৬০ মি. আল্টিমেট', minutes: 60 },
-  { label: '৯০ মি. এক্সাম', minutes: 90 },
+const POMODORO_PRESETS = [
+  { label: '25m Focus', minutes: 25, desc: 'স্ট্যান্ডার্ড' },
+  { label: '45m Deep', minutes: 45, desc: 'ডিপ স্টাডি' },
+  { label: '60m Marathon', minutes: 60, desc: 'আল্টিমেট' },
+  { label: '90m Exam', minutes: 90, desc: 'মডেল টেস্ট' },
 ];
 
 const SUBJECTS = [
@@ -63,8 +65,12 @@ const SUBJECTS = [
   'প্রশ্ন ব্যাংক অনুশীলন',
 ];
 
-const toBnDigits = (val: string | number) =>
-  String(val).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[parseInt(d, 10)]);
+interface StopwatchLap {
+  id: number;
+  timeSec: number;
+  formatted: string;
+  splitSec: number;
+}
 
 export function StudyTimerHub({
   currentUid: _currentUid,
@@ -85,6 +91,7 @@ export function StudyTimerHub({
   const [isRunning, setIsRunning] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [stopwatchSeconds, setStopwatchSeconds] = useState(0);
+  const [stopwatchLaps, setStopwatchLaps] = useState<StopwatchLap[]>([]);
   const sessionStartTimeRef = useRef<number>(Date.now());
 
   // Ambient sound
@@ -93,6 +100,10 @@ export function StudyTimerHub({
 
   // Fullscreen / Zen Mode
   const [isZenMode, setIsZenMode] = useState(false);
+
+  // Custom minute modal / input
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customMinInput, setCustomMinInput] = useState(30);
 
   // Stored Study Sessions
   const [sessions, setSessions] = useState<StudySession[]>(() => loadStudySessions());
@@ -121,6 +132,18 @@ export function StudyTimerHub({
       stopAmbientSound();
     };
   }, [isRunning, ambientSound, ambientVolume]);
+
+  // Format seconds to English digits HH:MM:SS or MM:SS
+  const formatTimeEnglish = (totalSec: number, showHoursAlways = false) => {
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+
+    if (h > 0 || showHoursAlways) {
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
 
   // Handle Session Completion
   const handleCompleteSession = useCallback(
@@ -158,7 +181,7 @@ export function StudyTimerHub({
       // Trigger phone notification
       sendPhoneNotification({
         title: 'স্টাডি সেশন সম্পন্ন! 🏆✨',
-        body: `সাবাশ! ${toBnDigits(effectiveMinutes)} মিনিট ${selectedSubject} পড়া শেষ হয়েছে! +${toBnDigits(earnedAura)} Aura অর্জিত!`,
+        body: `সাবাশ! ${effectiveMinutes} মিনিট ${selectedSubject} পড়া শেষ হয়েছে! +${earnedAura} Aura অর্জিত!`,
         mood: 'ice-bear',
       });
     },
@@ -215,11 +238,25 @@ export function StudyTimerHub({
       setSecondsLeft(mins * 60);
     } else {
       if (stopwatchSeconds >= 60) {
-        // Save whatever was studied before reset
         handleCompleteSession(Math.floor(stopwatchSeconds / 60), stopwatchSeconds);
       }
       setStopwatchSeconds(0);
+      setStopwatchLaps([]);
     }
+  };
+
+  // Record a Lap in Stopwatch Mode
+  const recordLap = () => {
+    if (stopwatchSeconds === 0) return;
+    const lastLapTime = stopwatchLaps.length > 0 ? stopwatchLaps[0].timeSec : 0;
+    const splitSec = stopwatchSeconds - lastLapTime;
+    const newLap: StopwatchLap = {
+      id: stopwatchLaps.length + 1,
+      timeSec: stopwatchSeconds,
+      formatted: formatTimeEnglish(stopwatchSeconds),
+      splitSec,
+    };
+    setStopwatchLaps((prev) => [newLap, ...prev]);
   };
 
   // Preset click
@@ -250,6 +287,7 @@ export function StudyTimerHub({
     const mins = Math.floor(stopwatchSeconds / 60);
     handleCompleteSession(mins, stopwatchSeconds);
     setStopwatchSeconds(0);
+    setStopwatchLaps([]);
   };
 
   // Display calculations
@@ -264,11 +302,11 @@ export function StudyTimerHub({
       ? (totalPhaseSec - secondsLeft) / totalPhaseSec
       : (stopwatchSeconds % 3600) / 3600;
 
-  const displayMinutes = Math.floor(currentSec / 60);
-  const displaySeconds = currentSec % 60;
-  const timeString = `${String(displayMinutes).padStart(2, '0')}:${String(
-    displaySeconds
-  ).padStart(2, '0')}`;
+  // The primary clock string formatted strictly in English numbers
+  const displayClockString =
+    mode === 'pomodoro'
+      ? formatTimeEnglish(secondsLeft)
+      : formatTimeEnglish(stopwatchSeconds, stopwatchSeconds >= 3600);
 
   // Kira Companion speech based on timer state
   const getKiraMoodAndQuote = () => {
@@ -304,23 +342,43 @@ export function StudyTimerHub({
 
   const kira = getKiraMoodAndQuote();
 
-  // Circular SVG ring constants
-  const size = 260;
-  const strokeWidth = 14;
-  const radius = (size - strokeWidth) / 2;
+  // Circular SVG Chronograph Bezel & Ring Constants
+  const dialSize = 280;
+  const strokeWidth = 12;
+  const radius = (dialSize - strokeWidth - 36) / 2; // leaves space for precision bezel tick marks
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - Math.min(1, Math.max(0, progressRatio)));
 
+  // Bezel 60 ticks generator
+  const bezelTicks = Array.from({ length: 60 }).map((_, i) => {
+    const isMajor = i % 5 === 0;
+    const angle = (i * 6) * (Math.PI / 180);
+    const rOuter = dialSize / 2 - 3;
+    const rInner = rOuter - (isMajor ? 8 : 4);
+    const x1 = dialSize / 2 + rInner * Math.sin(angle);
+    const y1 = dialSize / 2 - rInner * Math.cos(angle);
+    const x2 = dialSize / 2 + rOuter * Math.sin(angle);
+    const y2 = dialSize / 2 - rOuter * Math.cos(angle);
+    return { id: i, x1, y1, x2, y2, isMajor };
+  });
+
   return (
-    <div className={`space-y-6 ${isZenMode ? 'fixed inset-0 z-50 bg-[#070A14] p-6 sm:p-10 flex flex-col justify-between overflow-y-auto' : ''}`}>
+    <div
+      className={`space-y-6 ${
+        isZenMode
+          ? 'fixed inset-0 z-50 bg-[#060913] text-slate-100 p-6 sm:p-10 flex flex-col justify-between overflow-y-auto select-none'
+          : ''
+      }`}
+    >
       {/* Zen Mode Header with Close Button */}
       {isZenMode && (
         <div className="flex items-center justify-between border-b border-cyan-500/20 pb-4">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
             <span className="text-xs font-black font-aura tracking-widest text-cyan-400 uppercase">
               Zen Focus Mode · পূর্ণ মনোযোগ
             </span>
+            <span className="text-xs text-slate-400">· {selectedSubject}</span>
           </div>
           <button
             type="button"
@@ -347,7 +405,7 @@ export function StudyTimerHub({
               }`}
             >
               <TimerIcon className="w-4 h-4" />
-              <span>স্টাডি টাইমার</span>
+              <span>স্টাডি টাইমার ও ক্লক</span>
             </button>
             <button
               type="button"
@@ -373,7 +431,7 @@ export function StudyTimerHub({
               {todayAura > 0 && (
                 <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[10px] font-black font-aura flex items-center gap-0.5">
                   <Sparkles className="w-3 h-3" />
-                  +{toBnDigits(todayAura)} Aura
+                  +{todayAura} Aura
                 </span>
               )}
             </div>
@@ -394,7 +452,7 @@ export function StudyTimerHub({
       {/* VIEW 1: FOCUS TIMER */}
       {hubTab === 'timer' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Dial & Controls Column */}
+          {/* Main Dial & Chronograph Column */}
           <div className="lg:col-span-8 rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 p-6 sm:p-8 shadow-sm space-y-6 flex flex-col items-center relative overflow-hidden">
             {/* Ambient subtle cyber gradient background */}
             <div
@@ -407,7 +465,7 @@ export function StudyTimerHub({
             />
 
             {/* Mode Switcher: Pomodoro vs Stopwatch */}
-            <div className="flex items-center gap-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700">
+            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 shadow-inner">
               <button
                 type="button"
                 onClick={() => {
@@ -415,13 +473,14 @@ export function StudyTimerHub({
                   setIsRunning(false);
                   setSecondsLeft(pomodoroMinutes * 60);
                 }}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-1.5 cursor-pointer ${
                   mode === 'pomodoro'
-                    ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-cyan-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-cyan-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                পোমোডোরো (Pomodoro)
+                <TimerIcon className="w-4 h-4" />
+                <span>পোমোডোরো (Pomodoro)</span>
               </button>
               <button
                 type="button"
@@ -430,97 +489,132 @@ export function StudyTimerHub({
                   setIsRunning(false);
                   setStopwatchSeconds(0);
                 }}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-1.5 cursor-pointer ${
                   mode === 'stopwatch'
-                    ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-cyan-400 shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                    ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-cyan-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                স্টপওয়াচ (Count Up)
+                <Clock className="w-4 h-4" />
+                <span>স্টপওয়াচ (Stopwatch)</span>
               </button>
             </div>
 
             {/* Pomodoro Presets & Phase Buttons */}
-            {mode === 'pomodoro' && (
+            {mode === 'pomodoro' ? (
               <div className="space-y-3 w-full flex flex-col items-center">
                 {/* Phase Tabs */}
                 <div className="flex items-center gap-1.5 flex-wrap justify-center">
                   <button
                     type="button"
                     onClick={() => switchToPhase('focus')}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       phase === 'focus'
-                        ? 'bg-indigo-600 text-white shadow-xs'
+                        ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-xs'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}
                   >
-                    ফোকাস ({toBnDigits(pomodoroMinutes)} মি.)
+                    🎯 Focus ({pomodoroMinutes}m)
                   </button>
                   <button
                     type="button"
                     onClick={() => switchToPhase('shortBreak')}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       phase === 'shortBreak'
-                        ? 'bg-emerald-600 text-white shadow-xs'
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}
                   >
-                    শর্ট ব্রেক (৫ মি.)
+                    ☕ Short Break (5m)
                   </button>
                   <button
                     type="button"
                     onClick={() => switchToPhase('longBreak')}
-                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       phase === 'longBreak'
-                        ? 'bg-teal-600 text-white shadow-xs'
+                        ? 'bg-gradient-to-r from-teal-600 to-sky-600 text-white shadow-xs'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                     }`}
                   >
-                    লং ব্রেক (১৫ মি.)
+                    🌴 Long Break (15m)
                   </button>
                 </div>
 
                 {/* Preset Chips */}
                 {phase === 'focus' && (
-                  <div className="flex items-center gap-1.5 flex-wrap justify-center">
-                    {PRESETS.map((p) => (
+                  <div className="flex items-center gap-2 flex-wrap justify-center">
+                    {POMODORO_PRESETS.map((p) => (
                       <button
                         key={p.minutes}
                         type="button"
                         onClick={() => selectPreset(p.minutes)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                           pomodoroMinutes === p.minutes
-                            ? 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-400/60'
+                            ? 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-400/80 shadow-xs'
                             : 'border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                         }`}
                       >
                         {p.label}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => setShowCustomModal(true)}
+                      className="px-3 py-1.5 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-indigo-400 hover:text-indigo-500 transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>Custom</span>
+                    </button>
                   </div>
                 )}
               </div>
+            ) : (
+              /* Stopwatch Header Sub-bar */
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span>PRECISION CHRONOGRAPH · কাউন্ট-আপ ফ্রি স্টাডি মোড</span>
+              </div>
             )}
 
-            {/* Glowing Circular Progress SVG Dial */}
-            <div className="relative my-4 flex items-center justify-center select-none">
+            {/* UPGRADED CHRONOGRAPH BEZEL & DIAL */}
+            <div className="relative my-2 sm:my-4 flex items-center justify-center select-none">
               {/* Outer Ambient Glow Ring */}
               <div
                 aria-hidden="true"
-                className={`absolute inset-0 rounded-full blur-xl opacity-40 transition-all duration-700 ${
+                className={`absolute inset-4 rounded-full blur-2xl opacity-40 transition-all duration-700 ${
                   isRunning
                     ? phase === 'focus'
-                      ? 'bg-gradient-to-tr from-cyan-500 via-indigo-500 to-purple-500'
-                      : 'bg-gradient-to-tr from-emerald-500 via-teal-500 to-sky-500'
+                      ? 'bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-600'
+                      : 'bg-gradient-to-tr from-emerald-400 via-teal-500 to-sky-500'
                     : 'bg-slate-300 dark:bg-slate-800'
                 }`}
               />
 
-              <svg width={size} height={size} className="transform -rotate-90">
+              <svg width={dialSize} height={dialSize} className="relative z-10 overflow-visible">
+                {/* 60 Precision Chronograph Bezel Tick Marks */}
+                <g className="bezel-ticks">
+                  {bezelTicks.map((t) => (
+                    <line
+                      key={t.id}
+                      x1={t.x1}
+                      y1={t.y1}
+                      x2={t.x2}
+                      y2={t.y2}
+                      stroke="currentColor"
+                      strokeWidth={t.isMajor ? 2.5 : 1.2}
+                      className={
+                        t.isMajor
+                          ? 'text-indigo-400 dark:text-cyan-400 opacity-90'
+                          : 'text-slate-300 dark:text-slate-700 opacity-50'
+                      }
+                    />
+                  ))}
+                </g>
+
                 {/* Background Ring Track */}
                 <circle
-                  cx={size / 2}
-                  cy={size / 2}
+                  cx={dialSize / 2}
+                  cy={dialSize / 2}
                   r={radius}
                   stroke="currentColor"
                   strokeWidth={strokeWidth}
@@ -529,62 +623,81 @@ export function StudyTimerHub({
                 />
 
                 {/* Animated Gradient Progress Stroke */}
-                <circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={radius}
-                  stroke="url(#timerGradient)"
-                  strokeWidth={strokeWidth}
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  className="transition-all duration-500 ease-linear"
-                  fill="transparent"
-                />
+                <g className="transform -rotate-90 origin-center">
+                  <circle
+                    cx={dialSize / 2}
+                    cy={dialSize / 2}
+                    r={radius}
+                    stroke="url(#chronographGradient)"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    className="transition-all duration-500 ease-linear"
+                    fill="transparent"
+                  />
+                </g>
 
                 <defs>
-                  <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient id="chronographGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop
                       offset="0%"
-                      stopColor={
-                        phase === 'focus' ? '#00F0FF' : '#10B981'
-                      }
+                      stopColor={phase === 'focus' ? '#00F0FF' : '#10B981'}
                     />
                     <stop
                       offset="50%"
-                      stopColor={
-                        phase === 'focus' ? '#4F46E5' : '#06B6D4'
-                      }
+                      stopColor={phase === 'focus' ? '#4F46E5' : '#06B6D4'}
                     />
                     <stop
                       offset="100%"
-                      stopColor={
-                        phase === 'focus' ? '#EC4899' : '#3B82F6'
-                      }
+                      stopColor={phase === 'focus' ? '#EC4899' : '#3B82F6'}
                     />
                   </linearGradient>
                 </defs>
               </svg>
 
-              {/* Digital Time Center Overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                <span className="text-xs font-black font-aura tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-1">
-                  {mode === 'pomodoro'
-                    ? phase === 'focus'
-                      ? 'FOCUS'
-                      : 'BREAK'
-                    : 'STOPWATCH'}
-                </span>
-                <span className="font-mono-num font-black text-5xl sm:text-6xl tracking-tight text-slate-900 dark:text-slate-50 drop-shadow-sm">
-                  {toBnDigits(timeString)}
-                </span>
-                <span className="mt-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 max-w-[170px] truncate px-2">
+              {/* Digital Time Center Display (STRICTLY IN ENGLISH NUMBERS) */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 pointer-events-none">
+                {/* Status Pill Indicator */}
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 text-[10px] font-black tracking-widest font-mono uppercase text-slate-500 dark:text-slate-400 mb-1">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isRunning
+                        ? 'bg-emerald-400 animate-ping'
+                        : 'bg-amber-400'
+                    }`}
+                  />
+                  <span>
+                    {isRunning
+                      ? mode === 'pomodoro'
+                        ? phase === 'focus'
+                          ? 'FOCUS'
+                          : 'BREAK'
+                        : 'RUNNING'
+                      : 'PAUSED'}
+                  </span>
+                </div>
+
+                {/* English Digital Clock Digits */}
+                <div className="font-mono font-black text-5xl sm:text-6xl tracking-wider text-slate-900 dark:text-slate-50 drop-shadow-md select-none tabular-nums my-1">
+                  {displayClockString}
+                </div>
+
+                {/* Subject Subtitle Chip */}
+                <div className="mt-1 px-3 py-0.5 rounded-full bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200/60 dark:border-indigo-800/60 text-xs font-bold text-indigo-700 dark:text-cyan-300 max-w-[170px] truncate">
                   {selectedSubject}
-                </span>
+                </div>
+
+                {/* Progress Percentage for Pomodoro */}
+                {mode === 'pomodoro' && (
+                  <div className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 mt-1">
+                    {Math.round(progressRatio * 100)}% COMPLETED
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Play, Pause & Reset Controls Bar */}
+            {/* Play, Pause, Lap & Reset Action Controls Bar */}
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="button"
@@ -608,16 +721,29 @@ export function StudyTimerHub({
                 {isRunning ? (
                   <>
                     <Pause className="w-5 h-5 fill-current" />
-                    <span>পজ করুন</span>
+                    <span>Pause (পজ)</span>
                   </>
                 ) : (
                   <>
                     <Play className="w-5 h-5 fill-current" />
-                    <span>পড়া শুরু করুন</span>
+                    <span>Start Focus (শুরু)</span>
                   </>
                 )}
               </button>
 
+              {/* Stopwatch Lap Button */}
+              {mode === 'stopwatch' && isRunning && (
+                <button
+                  type="button"
+                  onClick={recordLap}
+                  title="ল্যাপ / মাইলস্টোন মার্ক করুন"
+                  className="p-3.5 rounded-2xl border border-cyan-400/50 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-all cursor-pointer shadow-xs active:scale-95"
+                >
+                  <Flag className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* Finish & Save Button for Stopwatch */}
               {mode === 'stopwatch' && stopwatchSeconds >= 60 && (
                 <button
                   type="button"
@@ -626,10 +752,35 @@ export function StudyTimerHub({
                   className="px-4 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>সম্পন্ন</span>
+                  <span>Finish & Save</span>
                 </button>
               )}
             </div>
+
+            {/* Stopwatch Laps Record View */}
+            {mode === 'stopwatch' && stopwatchLaps.length > 0 && (
+              <div className="w-full max-w-md pt-3 space-y-1.5 border-t border-slate-100 dark:border-slate-800">
+                <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between mb-1">
+                  <span>রেকর্ড করা ল্যাপস (Laps):</span>
+                  <span className="font-mono text-[11px]">{stopwatchLaps.length} Laps</span>
+                </div>
+                <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
+                  {stopwatchLaps.map((lap) => (
+                    <div
+                      key={lap.id}
+                      className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60 text-xs font-mono"
+                    >
+                      <span className="font-bold text-slate-600 dark:text-slate-300">
+                        Lap #{lap.id}
+                      </span>
+                      <span className="font-black text-indigo-600 dark:text-cyan-400">
+                        {lap.formatted}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Subject Tag Selector Chips */}
             <div className="w-full pt-4 border-t border-slate-100 dark:border-slate-800/80">
@@ -721,7 +872,7 @@ export function StudyTimerHub({
                 <div className="space-y-1 pt-1">
                   <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-300">
                     <span>ভলিউম</span>
-                    <span className="font-mono-num">{Math.round(ambientVolume * 100)}%</span>
+                    <span className="font-mono">{Math.round(ambientVolume * 100)}%</span>
                   </div>
                   <input
                     type="range"
@@ -789,6 +940,50 @@ export function StudyTimerHub({
             }
           }}
         />
+      )}
+
+      {/* Custom Minutes Pomodoro Modal */}
+      {showCustomModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs"
+          onClick={() => setShowCustomModal(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-xs rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xl space-y-4"
+          >
+            <h4 className="font-bold text-slate-900 dark:text-slate-50 text-sm font-display">
+              Custom Focus Time (মিনিট)
+            </h4>
+            <input
+              type="number"
+              min="1"
+              max="180"
+              value={customMinInput}
+              onChange={(e) => setCustomMinInput(Math.max(1, Math.min(180, Number(e.target.value))))}
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-lg font-mono font-bold text-center text-slate-900 dark:text-slate-100"
+            />
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowCustomModal(false)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300"
+              >
+                বাতিল
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  selectPreset(customMinInput);
+                  setShowCustomModal(false);
+                }}
+                className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-sm"
+              >
+                সেট করুন
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
