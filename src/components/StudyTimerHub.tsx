@@ -22,6 +22,10 @@ import {
   Smartphone,
   ChevronDown,
   Zap,
+  Lightbulb,
+  PictureInPicture2,
+  Sliders,
+  ExternalLink,
 } from 'lucide-react';
 import type {
   StudySession,
@@ -46,7 +50,10 @@ import { playWarningAlertSound } from '../lib/sound';
 import { sendPhoneNotification } from '../lib/notifications';
 import { MascotCharacter } from './MascotCharacter';
 import { StudyCalendarView } from './StudyCalendarView';
-import { AllowedAppsModal } from './AllowedAppsModal';
+import {
+  AllowedAppsModal,
+  type PhoneAllowedApp,
+} from './AllowedAppsModal';
 
 interface StudyTimerHubProps {
   currentUid: string;
@@ -66,12 +73,12 @@ interface TimerPreset {
 }
 
 const PRESETS: TimerPreset[] = [
-  { id: 'p25', label: '২৫ মি. ফোকাস', minutes: 25, mode: 'pomodoro', phase: 'focus', badge: 'জনপ্রিয়', icon: '🎯' },
-  { id: 'p45', label: '৪৫ মি. ডিপ স্টাডি', minutes: 45, mode: 'pomodoro', phase: 'focus', icon: '⚡' },
-  { id: 'p60', label: '৬০ মি. ম্যারাথন', minutes: 60, mode: 'pomodoro', phase: 'focus', icon: '🔥' },
-  { id: 'b5', label: '৫ মি. ব্রেক', minutes: 5, mode: 'pomodoro', phase: 'shortBreak', icon: '☕' },
-  { id: 'b15', label: '১৫ মি. লং ব্রেক', minutes: 15, mode: 'pomodoro', phase: 'longBreak', icon: '🌴' },
-  { id: 'stopwatch', label: 'স্টপওয়াচ', minutes: 0, mode: 'stopwatch', icon: '⏱️' },
+  { id: 'p25', label: '25m Focus', minutes: 25, mode: 'pomodoro', phase: 'focus', badge: 'জনপ্রিয়', icon: '🎯' },
+  { id: 'p45', label: '45m Deep', minutes: 45, mode: 'pomodoro', phase: 'focus', icon: '⚡' },
+  { id: 'p60', label: '60m Marathon', minutes: 60, mode: 'pomodoro', phase: 'focus', icon: '🔥' },
+  { id: 'b5', label: '5m Break', minutes: 5, mode: 'pomodoro', phase: 'shortBreak', icon: '☕' },
+  { id: 'b15', label: '15m Break', minutes: 15, mode: 'pomodoro', phase: 'longBreak', icon: '🌴' },
+  { id: 'stopwatch', label: 'Stopwatch', minutes: 0, mode: 'stopwatch', icon: '⏱️' },
 ];
 
 const SUBJECTS = [
@@ -82,6 +89,14 @@ const SUBJECTS = [
   'ইংরেজি',
   'স্পেসড রিভিশন',
   'প্রশ্ন ব্যাংক অনুশীলন',
+];
+
+const MOTIVATION_QUOTES = [
+  'আজ ফোকাস, আগামীকাল উদযাপন।',
+  'আজকের পরিশ্রম, আগামীকালের ঢাকা বিশ্ববিদ্যালয়!',
+  'এক ঘণ্টার গভীর মনোযোগ, এক দিনের বিভ্রান্তির চেয়ে শ্রেষ্ঠ।',
+  'প্রতিটি ফোকাস মিনিট তোমাকে তোমার ড্রিম ক্যাম্পাসের দিকে এগিয়ে নিচ্ছে!',
+  'আধা ঘণ্টার লড়াই তোমাকে হাজার জনের চেয়ে এগিয়ে রাখবে।',
 ];
 
 interface StopwatchLap {
@@ -121,6 +136,10 @@ export function StudyTimerHub({
   const [ambientVolume, setAmbientVolume] = useState(0.4);
   const [showSoundMenu, setShowSoundMenu] = useState(false);
 
+  // Screen Wake Lock API
+  const [wakeLockActive, setWakeLockActive] = useState(false);
+  const wakeLockSentinelRef = useRef<any>(null);
+
   // Fullscreen / Zen Mode
   const [isZenMode, setIsZenMode] = useState(false);
 
@@ -130,14 +149,41 @@ export function StudyTimerHub({
 
   // Allowed Apps Hub Modal
   const [showAllowedApps, setShowAllowedApps] = useState(false);
+  const [allowedAppsList, setAllowedAppsList] = useState<PhoneAllowedApp[]>(() => {
+    try {
+      const raw = localStorage.getItem('varsity_phone_allowed_apps_v2');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return [];
+  });
 
-  // Anti-Distraction Lock
+  // Anti-Distraction Lock & Penalty Tracking
   const [focusLockActive, setFocusLockActive] = useState(true);
   const [showDistractionWarning, setShowDistractionWarning] = useState(false);
   const [distractionCount, setDistractionCount] = useState(0);
+  const [lastPenaltySec, setLastPenaltySec] = useState(0);
+  const exitTimestampRef = useRef<number | null>(null);
+  const isTemporaryAllowedExitRef = useRef<boolean>(false);
+
+  // Dynamic Motivation Quote
+  const [quoteIndex, setQuoteIndex] = useState(0);
+
+  // Hidden Video & Canvas for Picture-in-Picture (PiP) Floating Widget
+  const pipVideoRef = useRef<HTMLVideoElement | null>(null);
+  const pipCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isPipActive, setIsPipActive] = useState(false);
 
   // Stored Study Sessions
   const [sessions, setSessions] = useState<StudySession[]>(() => loadStudySessions());
+
+  // Haptic feedback helper
+  const triggerHaptic = (ms = 20) => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate(ms);
+      } catch {}
+    }
+  };
 
   // Broadcast remaining time to parent
   useEffect(() => {
@@ -147,6 +193,46 @@ export function StudyTimerHub({
       selectedSubject
     );
   }, [isRunning, secondsLeft, stopwatchSeconds, mode, selectedSubject, onActiveTimerChange]);
+
+  // Screen Wake Lock API Controller (keeps phone screen on while studying!)
+  useEffect(() => {
+    if (!isRunning) {
+      if (wakeLockSentinelRef.current) {
+        wakeLockSentinelRef.current.release().catch(() => {});
+        wakeLockSentinelRef.current = null;
+        setWakeLockActive(false);
+      }
+      return;
+    }
+
+    let isSubscribed = true;
+    const requestWakeLock = async () => {
+      if ('wakeLock' in navigator) {
+        try {
+          const sentinel = await (navigator as any).wakeLock.request('screen');
+          if (isSubscribed) {
+            wakeLockSentinelRef.current = sentinel;
+            setWakeLockActive(true);
+            sentinel.addEventListener('release', () => {
+              if (isSubscribed) setWakeLockActive(false);
+            });
+          }
+        } catch (err) {
+          console.warn('Wake Lock request error:', err);
+        }
+      }
+    };
+
+    requestWakeLock();
+    return () => {
+      isSubscribed = false;
+      if (wakeLockSentinelRef.current) {
+        wakeLockSentinelRef.current.release().catch(() => {});
+        wakeLockSentinelRef.current = null;
+        setWakeLockActive(false);
+      }
+    };
+  }, [isRunning]);
 
   // Ambient Sound Controller
   useEffect(() => {
@@ -160,13 +246,51 @@ export function StudyTimerHub({
     };
   }, [isRunning, ambientSound, ambientVolume]);
 
-  // Anti-Distraction Tab Switch & Blur Detector
+  // Real Distraction & Tab Exit Detection with Aura Penalty & Native Alert
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && isRunning && focusLockActive) {
-        playWarningAlertSound(true);
-        setShowDistractionWarning(true);
-        setDistractionCount((prev) => prev + 1);
+      if (document.hidden) {
+        if (isRunning && focusLockActive) {
+          if (isTemporaryAllowedExitRef.current) {
+            // User went to an approved study app; suppress penalty
+            isTemporaryAllowedExitRef.current = false;
+            return;
+          }
+
+          exitTimestampRef.current = Date.now();
+
+          // 1. Immediate Native Phone Notification on Notification Bar / Lockscreen
+          sendPhoneNotification({
+            title: '🚨 ফোকাস ভঙ্গ! দ্রুত টেবিলে আসো!',
+            body: `তোমার ${selectedSubject} ফোকাস টাইমার কিন্তু চলছে! এখনই না ফিরলে AURA জরিমানা কাটা হবে!`,
+            mood: 'panic',
+          });
+
+          // 2. Alarm sound & Phone vibration
+          playWarningAlertSound(true);
+          triggerHaptic(400);
+        }
+      } else {
+        // User returned to the app!
+        if (exitTimestampRef.current && isRunning && focusLockActive) {
+          const awayDurationMs = Date.now() - exitTimestampRef.current;
+          const awaySec = Math.round(awayDurationMs / 1000);
+          exitTimestampRef.current = null;
+
+          if (awaySec >= 5) {
+            // REAL PENALTY: Deduct -25 AURA from their squad progress!
+            const penaltyAura = -25;
+            setLastPenaltySec(awaySec);
+            setDistractionCount((prev) => prev + 1);
+            setShowDistractionWarning(true);
+
+            playWarningAlertSound(true);
+            triggerHaptic(300);
+
+            // Deduct from parent database / squad leaderboard
+            onSessionCompleteAura?.(penaltyAura);
+          }
+        }
       }
     };
 
@@ -174,7 +298,7 @@ export function StudyTimerHub({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isRunning, focusLockActive]);
+  }, [isRunning, focusLockActive, selectedSubject, onSessionCompleteAura]);
 
   // Format seconds to English digits HH:MM:SS or MM:SS
   const formatTimeEnglish = (totalSec: number, showHoursAlways = false) => {
@@ -188,13 +312,85 @@ export function StudyTimerHub({
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
+  // Picture-in-Picture (PiP) Floating Widget Renderer
+  const updatePipCanvas = useCallback(() => {
+    const canvas = pipCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Dark sleek background
+    ctx.fillStyle = '#0F172A';
+    ctx.fillRect(0, 0, w, h);
+
+    // Cyan/Blue header bar
+    ctx.fillStyle = '#2563EB';
+    ctx.fillRect(0, 0, w, 8);
+
+    // Subject
+    ctx.fillStyle = '#94A3B8';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`⚡ ${selectedSubject.slice(0, 18)}`, w / 2, 38);
+
+    // Time display
+    const timeText =
+      mode === 'pomodoro'
+        ? formatTimeEnglish(secondsLeft)
+        : formatTimeEnglish(stopwatchSeconds);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = '900 48px monospace';
+    ctx.fillText(timeText, w / 2, 94);
+
+    // Status footer
+    ctx.fillStyle = isRunning ? '#10B981' : '#F59E0B';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(
+      isRunning ? '● ফোকাস চলছে · কিরা সাথে আছে' : '⏸ বিরতি',
+      w / 2,
+      130
+    );
+  }, [selectedSubject, mode, secondsLeft, stopwatchSeconds, isRunning]);
+
+  useEffect(() => {
+    updatePipCanvas();
+  }, [updatePipCanvas]);
+
+  // Toggle Picture-in-Picture Floating Mode
+  const handleTogglePip = async () => {
+    triggerHaptic(25);
+    const video = pipVideoRef.current;
+    const canvas = pipCanvasRef.current;
+    if (!video || !canvas) return;
+
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+        setIsPipActive(false);
+      } else {
+        updatePipCanvas();
+        if (!video.srcObject) {
+          const stream = (canvas as any).captureStream(10);
+          video.srcObject = stream;
+        }
+        await video.play();
+        await video.requestPictureInPicture();
+        setIsPipActive(true);
+      }
+    } catch (err) {
+      console.warn('PiP request error:', err);
+    }
+  };
+
   // Handle Session Completion
   const handleCompleteSession = useCallback(
     (studiedMinutes: number, studiedSeconds: number) => {
       if (studiedSeconds < 30) return;
 
       const effectiveMinutes = Math.max(1, studiedMinutes);
-      // Study awards 1 Aura per minute studied + 20 Aura pomodoro completion bonus
       const earnedAura = effectiveMinutes + 20;
 
       const newSession: StudySession = {
@@ -247,8 +443,9 @@ export function StudyTimerHub({
     return () => clearInterval(interval);
   }, [isRunning, mode, activePreset.minutes, handleCompleteSession]);
 
-  // Handle Play / Pause Toggle
+  // Handle Play / Pause Toggle with Haptics
   const handleTogglePlay = () => {
+    triggerHaptic(30);
     if (!isRunning) {
       sessionStartTimeRef.current = Date.now();
       setIsRunning(true);
@@ -257,8 +454,9 @@ export function StudyTimerHub({
     }
   };
 
-  // Handle Reset
+  // Handle Reset with Haptics
   const handleReset = () => {
+    triggerHaptic(20);
     setIsRunning(false);
     if (mode === 'pomodoro') {
       setSecondsLeft(activePreset.minutes * 60);
@@ -273,6 +471,7 @@ export function StudyTimerHub({
 
   // Record a Lap in Stopwatch Mode
   const recordLap = () => {
+    triggerHaptic(15);
     if (stopwatchSeconds === 0) return;
     const lastLapTime = stopwatchLaps.length > 0 ? stopwatchLaps[0].timeSec : 0;
     const splitSec = stopwatchSeconds - lastLapTime;
@@ -287,6 +486,7 @@ export function StudyTimerHub({
 
   // Select Preset Handler
   const handleSelectPreset = (p: TimerPreset) => {
+    triggerHaptic(15);
     setSelectedPresetId(p.id);
     setIsRunning(false);
     if (p.mode === 'stopwatch') {
@@ -298,6 +498,11 @@ export function StudyTimerHub({
       setPhase(p.phase || 'focus');
       setSecondsLeft(p.minutes * 60);
     }
+  };
+
+  // Launch Allowed App Without Penalty
+  const handleLaunchAllowedApp = (app: PhoneAllowedApp) => {
+    isTemporaryAllowedExitRef.current = true;
   };
 
   // Delete session handler
@@ -317,122 +522,146 @@ export function StudyTimerHub({
     mode === 'pomodoro' ? totalDurationSec - secondsLeft : stopwatchSeconds;
   const progressRatio = Math.min(1, Math.max(0, currentElapsedSec / totalDurationSec));
 
-  const dialSize = 310;
+  const dialSize = 290;
   const strokeWidth = 14;
-  const radius = (dialSize - strokeWidth - 16) / 2;
+  const radius = (dialSize - strokeWidth - 14) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - progressRatio);
+
+  // Position of Glowing Orb Dot on Tip of Progress Arc
+  const currentAngle = progressRatio * 2 * Math.PI - Math.PI / 2;
+  const orbX = dialSize / 2 + radius * Math.cos(currentAngle);
+  const orbY = dialSize / 2 + radius * Math.sin(currentAngle);
 
   const displayClockString =
     mode === 'pomodoro'
       ? formatTimeEnglish(secondsLeft)
       : formatTimeEnglish(stopwatchSeconds);
 
+  // Filter allowed phone apps for quick bar
+  const activeAllowedPhoneApps = allowedAppsList.filter((a) => a.isAllowed);
+
   return (
     <div
-      className={`space-y-5 ${
+      className={`space-y-4 sm:space-y-5 ${
         isZenMode
-          ? 'fixed inset-0 z-50 bg-slate-950 text-slate-100 p-6 sm:p-10 flex flex-col justify-between overflow-y-auto select-none'
+          ? 'fixed inset-0 z-50 bg-slate-950 text-slate-100 p-4 sm:p-8 flex flex-col justify-between overflow-y-auto select-none'
           : ''
       }`}
     >
-      {/* Zen Mode Header with Exit Button */}
+      {/* Hidden Canvas & Video for Floating Picture-in-Picture Widget */}
+      <div className="hidden" aria-hidden="true">
+        <canvas ref={pipCanvasRef} width={340} height={160} />
+        <video ref={pipVideoRef} muted playsInline />
+      </div>
+
+      {/* Zen Mode Header */}
       {isZenMode && (
-        <div className="flex items-center justify-between border-b border-indigo-500/20 pb-4">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between border-b border-indigo-500/20 pb-3">
+          <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
             <span className="text-xs font-black font-aura tracking-widest text-blue-400 uppercase">
-              ZEN FOCUS MODE · পূর্ণ মনোযোগ
+              ZEN FOCUS MODE · {selectedSubject}
             </span>
-            <span className="text-xs text-slate-400">· {selectedSubject}</span>
           </div>
           <button
             type="button"
             onClick={() => setIsZenMode(false)}
-            className="px-3.5 py-1.5 rounded-xl border border-blue-400/40 bg-blue-950/40 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 rounded-xl border border-blue-400/40 bg-blue-950/40 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Minimize2 className="w-3.5 h-3.5" />
-            <span>ফুলস্ক্রিন বন্ধ করুন</span>
+            <span>ফুলস্ক্রিন বন্ধ</span>
           </button>
         </div>
       )}
 
-      {/* Top Controls Bar: Tab Switcher & Today Summary */}
+      {/* Top Controls Bar */}
       {!isZenMode && (
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center justify-between gap-2.5 flex-wrap">
           {/* Dual Tab Switcher */}
           <div className="inline-flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 shadow-xs">
             <button
               type="button"
-              onClick={() => setHubTab('timer')}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              onClick={() => {
+                triggerHaptic(15);
+                setHubTab('timer');
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 hubTab === 'timer'
                   ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <TimerIcon className="w-4 h-4" />
+              <TimerIcon className="w-3.5 h-3.5" />
               <span>স্টাডি টাইমার</span>
             </button>
             <button
               type="button"
-              onClick={() => setHubTab('calendar')}
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              onClick={() => {
+                triggerHaptic(15);
+                setHubTab('calendar');
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 hubTab === 'calendar'
                   ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md'
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <CalendarIcon className="w-4 h-4" />
-              <span>স্টাডি ক্যালেন্ডার ও ইতিহাস</span>
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span>ক্যালেন্ডার ও লগ</span>
             </button>
           </div>
 
-          {/* Today's Quick Summary & Utility Buttons */}
-          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-            <div className="px-3.5 py-1.5 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs flex items-center gap-2">
-              <span className="text-slate-500 dark:text-slate-400">আজকের মোট পড়া:</span>
-              <span className="text-blue-600 dark:text-blue-400 font-mono-num font-black">
-                {formatDurationBangla(todayMinutes)}
-              </span>
-              {todayAura > 0 && (
-                <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[10px] font-black font-aura flex items-center gap-0.5">
-                  <Sparkles className="w-3 h-3" />
-                  +{todayAura} Aura
-                </span>
-              )}
-            </div>
+          {/* Quick Utility Tools Pill Bar */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            {/* Screen Wake Lock Indicator */}
+            {wakeLockActive && (
+              <div
+                className="px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[11px] font-bold flex items-center gap-1 shadow-xs animate-pulse"
+                title="পড়ার সময় ফোন স্ক্রিন অফ হবে না"
+              >
+                <Lightbulb className="w-3 h-3" />
+                <span className="hidden sm:inline">স্ক্রিন অন</span>
+              </div>
+            )}
 
-            {/* Allowed Apps Hub Trigger Button */}
+            {/* Floating Picture-in-Picture (PiP) Button */}
             <button
               type="button"
-              onClick={() => setShowAllowedApps(true)}
-              className="px-3 py-1.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-              title="অনুমোদিত স্টাডি টুলস ও ক্যালকুলেটর"
+              onClick={handleTogglePip}
+              className={`px-2.5 sm:px-3 py-1.5 rounded-2xl border transition-all flex items-center gap-1 text-xs font-bold cursor-pointer shadow-xs ${
+                isPipActive
+                  ? 'bg-blue-600 text-white border-blue-700 shadow-blue-500/20'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:border-blue-400'
+              }`}
+              title="ফোনের অন্য যেকোনো অ্যাপের ওপর ফ্লোটিং টাইমার উইজেট চালান"
+            >
+              <PictureInPicture2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">ফ্লোটিং উইজেট</span>
+            </button>
+
+            {/* Allowed Apps Manager Button */}
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic(15);
+                setShowAllowedApps(true);
+              }}
+              className="px-2.5 sm:px-3 py-1.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="অনুমোদিত অ্যাপস তালিকা ও ক্যালকুলেটর"
             >
               <Smartphone className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
               <span>অনুমোদিত অ্যাপস</span>
-            </button>
-
-            {/* Strict Focus Lock Pill */}
-            <button
-              type="button"
-              onClick={() => setFocusLockActive(!focusLockActive)}
-              className={`p-2 rounded-2xl border transition-all cursor-pointer ${
-                focusLockActive
-                  ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400'
-              }`}
-              title={focusLockActive ? 'স্ট্রিক্ট ফোকাস লক সক্রিয়' : 'লক নিষ্ক্রিয়'}
-            >
-              <ShieldCheck className="w-4 h-4" />
             </button>
 
             {/* Ambient Sound Menu */}
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setShowSoundMenu(!showSoundMenu)}
+                onClick={() => {
+                  triggerHaptic(10);
+                  setShowSoundMenu(!showSoundMenu);
+                }}
                 className={`p-2 rounded-2xl border transition-all cursor-pointer ${
                   ambientSound !== 'none'
                     ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-300 dark:border-blue-800 text-blue-600 dark:text-blue-400'
@@ -500,7 +729,10 @@ export function StudyTimerHub({
             {/* Zen Fullscreen Button */}
             <button
               type="button"
-              onClick={() => setIsZenMode(true)}
+              onClick={() => {
+                triggerHaptic(15);
+                setIsZenMode(true);
+              }}
               className="p-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer shadow-xs"
               title="ফুলস্ক্রিন জেন মোড"
             >
@@ -510,12 +742,12 @@ export function StudyTimerHub({
         </div>
       )}
 
-      {/* VIEW 1: COHESIVE OCEAN BLUE FOCUS TIMER */}
+      {/* VIEW 1: FLAGSHIP $50M FOCUS TIMER */}
       {hubTab === 'timer' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Timer Dial Card */}
-          <div className="lg:col-span-8 rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-[0_8px_24px_rgba(37,99,235,0.06)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35)] space-y-6 flex flex-col items-center relative overflow-hidden">
-            {/* Subtle Aurora Ambient Glow */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+          {/* Main Dial & Interaction Panel */}
+          <div className="lg:col-span-8 rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-8 shadow-[0_8px_30px_rgba(37,99,235,0.06)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.35)] space-y-5 flex flex-col items-center relative overflow-hidden">
+            {/* Ambient Aurora Glow */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-3xl"
@@ -525,7 +757,7 @@ export function StudyTimerHub({
               className="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-cyan-500/10 dark:bg-cyan-500/5 blur-3xl"
             />
 
-            {/* Horizontal Preset Chips Bar */}
+            {/* Preset Selector Carousel */}
             <div className="w-full flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 select-none">
               {PRESETS.map((p) => {
                 const isSelected = p.id === selectedPresetId;
@@ -534,7 +766,7 @@ export function StudyTimerHub({
                     key={p.id}
                     type="button"
                     onClick={() => handleSelectPreset(p)}
-                    className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                    className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                       isSelected
                         ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md shadow-blue-500/20'
                         : 'bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400'
@@ -551,19 +783,21 @@ export function StudyTimerHub({
                 );
               })}
 
-              {/* Custom Min Button */}
               <button
                 type="button"
-                onClick={() => setShowCustomModal(true)}
-                className="px-3 py-2 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                onClick={() => {
+                  triggerHaptic(15);
+                  setShowCustomModal(true);
+                }}
+                className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>কাস্টম</span>
               </button>
             </div>
 
-            {/* Subject Selector Pill Bar */}
-            <div className="flex items-center gap-1.5 flex-wrap justify-center pt-1">
+            {/* Subject Selector Chips */}
+            <div className="flex items-center gap-1.5 flex-wrap justify-center pt-0.5">
               <span className="text-xs font-bold text-slate-400 mr-1 flex items-center gap-1">
                 <BookOpen className="w-3.5 h-3.5 text-blue-500" />
                 <span>বিষয়:</span>
@@ -572,8 +806,11 @@ export function StudyTimerHub({
                 <button
                   key={s}
                   type="button"
-                  onClick={() => setSelectedSubject(s)}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  onClick={() => {
+                    triggerHaptic(10);
+                    setSelectedSubject(s);
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     selectedSubject === s
                       ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-400 shadow-xs'
                       : 'border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
@@ -584,16 +821,14 @@ export function StudyTimerHub({
               ))}
             </div>
 
-            {/* THE CIRCULAR FOCUS GAUGE */}
-            <div className="relative my-3 sm:my-5 flex items-center justify-center select-none">
-              {/* Outer Glowing Background Ring */}
+            {/* THE CIRCULAR FOCUS GAUGE WITH ORBITING GLOW HEAD */}
+            <div className="relative my-2 sm:my-4 flex items-center justify-center select-none">
+              {/* Outer Pulsing Ambient Ring */}
               <div
                 aria-hidden="true"
-                className={`absolute inset-4 rounded-full blur-2xl opacity-30 transition-all duration-700 ${
+                className={`absolute inset-3 rounded-full blur-2xl opacity-35 transition-all duration-700 ${
                   isRunning
-                    ? phase === 'focus'
-                      ? 'bg-gradient-to-tr from-blue-500 via-indigo-500 to-cyan-400'
-                      : 'bg-gradient-to-tr from-emerald-400 to-teal-500'
+                    ? 'bg-gradient-to-tr from-blue-500 via-indigo-500 to-cyan-400 animate-pulse'
                     : 'bg-slate-200 dark:bg-slate-800'
                 }`}
               />
@@ -616,7 +851,7 @@ export function StudyTimerHub({
                     cx={dialSize / 2}
                     cy={dialSize / 2}
                     r={radius}
-                    stroke="url(#oceanBlueTimerGradient)"
+                    stroke="url(#flagshipOceanGradient)"
                     strokeWidth={strokeWidth}
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
@@ -626,18 +861,29 @@ export function StudyTimerHub({
                   />
                 </g>
 
+                {/* Orbiting Glowing Head Dot */}
+                {isRunning && (
+                  <circle
+                    cx={orbX}
+                    cy={orbY}
+                    r={7}
+                    fill="#06B6D4"
+                    className="filter drop-shadow-[0_0_8px_rgba(6,182,212,0.9)] transition-all duration-500 ease-linear"
+                  />
+                )}
+
                 <defs>
-                  <linearGradient id="oceanBlueTimerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={phase === 'focus' ? '#2563EB' : '#10B981'} />
-                    <stop offset="50%" stopColor={phase === 'focus' ? '#4F46E5' : '#06B6D4'} />
-                    <stop offset="100%" stopColor={phase === 'focus' ? '#06B6D4' : '#3B82F6'} />
+                  <linearGradient id="flagshipOceanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#2563EB" />
+                    <stop offset="50%" stopColor="#4F46E5" />
+                    <stop offset="100%" stopColor="#06B6D4" />
                   </linearGradient>
                 </defs>
               </svg>
 
               {/* Digital Time Center Overlay */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 pointer-events-none">
-                {/* Status Badge */}
+                {/* Status Pill Badge */}
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-[11px] font-black tracking-widest font-mono uppercase text-slate-600 dark:text-slate-300 mb-1 shadow-xs">
                   <span
                     className={`w-2 h-2 rounded-full ${
@@ -650,7 +896,7 @@ export function StudyTimerHub({
                     {isRunning
                       ? mode === 'pomodoro'
                         ? phase === 'focus'
-                          ? 'FOCUS'
+                          ? 'FOCUSING'
                           : 'BREAK'
                         : 'RUNNING'
                       : 'PAUSED'}
@@ -658,26 +904,27 @@ export function StudyTimerHub({
                 </div>
 
                 {/* Big Clean English Digital Clock Digits */}
-                <div className="font-mono font-black text-5xl sm:text-6xl tracking-wider text-slate-900 dark:text-slate-50 drop-shadow-sm select-none tabular-nums my-1">
+                <div className="font-mono font-black text-6xl sm:text-7xl tracking-tight text-slate-900 dark:text-slate-50 drop-shadow-sm select-none tabular-nums my-1">
                   {displayClockString}
                 </div>
 
                 {/* Subject Subtitle Chip */}
-                <div className="mt-1 px-3 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/80 text-xs font-bold text-blue-700 dark:text-blue-300 max-w-[180px] truncate shadow-xs">
+                <div className="mt-1 px-3.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/80 text-xs font-bold text-blue-700 dark:text-blue-300 max-w-[190px] truncate shadow-xs">
                   {selectedSubject}
                 </div>
 
-                {/* Progress Percentage for Pomodoro */}
-                {mode === 'pomodoro' && (
-                  <div className="text-[11px] font-mono font-bold text-slate-400 dark:text-slate-500 mt-1">
-                    {Math.round(progressRatio * 100)}% COMPLETED
+                {/* Live Aura Accumulator Pill */}
+                {isRunning && (
+                  <div className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 animate-pulse">
+                    <Sparkles className="w-3 h-3" />
+                    <span>প্রতি মিনিটে +১ Aura অর্জিত হচ্ছে</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Action Buttons: Play/Pause, Reset, Lap, Finish */}
-            <div className="flex items-center gap-3 pt-2">
+            {/* DUOLINGO 3D TACTILE ACTION BUTTONS */}
+            <div className="flex items-center gap-3 pt-1">
               {/* Reset Button */}
               <button
                 type="button"
@@ -689,14 +936,14 @@ export function StudyTimerHub({
                 <RotateCcw className="w-5 h-5" />
               </button>
 
-              {/* Primary Play/Pause Button: Large Ocean Blue Gradient Pill */}
+              {/* Primary 3D Start/Pause Button with Bevel Depth */}
               <button
                 type="button"
                 onClick={handleTogglePlay}
-                className={`px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl text-white text-sm sm:text-base font-black transition-all shadow-lg active:scale-95 cursor-pointer flex items-center gap-2 select-none ${
+                className={`px-8 sm:px-12 py-3.5 sm:py-4 rounded-2xl text-white text-base font-black transition-all select-none cursor-pointer flex items-center gap-2 border-b-4 active:border-b-0 active:translate-y-1 ${
                   isRunning
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-orange-500/25'
-                    : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-blue-500/30'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 border-amber-700 shadow-lg shadow-orange-500/25'
+                    : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 border-blue-800 shadow-xl shadow-blue-500/30'
                 }`}
               >
                 {isRunning ? (
@@ -729,6 +976,7 @@ export function StudyTimerHub({
                 <button
                   type="button"
                   onClick={() => {
+                    triggerHaptic(25);
                     handleCompleteSession(Math.floor(stopwatchSeconds / 60), stopwatchSeconds);
                     setStopwatchSeconds(0);
                     setIsRunning(false);
@@ -739,6 +987,51 @@ export function StudyTimerHub({
                   <span>Finish & Save</span>
                 </button>
               )}
+            </div>
+
+            {/* Quick Allowed Apps Drawer Bar Directly on Timer Screen */}
+            <div className="w-full pt-3 border-t border-slate-100 dark:border-slate-800/80">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <Smartphone className="w-3.5 h-3.5 text-blue-500" />
+                  <span>অনুমোদিত স্টাডি টুলস ও অ্যাপস:</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic(10);
+                    setShowAllowedApps(true);
+                  }}
+                  className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                >
+                  <span>সব অ্যাপস ও ক্যালকুলেটর</span>
+                  <Sliders className="w-3 h-3" />
+                </button>
+              </div>
+
+              {/* Horizontal Allowed App Quick Launch Chips */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                {activeAllowedPhoneApps.slice(0, 5).map((app) => (
+                  <button
+                    key={app.id}
+                    type="button"
+                    onClick={() => {
+                      triggerHaptic(15);
+                      handleLaunchAllowedApp(app);
+                      if (app.urlScheme === '#inapp-calc') {
+                        setShowAllowedApps(true);
+                      } else if (app.urlScheme.startsWith('http')) {
+                        window.open(app.urlScheme, '_blank');
+                      }
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 hover:border-blue-400 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-xs active:scale-95"
+                  >
+                    <span>{app.icon}</span>
+                    <span className="truncate max-w-[110px]">{app.name}</span>
+                    <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Stopwatch Laps Record View */}
@@ -767,8 +1060,8 @@ export function StudyTimerHub({
             )}
           </div>
 
-          {/* Right Column: Kira Mascot Encouragement & Daily Stats */}
-          <div className="lg:col-span-4 space-y-5">
+          {/* Right Column: Kira Mascot & Daily Live Progress */}
+          <div className="lg:col-span-4 space-y-4 sm:space-y-5">
             {/* Mascot Kira Companion Speech Card */}
             <div className="rounded-3xl border border-blue-200/90 dark:border-blue-900/60 bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/40 p-5 shadow-sm space-y-3 relative overflow-hidden">
               <div className="flex items-center gap-3">
@@ -782,20 +1075,20 @@ export function StudyTimerHub({
                     স্টাডি বাডি কিরা (Kira)
                   </div>
                   <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {isRunning ? 'ফোকাস মোডে পাশে আছে' : 'টেবিলে অপেক্ষা করছে'}
+                    {isRunning ? 'ফোকাস মোডে নজর রাখছে 👀' : 'টেবিলে অপেক্ষা করছে'}
                   </div>
                 </div>
               </div>
 
               {/* Speech Bubble */}
-              <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-xs relative">
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-xs">
                 {isRunning ? (
                   <span>
                     &ldquo;মনোযোগ দিয়ে পড়া চালিয়ে যাও! প্রতিটি মিনিট তোমার জন্য <strong>+১ Aura</strong> আনছে এবং স্কোয়াডে র্যাংক বাড়াচ্ছে! 🚀&rdquo;
                   </span>
                 ) : distractionCount > 0 ? (
                   <span>
-                    &ldquo;উঁকি মেরে কিন্তু দেখতে পাচ্ছি! স্ক্রিন থেকে দূরে না গিয়ে তাড়াতাড়ি স্টাডি শুরু করো! 😼&rdquo;
+                    &ldquo;উঁকি মেরে কিন্তু দেখতে পাচ্ছি! স্ক্রিন থেকে দূরে না গিয়ে তাড়াতাড়ি টেবিলে ফিরে পড়ায় বসো! 😼&rdquo;
                   </span>
                 ) : (
                   <span>
@@ -842,7 +1135,7 @@ export function StudyTimerHub({
               <div className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-xs text-slate-600 dark:text-slate-300 space-y-1">
                 <div className="font-bold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
                   <Zap className="w-3.5 h-3.5" />
-                  <span>স্কোয়াডে লাইভ আপডেট:</span>
+                  <span>লাইভ স্কোয়াড সিঙ্ক:</span>
                 </div>
                 <div>
                   টাইমারে পড়া শেষ করলেই সরাসরি আপনার স্কোয়াড লিডারবোর্ডে সময় ও Aura রিওয়ার্ড যুক্ত হবে।
@@ -872,11 +1165,12 @@ export function StudyTimerHub({
         onClose={() => setShowAllowedApps(false)}
         activeSubject={selectedSubject}
         remainingTimeSec={mode === 'pomodoro' ? secondsLeft : undefined}
+        onLaunchAllowedApp={handleLaunchAllowedApp}
       />
 
-      {/* ANTI-DISTRACTION PENALTY ALERT MODAL */}
+      {/* REAL DISTRACTION PENALTY ALERT MODAL */}
       {showDistractionWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in">
           <div className="w-full max-w-sm rounded-3xl border-2 border-rose-500 bg-white dark:bg-slate-900 p-6 text-slate-900 dark:text-white shadow-2xl shadow-rose-950/40 text-center space-y-4">
             <div className="w-16 h-16 mx-auto rounded-full bg-rose-100 dark:bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center text-rose-600 dark:text-rose-400 animate-bounce">
               <ShieldAlert className="w-8 h-8" />
@@ -884,25 +1178,31 @@ export function StudyTimerHub({
 
             <div className="space-y-1">
               <h3 className="font-display text-lg font-black text-rose-600 dark:text-rose-400">
-                🚨 ফোকাস ভঙ্গ সতর্কবার্তা!
+                🚨 ফোকাস ভঙ্গ! AURA জরিমানা কাটা হয়েছে!
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-300 font-bangla">
-                পড়ার সেশন চলাকালীন অন্য কোনো ব্রাউজার ট্যাব বা অ্যাপে যাওয়া নিষিদ্ধ!
+                অনুমোদিত স্টাডি অ্যাপ ছাড়া পড়ার সেশন ছেড়ে অন্য অ্যাপে যাওয়া নিষেধ!
               </p>
             </div>
 
-            <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 space-y-1">
-              <div className="font-bold">কিরা রেগে গেছে! 😼🔥</div>
-              <div>&ldquo;ফেসবুক বা রিলস স্ক্রল করা বন্ধ করে দ্রুত পড়ার টেবিলে ফিরো!&rdquo;</div>
-            </div>
-
-            <div className="text-[11px] font-mono text-slate-500">
-              ফোকাস লঙ্ঘন সংখ্যা: <strong className="text-rose-600 dark:text-rose-400 font-bold">{distractionCount}</strong> বার
+            <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 space-y-1">
+              <div className="font-bold text-sm">
+                তুমি {lastPenaltySec} সেকেন্ড পড়ার বাইরে ছিলে!
+              </div>
+              <div className="font-mono font-black text-rose-600 dark:text-rose-400 text-base">
+                -25 AURA পেনাল্টি কাটা হয়েছে!
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+                স্কোয়াড লিডারবোর্ডে আপনার অবস্থান নিচে নেমে গেছে। অবিলম্বে মনোযোগ ফিরিয়ে আনুন!
+              </div>
             </div>
 
             <button
               type="button"
-              onClick={() => setShowDistractionWarning(false)}
+              onClick={() => {
+                triggerHaptic(20);
+                setShowDistractionWarning(false);
+              }}
               className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm shadow-lg shadow-blue-500/25 cursor-pointer active:scale-95 transition-all"
             >
               পড়ায় ফিরে যাচ্ছি (আমি টেবিলে আছি)
@@ -943,6 +1243,7 @@ export function StudyTimerHub({
               <button
                 type="button"
                 onClick={() => {
+                  triggerHaptic(15);
                   setSecondsLeft(customMinInput * 60);
                   setShowCustomModal(false);
                 }}

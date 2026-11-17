@@ -1542,7 +1542,11 @@ export default function App() {
                   currentUid={user.uid}
                   userDisplayName={displayName}
                   onSessionCompleteAura={async (aura) => {
-                    showXpToast(`+${aura} AURA অর্জিত!`);
+                    if (aura >= 0) {
+                      showXpToast(`+${aura} AURA অর্জিত! ⚡`);
+                    } else {
+                      showXpToast(`${aura} AURA পেনাল্টি কাটা হয়েছে! ⚠️`);
+                    }
                     await persistProgress(myRoutine, mySyllabus);
                   }}
                   onActiveTimerChange={(active, sec, subj) => {

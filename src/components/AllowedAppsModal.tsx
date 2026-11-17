@@ -2,85 +2,91 @@ import { useState, useEffect } from 'react';
 import {
   X,
   Calculator,
-  BookOpen,
-  FileText,
-  Search,
   ExternalLink,
   Plus,
   Trash2,
   CheckCircle2,
-  Sparkles,
   ShieldCheck,
+  Smartphone,
+  RotateCcw,
+  Check,
 } from 'lucide-react';
 
-interface CustomAllowedApp {
+export interface PhoneAllowedApp {
   id: string;
   name: string;
-  url: string;
-  icon?: string;
+  category: string;
+  icon: string;
+  urlScheme: string; // URL or deep link
+  isAllowed: boolean;
+  isCustom?: boolean;
 }
 
-const DEFAULT_ALLOWED_LINKS: CustomAllowedApp[] = [
+const DEFAULT_PHONE_APPS: PhoneAllowedApp[] = [
   {
-    id: 'desmos',
-    name: 'Desmos গ্রাফিং ক্যালকুলেটর',
-    url: 'https://www.desmos.com/calculator',
-    icon: '📊',
+    id: 'calculator',
+    name: 'ক্যালকুলেটর (Calculator)',
+    category: 'ম্যাথ ও বিজ্ঞান',
+    icon: '🧮',
+    urlScheme: '#inapp-calc',
+    isAllowed: true,
   },
   {
-    id: 'wikipedia',
-    name: 'উইকিপিডিয়া স্টাডি আর্টিকেলে',
-    url: 'https://bn.wikipedia.org',
-    icon: '🌐',
+    id: 'youtube',
+    name: 'YouTube (লেকচার ও ক্লাস)',
+    category: 'স্টাডি ভিডিও',
+    icon: '🔴',
+    urlScheme: 'https://youtube.com',
+    isAllowed: true,
   },
   {
-    id: 'google-drive',
-    name: 'গুগল ড্রাইভ স্টাডি নোটস',
-    url: 'https://drive.google.com',
+    id: 'gdrive',
+    name: 'গুগল ড্রাইভ ও PDF নোটস',
+    category: 'হ্যান্ডনোট ও ফাইল',
     icon: '📁',
-  },
-];
-
-const FORMULA_CHEAT_SHEET = [
-  {
-    category: 'পদার্থবিজ্ঞান',
-    items: [
-      { name: 'গতিবিদ্যা', formula: 'v = u + at | s = ut + ½at² | v² = u² + 2as' },
-      { name: 'কাজ-শক্তি', formula: 'W = F·s·cosθ | E_k = ½mv² | E_p = mgh' },
-      { name: 'মহাকর্ষ', formula: 'F = G(m₁m₂)/r² | g = GM/R² | v_e = √(2gR)' },
-      { name: 'তরঙ্গ ও শব্দ', formula: 'v = fλ | T = 1/f | I ∝ A²' },
-      { name: 'তড়িৎ', formula: 'V = IR | P = VI = I²R | C = Q/V' },
-    ],
+    urlScheme: 'https://drive.google.com',
+    isAllowed: true,
   },
   {
-    category: 'উচ্চতর গণিত',
-    items: [
-      { name: 'ত্রিকোণমিতি', formula: 'sin²θ + cos²θ = 1 | sin(A±B) = sinA·cosB ± cosA·sinB' },
-      { name: 'ডিফারেন্সিয়েশন', formula: 'd/dx(xⁿ) = n·xⁿ⁻¹ | d/dx(sin x) = cos x | d/dx(eˣ) = eˣ' },
-      { name: 'ইন্টিগ্রেশন', formula: '∫ xⁿ dx = (xⁿ⁺¹)/(n+1) | ∫ 1/x dx = ln|x|' },
-      { name: 'কনিক্স', formula: 'বৃত্ত: x² + y² = r² | পরাবৃত্ত: y² = 4ax' },
-    ],
+    id: 'chrome',
+    name: 'গুগল ক্রোম / ব্রাউজার',
+    category: 'তথ্য অনুসন্ধান',
+    icon: '🌐',
+    urlScheme: 'https://google.com',
+    isAllowed: true,
   },
   {
-    category: 'রসায়ন ধ্রুবক',
-    items: [
-      { name: 'গ্যাস ধ্রুবক (R)', formula: 'R = 8.314 J·mol⁻¹·K⁻¹ | 0.0821 L·atm·mol⁻¹·K⁻¹' },
-      { name: 'অ্যাভোগাড্রো সংখ্যা', formula: 'N_A = 6.022 × 10²³ mol⁻¹' },
-      { name: 'প্ল্যাঙ্ক ধ্রুবক', formula: 'h = 6.626 × 10⁻³⁴ J·s' },
-      { name: 'আদর্শ গ্যাস', formula: 'PV = nRT | P₁V₁/T₁ = P₂V₂/T₂' },
-    ],
+    id: 'notes',
+    name: 'নোটস / Keep Notes',
+    category: 'নোট লেখা',
+    icon: '📝',
+    urlScheme: 'https://keep.google.com',
+    isAllowed: true,
   },
-];
-
-const VOCAB_DATABASE = [
-  { word: 'Ubiquitous', meaning: 'সর্বব্যাপী, যা সব জায়গায় পাওয়া যায়', syn: 'Omnipresent, Pervasive' },
-  { word: 'Equilibrium', meaning: 'সাম্যাবস্থা, স্থিতাবস্থা', syn: 'Balance, Stability, Poise' },
-  { word: 'Momentum', meaning: 'ভরবেগ, গতিশক্তি বা কাজের প্রেরণা', syn: 'Impetus, Drive, Thrust' },
-  { word: 'Viscosity', meaning: 'সান্দ্রতা, তরলের অভ্যন্তরীণ ঘর্ষণ', syn: 'Thickness, Stickiness' },
-  { word: 'Resonance', meaning: 'অনুনাদ, কম্পাঙ্কের সামঞ্জস্যে বিস্তার বৃদ্ধি', syn: 'Echo, Reverberation' },
-  { word: 'Pragmatic', meaning: 'বাস্তবধর্মী, প্রায়োগিক', syn: 'Practical, Realistic' },
-  { word: 'Proactive', meaning: 'আগাম প্রস্তুতিমূলক, অগ্রবর্তী', syn: 'Forward-looking, Dynamic' },
-  { word: 'Dormant', meaning: 'সুপ্ত, নিষ্ক্রিয় অবস্থায় থাকা', syn: 'Inactive, Latent, Sleeping' },
+  {
+    id: 'telegram',
+    name: 'টেলিগ্রাম স্টাডি গ্রুপ',
+    category: 'কোচিং চ্যানেল',
+    icon: '💬',
+    urlScheme: 'https://web.telegram.org',
+    isAllowed: false,
+  },
+  {
+    id: 'zoom',
+    name: 'Zoom / Google Meet',
+    category: 'অনলাইন লাইভ ক্লাস',
+    icon: '💻',
+    urlScheme: 'https://meet.google.com',
+    isAllowed: true,
+  },
+  {
+    id: 'dictionary',
+    name: 'অভিধান ও ডিকশনারি',
+    category: 'শব্দার্থ ও ভোকাব',
+    icon: '📚',
+    urlScheme: 'https://bn.wikipedia.org',
+    isAllowed: true,
+  },
 ];
 
 interface AllowedAppsModalProps {
@@ -88,6 +94,7 @@ interface AllowedAppsModalProps {
   onClose: () => void;
   activeSubject?: string;
   remainingTimeSec?: number;
+  onLaunchAllowedApp?: (app: PhoneAllowedApp) => void;
 }
 
 export function AllowedAppsModal({
@@ -95,43 +102,67 @@ export function AllowedAppsModal({
   onClose,
   activeSubject = 'ফোকাস সেশন',
   remainingTimeSec,
+  onLaunchAllowedApp,
 }: AllowedAppsModalProps) {
-  const [activeTab, setActiveTab] = useState<'calc' | 'notes' | 'formulas' | 'vocab' | 'apps'>('calc');
+  const [activeTab, setActiveTab] = useState<'apps' | 'calc'>('apps');
+
+  // Phone Allowed Apps State
+  const [phoneApps, setPhoneApps] = useState<PhoneAllowedApp[]>(() => {
+    try {
+      const raw = localStorage.getItem('varsity_phone_allowed_apps_v2');
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return DEFAULT_PHONE_APPS;
+  });
+
+  const [newAppName, setNewAppName] = useState('');
+  const [newAppUrl, setNewAppUrl] = useState('');
+  const [showAddForm, setShowAddForm] = useState(false);
 
   // Scientific Calculator State
   const [calcDisplay, setCalcDisplay] = useState('0');
   const [calcSub, setCalcSub] = useState('');
   const [calcHistory, setCalcHistory] = useState<string[]>([]);
 
-  // Scratchpad State
-  const [scratchText, setScratchText] = useState(() => {
-    return localStorage.getItem('varsity_scratch_pad_v1') || '';
-  });
-
-  // Vocab Search
-  const [vocabQuery, setVocabQuery] = useState('');
-
-  // Custom allowed links
-  const [customApps, setCustomApps] = useState<CustomAllowedApp[]>(() => {
-    try {
-      const raw = localStorage.getItem('varsity_custom_allowed_apps_v1');
-      if (raw) return JSON.parse(raw);
-    } catch {}
-    return DEFAULT_ALLOWED_LINKS;
-  });
-  const [newAppName, setNewAppName] = useState('');
-  const [newAppUrl, setNewAppUrl] = useState('');
-  const [showAddApp, setShowAddApp] = useState(false);
-
   useEffect(() => {
-    localStorage.setItem('varsity_scratch_pad_v1', scratchText);
-  }, [scratchText]);
-
-  useEffect(() => {
-    localStorage.setItem('varsity_custom_allowed_apps_v1', JSON.stringify(customApps));
-  }, [customApps]);
+    localStorage.setItem('varsity_phone_allowed_apps_v2', JSON.stringify(phoneApps));
+  }, [phoneApps]);
 
   if (!isOpen) return null;
+
+  // Toggle app permission
+  const handleToggleApp = (id: string) => {
+    setPhoneApps((prev) =>
+      prev.map((app) => (app.id === id ? { ...app, isAllowed: !app.isAllowed } : app))
+    );
+  };
+
+  // Add custom app
+  const handleAddCustomApp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAppName.trim()) return;
+    let url = newAppUrl.trim();
+    if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    const newEntry: PhoneAllowedApp = {
+      id: `custom_${Date.now()}`,
+      name: newAppName.trim(),
+      category: 'কাস্টম অ্যাপ',
+      icon: '📱',
+      urlScheme: url || 'https://google.com',
+      isAllowed: true,
+      isCustom: true,
+    };
+    setPhoneApps((prev) => [newEntry, ...prev]);
+    setNewAppName('');
+    setNewAppUrl('');
+    setShowAddForm(false);
+  };
+
+  const handleDeleteCustomApp = (id: string) => {
+    setPhoneApps((prev) => prev.filter((a) => a.id !== id));
+  };
 
   // Calculator Functions
   const handleCalcInput = (char: string) => {
@@ -141,9 +172,11 @@ export function AllowedAppsModal({
     });
   };
 
-  const handleCalcClear = () => {
+  // COMPLETE CLEAR ALL - "সব মোছার বাটন"
+  const handleCalcAllClear = () => {
     setCalcDisplay('0');
     setCalcSub('');
+    setCalcHistory([]);
   };
 
   const handleCalcDelete = () => {
@@ -187,35 +220,19 @@ export function AllowedAppsModal({
     }
   };
 
-  const handleAddApp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAppName.trim() || !newAppUrl.trim()) return;
-    let url = newAppUrl.trim();
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = 'https://' + url;
+  const handleLaunch = (app: PhoneAllowedApp) => {
+    if (app.urlScheme === '#inapp-calc') {
+      setActiveTab('calc');
+      return;
     }
-    const newEntry: CustomAllowedApp = {
-      id: `custom_${Date.now()}`,
-      name: newAppName.trim(),
-      url,
-      icon: '🔗',
-    };
-    setCustomApps((prev) => [newEntry, ...prev]);
-    setNewAppName('');
-    setNewAppUrl('');
-    setShowAddApp(false);
+    onLaunchAllowedApp?.(app);
+    if (app.urlScheme.startsWith('http')) {
+      window.open(app.urlScheme, '_blank');
+    }
+    onClose();
   };
 
-  const handleDeleteApp = (id: string) => {
-    setCustomApps((prev) => prev.filter((a) => a.id !== id));
-  };
-
-  const filteredVocab = VOCAB_DATABASE.filter(
-    (v) =>
-      v.word.toLowerCase().includes(vocabQuery.toLowerCase()) ||
-      v.meaning.includes(vocabQuery) ||
-      v.syn.toLowerCase().includes(vocabQuery.toLowerCase())
-  );
+  const allowedCount = phoneApps.filter((a) => a.isAllowed).length;
 
   const formatRemaining = (sec?: number) => {
     if (!sec || sec <= 0) return '';
@@ -226,35 +243,35 @@ export function AllowedAppsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/75 backdrop-blur-xs animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl overflow-hidden"
+        className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl overflow-hidden"
       >
-        {/* Top Header Bar */}
+        {/* Top Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-display text-sm sm:text-base font-bold text-slate-900 dark:text-slate-50">
-                  অনুমোদিত স্টাডি টুলস হাব
+                  অনুমোদিত অ্যাপস ও টুলস
                 </h3>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-[10px] font-black tracking-wide border border-emerald-300 dark:border-emerald-800">
-                  ফোকাস সুরক্ষিত
+                  {allowedCount}টি অ্যাপ সক্রিয়
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                এই টুলস ব্যবহারে ফোকাস টাইমার সেশন বিঘ্নিত হবে না
+                পড়ার সময় এই অ্যাপগুলো ব্যবহারে Aura জরিমানা কাটা হবে না
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {remainingTimeSec !== undefined && remainingTimeSec > 0 && (
               <div className="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
@@ -271,77 +288,173 @@ export function AllowedAppsModal({
           </div>
         </div>
 
-        {/* Navigation Tabs Bar */}
-        <div className="flex items-center gap-1 px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 overflow-x-auto shrink-0 select-none">
-          <button
-            type="button"
-            onClick={() => setActiveTab('calc')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-              activeTab === 'calc'
-                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Calculator className="w-3.5 h-3.5" />
-            <span>সায়েন্টিফিক ক্যালকুলেটর</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('notes')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-              activeTab === 'notes'
-                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>রাফ স্ক্র্যাচপ্যাড</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('formulas')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-              activeTab === 'formulas'
-                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>সূত্রাবলি (Formulas)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab('vocab')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
-              activeTab === 'vocab'
-                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>ডিকশনারি ও শব্দার্থ</span>
-          </button>
-
+        {/* Dual Tab: Allowed Phone Apps vs In-App Scientific Calculator */}
+        <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab('apps')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+            className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'apps'
                 ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>অনুমোদিত ওয়েবসাইট ({customApps.length})</span>
+            <Smartphone className="w-4 h-4" />
+            <span>ফোনের অনুমোদিত অ্যাপস ({allowedCount})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('calc')}
+            className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              activeTab === 'calc'
+                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Calculator className="w-4 h-4" />
+            <span>সায়েন্টিফিক ক্যালকুলেটর</span>
           </button>
         </div>
 
-        {/* Tab Body Content Area */}
+        {/* Tab Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
-          {/* TAB 1: SCIENTIFIC CALCULATOR */}
+          {/* TAB 1: PHONE ALLOWED APPS WHITELIST */}
+          {activeTab === 'apps' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  পড়ার সময় ব্যবহারের জন্য অ্যাপ অনুমতি দিন:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>কাস্টম অ্যাপ যোগ</span>
+                </button>
+              </div>
+
+              {/* Add Custom App Form */}
+              {showAddForm && (
+                <form
+                  onSubmit={handleAddCustomApp}
+                  className="p-3.5 rounded-2xl bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-blue-900/60 space-y-2.5 animate-in fade-in"
+                >
+                  <div className="text-xs font-bold text-blue-700 dark:text-blue-300">
+                    নতুন অনুমোদিত অ্যাপ যোগ করুন
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={newAppName}
+                    onChange={(e) => setNewAppName(e.target.value)}
+                    placeholder="অ্যাপের নাম (যেমন: উদ্ভাস অ্যাপ / কলেজ পোর্টাল)"
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  />
+                  <input
+                    type="text"
+                    value={newAppUrl}
+                    onChange={(e) => setNewAppUrl(e.target.value)}
+                    placeholder="ওয়েবসাইট বা লিঙ্ক (ঐচ্ছিক)"
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
+                  />
+                  <div className="flex justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddForm(false)}
+                      className="px-3 py-1 rounded-xl text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                    >
+                      বাতিল
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm"
+                    >
+                      সেভ করুন
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* List of Phone Apps */}
+              <div className="space-y-2">
+                {phoneApps.map((app) => (
+                  <div
+                    key={app.id}
+                    className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                      app.isAllowed
+                        ? 'border-blue-200 dark:border-blue-900/70 bg-blue-50/40 dark:bg-blue-950/20'
+                        : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 opacity-60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-2xl">{app.icon}</span>
+                      <div className="min-w-0">
+                        <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate flex items-center gap-1.5">
+                          <span>{app.name}</span>
+                          {app.isAllowed ? (
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                              (অনুমোদিত)
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-rose-500">
+                              (লকড)
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {app.category}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Launch Button */}
+                      {app.isAllowed && (
+                        <button
+                          type="button"
+                          onClick={() => handleLaunch(app)}
+                          className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>চালান</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </button>
+                      )}
+
+                      {/* Permission Toggle Checkbox Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleApp(app.id)}
+                        className={`w-7 h-7 rounded-xl flex items-center justify-center border transition-all cursor-pointer ${
+                          app.isAllowed
+                            ? 'bg-emerald-500 border-emerald-600 text-white shadow-xs'
+                            : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-transparent'
+                        }`}
+                        title={app.isAllowed ? 'অনুমতি বাতিল করুন' : 'অনুমতি দিন'}
+                      >
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </button>
+
+                      {app.isCustom && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCustomApp(app.id)}
+                          className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
+                          title="মুছুন"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: IN-APP SCIENTIFIC CALCULATOR */}
           {activeTab === 'calc' && (
             <div className="max-w-md mx-auto space-y-3">
               {/* Screen */}
@@ -430,44 +543,39 @@ export function AllowedAppsModal({
                   )
                 </button>
 
-                {/* Main keypad row 1 */}
+                {/* PROMINENT "সব মুছুন" (ALL CLEAR - AC) BUTTON */}
                 <button
                   type="button"
-                  onClick={handleCalcClear}
-                  className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 text-rose-600 dark:text-rose-300 font-bold text-xs hover:bg-rose-200 cursor-pointer"
+                  onClick={handleCalcAllClear}
+                  className="col-span-2 p-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1"
                 >
-                  AC
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>সব মুছুন (AC)</span>
                 </button>
+
                 <button
                   type="button"
                   onClick={handleCalcDelete}
-                  className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 font-bold text-xs hover:bg-amber-200 cursor-pointer"
+                  className="p-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm shadow-sm transition-all active:scale-95 cursor-pointer"
                 >
                   DEL
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleCalcInput('%')}
-                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 cursor-pointer"
-                >
-                  %
-                </button>
-                <button
-                  type="button"
                   onClick={() => handleCalcInput('÷')}
-                  className="p-2.5 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-sm hover:bg-blue-200 cursor-pointer"
+                  className="p-3 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-base hover:bg-blue-200 cursor-pointer"
                 >
                   ÷
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('×')}
-                  className="p-2.5 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-sm hover:bg-blue-200 cursor-pointer"
+                  className="p-3 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-base hover:bg-blue-200 cursor-pointer"
                 >
                   ×
                 </button>
 
-                {/* Keypad numbers */}
+                {/* Number Keypad */}
                 {['7', '8', '9'].map((n) => (
                   <button
                     key={n}
@@ -481,14 +589,14 @@ export function AllowedAppsModal({
                 <button
                   type="button"
                   onClick={() => handleCalcInput('-')}
-                  className="p-3 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-sm hover:bg-blue-200 cursor-pointer"
+                  className="p-3 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-base hover:bg-blue-200 cursor-pointer"
                 >
                   -
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('+')}
-                  className="p-3 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-sm hover:bg-blue-200 cursor-pointer"
+                  className="p-3 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-base hover:bg-blue-200 cursor-pointer"
                 >
                   +
                 </button>
@@ -528,7 +636,7 @@ export function AllowedAppsModal({
                 <button
                   type="button"
                   onClick={handleCalcEvaluate}
-                  className="col-span-2 p-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-lg shadow-md cursor-pointer"
+                  className="col-span-2 p-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-lg shadow-md cursor-pointer active:scale-95"
                 >
                   =
                 </button>
@@ -550,206 +658,6 @@ export function AllowedAppsModal({
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* TAB 2: SCRATCHPAD */}
-          {activeTab === 'notes' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                <span className="font-bold flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-blue-500" />
-                  <span>দ্রুত রাফ ও নোটপ্যাড (অটো-সেভ হচ্ছে)</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setScratchText('')}
-                  className="text-slate-400 hover:text-rose-500 transition-colors text-[11px]"
-                >
-                  সব মুছুন
-                </button>
-              </div>
-              <textarea
-                value={scratchText}
-                onChange={(e) => setScratchText(e.target.value)}
-                placeholder="এখানে ম্যাথ রাফ, সূত্রের নোট বা গুরুত্বপূর্ণ পয়েন্ট লিখে রাখুন..."
-                className="w-full h-72 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-sm font-mono focus:border-blue-500 focus:outline-hidden resize-none"
-              />
-            </div>
-          )}
-
-          {/* TAB 3: FORMULA CHEAT SHEET */}
-          {activeTab === 'formulas' && (
-            <div className="space-y-4">
-              {FORMULA_CHEAT_SHEET.map((cat) => (
-                <div
-                  key={cat.category}
-                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2"
-                >
-                  <h4 className="text-xs font-black text-blue-600 dark:text-blue-400 font-display tracking-wider uppercase">
-                    {cat.category}
-                  </h4>
-                  <div className="space-y-1.5">
-                    {cat.items.map((item) => (
-                      <div
-                        key={item.name}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 p-2 rounded-xl bg-white dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800/60 text-xs"
-                      >
-                        <span className="font-bold text-slate-700 dark:text-slate-300 shrink-0">
-                          {item.name}:
-                        </span>
-                        <code className="font-mono text-indigo-600 dark:text-indigo-300 text-[11px] sm:text-xs">
-                          {item.formula}
-                        </code>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* TAB 4: VOCAB SEARCH */}
-          {activeTab === 'vocab' && (
-            <div className="space-y-3">
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={vocabQuery}
-                  onChange={(e) => setVocabQuery(e.target.value)}
-                  placeholder="ইংরেজি শব্দ বা অর্থ দিয়ে খুঁজুন..."
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-800 dark:text-slate-200 focus:border-blue-500 focus:outline-hidden"
-                />
-              </div>
-
-              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                {filteredVocab.map((v) => (
-                  <div
-                    key={v.word}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-black text-slate-900 dark:text-white text-sm tracking-wide font-display">
-                        {v.word}
-                      </span>
-                      <span className="text-[10px] text-blue-600 dark:text-cyan-400 font-mono font-bold">
-                        Admission Vocab
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-700 dark:text-slate-300 font-bangla">
-                      {v.meaning}
-                    </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                      <strong>সমার্থক:</strong> {v.syn}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 5: CUSTOM ALLOWED APPS & WEBSITES */}
-          {activeTab === 'apps' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  অনুমোদিত ওয়েবসাইটসমূহ নিরাপদ ট্যাবে ওপেন হবে:
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowAddApp(!showAddApp)}
-                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>নতুন লিঙ্ক যোগ করুন</span>
-                </button>
-              </div>
-
-              {/* Add form */}
-              {showAddApp && (
-                <form
-                  onSubmit={handleAddApp}
-                  className="p-3.5 rounded-2xl bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-blue-900/60 space-y-2.5 animate-in fade-in"
-                >
-                  <div className="text-xs font-bold text-blue-700 dark:text-blue-300">
-                    নতুন অনুমোদিত স্টাডি লিঙ্ক বা পোর্টাল যোগ করুন
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={newAppName}
-                    onChange={(e) => setNewAppName(e.target.value)}
-                    placeholder="নাম (যেমন: উদ্ভাস অনলাইন পোর্টাল / ঢাকা কলেজ)"
-                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
-                  />
-                  <input
-                    type="text"
-                    required
-                    value={newAppUrl}
-                    onChange={(e) => setNewAppUrl(e.target.value)}
-                    placeholder="URL (যেমন: online.udvash.com বা drive.google.com)"
-                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
-                  />
-                  <div className="flex justify-end gap-2 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => setShowAddApp(false)}
-                      className="px-3 py-1 rounded-xl text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white"
-                    >
-                      বাতিল
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm"
-                    >
-                      সেভ করুন
-                    </button>
-                  </div>
-                </form>
-              )}
-
-              {/* List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {customApps.map((app) => (
-                  <div
-                    key={app.id}
-                    className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 transition-all flex items-center justify-between gap-2"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="text-xl">{app.icon || '🔗'}</span>
-                      <div className="min-w-0">
-                        <div className="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">
-                          {app.name}
-                        </div>
-                        <div className="text-[10px] text-slate-500 truncate max-w-[170px]">
-                          {app.url}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <a
-                        href={app.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 text-xs font-bold transition-colors flex items-center gap-1"
-                      >
-                        <span>ওপেন</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteApp(app.id)}
-                        className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
-                        title="মুছুন"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
         </div>
