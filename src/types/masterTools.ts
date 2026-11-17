@@ -37,6 +37,7 @@ export interface UserTargetVarsityGoal {
   dreamSubject: string;
   targetRank: string;
   personalMotto: string;
+  customExamDate?: string; // YYYY-MM-DD
   updatedAt: string;
 }
 
