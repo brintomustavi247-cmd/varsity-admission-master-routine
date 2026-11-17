@@ -20,6 +20,10 @@ import type { TargetVarsityInfo, UserTargetVarsityGoal } from '../types/masterTo
 const GOAL_STORAGE_KEY = 'varsity_dream_target_v1';
 const CUSTOM_DATES_STORAGE_KEY = 'varsity_custom_dates_v1';
 
+function getDefaultMottoForVarsity(varsityName: string): string {
+  return `${varsityName} আমার রক্তে, কোনো ফাঁকিবাজি নয়!`;
+}
+
 function formatExamDateBangla(isoString: string): string {
   try {
     const d = new Date(`${isoString}T00:00:00`);
@@ -78,6 +82,22 @@ export function TargetVarsityRadar() {
     );
   }, [goal.varsityId]);
 
+  // Dynamic contextual motto matching the active university
+  const displayMotto = useMemo(() => {
+    if (!goal.personalMotto) {
+      return getDefaultMottoForVarsity(activeVarsity.name);
+    }
+    // If the motto is an auto-generated motto containing a university name, make sure it matches activeVarsity
+    if (goal.personalMotto.endsWith('আমার রক্তে, কোনো ফাঁকিবাজি নয়!')) {
+      return getDefaultMottoForVarsity(activeVarsity.name);
+    }
+    // If the motto is from a different university (e.g. DU while looking at RU), adapt to activeVarsity
+    if (activeVarsity.id !== 'du_ka' && goal.personalMotto.includes('ঢাকা বিশ্ববিদ্যালয়')) {
+      return getDefaultMottoForVarsity(activeVarsity.name);
+    }
+    return goal.personalMotto;
+  }, [goal.personalMotto, activeVarsity]);
+
   // Resolve effective exam date for the active varsity
   const effectiveDateISO = useMemo(() => {
     if (goal.customExamDate) return goal.customExamDate;
@@ -105,7 +125,7 @@ export function TargetVarsityRadar() {
     setSelectedId(goal.varsityId);
     setDreamSubInput(goal.dreamSubject);
     setTargetRankInput(goal.targetRank);
-    setMottoInput(goal.personalMotto);
+    setMottoInput(displayMotto);
     setExamDateInput(effectiveDateISO);
     setIsEditing(true);
   };
@@ -179,7 +199,7 @@ export function TargetVarsityRadar() {
               কাঙ্ক্ষিত বিষয়: <strong className="text-cyan-300 underline underline-offset-4">{goal.dreamSubject}</strong>
             </p>
             <p className="text-xs text-slate-400 italic">
-              &ldquo;{goal.personalMotto}&rdquo;
+              &ldquo;{displayMotto}&rdquo;
             </p>
           </div>
 
@@ -262,6 +282,13 @@ export function TargetVarsityRadar() {
                     const matching = TARGET_VARSITIES.find((v) => v.id === newId);
                     if (matching) {
                       setExamDateInput(customDatesMap[newId] || matching.targetDateISO);
+                      if (
+                        !mottoInput ||
+                        mottoInput.endsWith('আমার রক্তে, কোনো ফাঁকিবাজি নয়!') ||
+                        mottoInput.includes('বিশ্ববিদ্যালয়')
+                      ) {
+                        setMottoInput(getDefaultMottoForVarsity(matching.name));
+                      }
                     }
                   }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 cursor-pointer"
@@ -488,9 +515,20 @@ export function TargetVarsityRadar() {
                   <button
                     type="button"
                     onClick={() => {
+                      const isAutoMotto =
+                        !goal.personalMotto ||
+                        goal.personalMotto.endsWith('আমার রক্তে, কোনো ফাঁকিবাজি নয়!') ||
+                        goal.personalMotto.includes('ঢাকা বিশ্ববিদ্যালয়') ||
+                        goal.personalMotto.includes('বিশ্ববিদ্যালয়');
+
+                      const nextMotto = isAutoMotto
+                        ? getDefaultMottoForVarsity(v.name)
+                        : goal.personalMotto;
+
                       const updated: UserTargetVarsityGoal = {
                         ...goal,
                         varsityId: v.id,
+                        personalMotto: nextMotto,
                         customExamDate: customDatesMap[v.id] || undefined,
                         updatedAt: new Date().toISOString(),
                       };
