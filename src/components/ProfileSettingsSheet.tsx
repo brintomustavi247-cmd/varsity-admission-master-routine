@@ -14,6 +14,7 @@ import {
   Send,
   Sun,
   Trash2,
+  Trophy,
   Upload,
   Volume2,
   VolumeX,
@@ -35,6 +36,7 @@ import {
   type SavageNotification,
 } from '../data/savageNotifications';
 import { MascotCharacter } from './MascotCharacter';
+import { computeBadges } from '../data/achievementBadges';
 
 interface ProfileSettingsSheetProps {
   open: boolean;
@@ -285,6 +287,45 @@ export function ProfileSettingsSheet({
                   </div>
                 </div>
               </div>
+
+              {/* Badges Preview */}
+              {(() => {
+                const badges = computeBadges({
+                  daysDone: metrics.daysDone,
+                  streak: metrics.streak,
+                  xp: metrics.xp,
+                  chapsDone: metrics.chapsDone,
+                });
+                const unlocked = badges.filter((b) => b.unlocked);
+                return (
+                  <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 p-3 bg-slate-50/50 dark:bg-slate-900/40 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <span className="flex items-center gap-1.5">
+                        <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                        <span>অর্জিত ব্যাজ ও মেডেল</span>
+                      </span>
+                      <span className="font-mono text-amber-600 dark:text-amber-400 font-bold">
+                        {unlocked.length}/{badges.length} অর্জিত
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                      {badges.map((b) => (
+                        <div
+                          key={b.id}
+                          title={`${b.title}: ${b.description}`}
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0 border transition-all ${
+                            b.unlocked
+                              ? 'bg-amber-100 dark:bg-amber-950/70 border-amber-300 dark:border-amber-700 shadow-xs scale-100'
+                              : 'bg-slate-200/60 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700 opacity-40 grayscale'
+                          }`}
+                        >
+                          {b.icon}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Study Track Selector */}
               <div className="space-y-2">

@@ -70,6 +70,7 @@ import { SquadView } from './components/SquadView';
 import { StrategyView } from './components/StrategyView';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { KiraPermissionModal } from './components/KiraPermissionModal';
+import { KiraInteractiveModal } from './components/KiraInteractiveModal';
 import {
   checkAndSend1140Notification,
   checkAndSendDailyReminder,
@@ -200,6 +201,7 @@ export default function App() {
   >(null);
   const [forcePreviewReminder, setForcePreviewReminder] =
     useState<boolean>(false);
+  const [kiraModalOpen, setKiraModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const xpToastTimer = useRef<number | null>(null);
@@ -1521,7 +1523,17 @@ export default function App() {
                 />
               )}
 
-              {activeTab === 'strategy' && <StrategyView />}
+              {activeTab === 'strategy' && (
+                <StrategyView
+                  myRoutine={myRoutine}
+                  activeTrack={activeTrack}
+                  metrics={myMetrics}
+                  onNavigateToDay={(dayNum) => {
+                    setActiveTab('routine');
+                    setJumpToDayRequest({ day: dayNum, nonce: Date.now() });
+                  }}
+                />
+              )}
             </>
           )}
         </main>
@@ -1628,6 +1640,39 @@ export default function App() {
       {/* Irresistible Emotional Kira Notification Permission Dialog */}
       <KiraPermissionModal
         onPermissionGranted={() => setReminderEnabled(true)}
+      />
+
+      {/* Kira Floating Interactive Companion Button */}
+      <button
+        type="button"
+        onClick={() => {
+          if (navigator.vibrate) navigator.vibrate(15);
+          setKiraModalOpen(true);
+        }}
+        title="কিরা-কে কিছু বলুন"
+        aria-label="কিরা-কে কিছু বলুন"
+        className="fixed bottom-20 sm:bottom-6 right-3 sm:right-6 z-40 px-3 py-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white shadow-xl shadow-indigo-500/25 flex items-center gap-2 text-xs font-bold transition-all cursor-pointer border border-cyan-300/40 active:scale-95 group"
+      >
+        <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-white/40 bg-slate-900">
+          <img
+            src="/mascot/cyber-cat-smug.png"
+            alt="Kira Mascot"
+            className="w-full h-full object-cover group-hover:scale-115 transition-transform"
+          />
+        </div>
+        <span className="hidden sm:inline font-bold">কিরা-কে বলো</span>
+        <span className="flex h-2 w-2 relative">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-300" />
+        </span>
+      </button>
+
+      {/* Kira Interactive Talk Modal */}
+      <KiraInteractiveModal
+        isOpen={kiraModalOpen}
+        onClose={() => setKiraModalOpen(false)}
+        soundEnabled={soundEnabled}
+        displayName={displayName}
       />
 
 
