@@ -87,3 +87,33 @@ export function playMissionFanfare(enabled: boolean) {
     // Ignore audio context errors
   }
 }
+
+export function playWarningAlertSound(enabled = true) {
+  if (!enabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    // Dramatic two-tone alert buzzer (880Hz -> 440Hz)
+    const tones = [
+      { freq: 880, start: now, dur: 0.15 },
+      { freq: 587.33, start: now + 0.18, dur: 0.22 },
+      { freq: 880, start: now + 0.44, dur: 0.15 },
+    ];
+    tones.forEach((t) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(t.freq, t.start);
+      gain.gain.setValueAtTime(0.001, t.start);
+      gain.gain.linearRampToValueAtTime(0.08, t.start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t.start + t.dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t.start);
+      osc.stop(t.start + t.dur + 0.02);
+    });
+  } catch {
+    // Ignore audio errors
+  }
+}

@@ -72,7 +72,11 @@ import { StrategyView } from './components/StrategyView';
 import { StudyTimerHub } from './components/StudyTimerHub';
 import { PwaInstallBanner } from './components/PwaInstallBanner';
 import { KiraPermissionModal } from './components/KiraPermissionModal';
-import { loadStudySessions, saveStudySessions } from './lib/studyTimerStorage';
+import {
+  loadStudySessions,
+  saveStudySessions,
+  getTodayStudyMinutes,
+} from './lib/studyTimerStorage';
 import {
   checkAndSend1140Notification,
   checkAndSendDailyReminder,
@@ -499,6 +503,8 @@ export default function App() {
                 xp: Number(d.xp ?? 0),
                 streak: Number(d.streak ?? 0),
                 isPublicSquadMember: Boolean(d.isPublicSquadMember),
+                studyMinutes: Number(d.studyMinutes ?? 0),
+                todayStudyMinutes: Number(d.todayStudyMinutes ?? 0),
               });
             });
 
@@ -734,6 +740,10 @@ export default function App() {
       if (!user) return;
       const targetTrack = trackOverride ?? activeTrack;
       const metrics = computeMetrics(nextRoutine, nextSyllabus, targetTrack);
+      const userSessions = loadStudySessions();
+      const totalStudyMin = userSessions.reduce((sum, s) => sum + (s.durationMinutes || 0), 0);
+      const todayStudyMin = getTodayStudyMinutes(userSessions);
+      const studyAura = userSessions.reduce((sum, s) => sum + (s.auraEarned || 0), 0);
       const squadRef = doc(db, 'squadProgress', user.uid);
       try {
         await updateDoc(squadRef, {
@@ -744,8 +754,10 @@ export default function App() {
           syllabus: nextSyllabus,
           daysDone: metrics.daysDone,
           chapsDone: metrics.chapsDone,
-          xp: metrics.xp,
+          xp: metrics.xp + studyAura,
           streak: metrics.streak,
+          studyMinutes: totalStudyMin,
+          todayStudyMinutes: todayStudyMin,
           updatedAt: serverTimestamp(),
         });
       } catch (err) {

@@ -35,6 +35,8 @@ export interface SquadMemberProgress {
   xp: number;
   streak: number;
   isPublicSquadMember: boolean;
+  studyMinutes?: number;
+  todayStudyMinutes?: number;
 }
 
 export interface UserPrivateSettings {
