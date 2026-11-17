@@ -17,11 +17,10 @@ import {
   Coffee,
   Flag,
   Plus,
-  ShieldAlert,
   ShieldCheck,
+  ShieldAlert,
   Smartphone,
   ChevronDown,
-  Bell,
   Zap,
 } from 'lucide-react';
 import type {
@@ -56,109 +55,26 @@ interface StudyTimerHubProps {
   onActiveTimerChange?: (active: boolean, remainingSec: number, subject: string) => void;
 }
 
-export type PresetKey =
-  | 'start'
-  | 'break'
-  | 'quick'
-  | 'pomodoro'
-  | 'deep'
-  | 'custom'
-  | 'infinity';
-
-interface PresetConfig {
-  key: PresetKey;
+interface TimerPreset {
+  id: string;
   label: string;
-  sub: string;
   minutes: number;
   mode: TimerMode;
-  themeColor: string; // Tailwind color class or hex
-  gradient: string;
-  accentHex: string;
-  glowClass: string;
+  phase?: PomodoroPhase;
+  badge?: string;
+  icon?: string;
 }
 
-const PRESET_CONFIGS: PresetConfig[] = [
-  {
-    key: 'start',
-    label: '2',
-    sub: 'START',
-    minutes: 2,
-    mode: 'pomodoro',
-    themeColor: 'amber',
-    gradient: 'from-amber-500 via-orange-500 to-yellow-500',
-    accentHex: '#F59E0B',
-    glowClass: 'shadow-amber-500/30',
-  },
-  {
-    key: 'break',
-    label: '5',
-    sub: 'BREAK',
-    minutes: 5,
-    mode: 'pomodoro',
-    themeColor: 'emerald',
-    gradient: 'from-emerald-500 via-teal-500 to-green-500',
-    accentHex: '#10B981',
-    glowClass: 'shadow-emerald-500/30',
-  },
-  {
-    key: 'quick',
-    label: '15',
-    sub: 'QUICK',
-    minutes: 15,
-    mode: 'pomodoro',
-    themeColor: 'orange',
-    gradient: 'from-orange-500 via-amber-600 to-red-500',
-    accentHex: '#EA580C',
-    glowClass: 'shadow-orange-500/30',
-  },
-  {
-    key: 'pomodoro',
-    label: '25',
-    sub: 'POMODORO',
-    minutes: 25,
-    mode: 'pomodoro',
-    themeColor: 'cyan',
-    gradient: 'from-cyan-500 via-sky-500 to-blue-600',
-    accentHex: '#06B6D4',
-    glowClass: 'shadow-cyan-500/30',
-  },
-  {
-    key: 'deep',
-    label: '50',
-    sub: 'DEEP',
-    minutes: 50,
-    mode: 'pomodoro',
-    themeColor: 'purple',
-    gradient: 'from-purple-500 via-indigo-600 to-violet-600',
-    accentHex: '#8B5CF6',
-    glowClass: 'shadow-purple-500/30',
-  },
-  {
-    key: 'custom',
-    label: '∞',
-    sub: 'CUSTOM',
-    minutes: 30,
-    mode: 'pomodoro',
-    themeColor: 'fuchsia',
-    gradient: 'from-fuchsia-500 via-pink-600 to-rose-600',
-    accentHex: '#D946EF',
-    glowClass: 'shadow-fuchsia-500/30',
-  },
-  {
-    key: 'infinity',
-    label: '∞',
-    sub: 'INFINITY',
-    minutes: 0,
-    mode: 'stopwatch',
-    themeColor: 'rose',
-    gradient: 'from-rose-500 via-red-500 to-pink-600',
-    accentHex: '#F43F5E',
-    glowClass: 'shadow-rose-500/30',
-  },
+const PRESETS: TimerPreset[] = [
+  { id: 'p25', label: '২৫ মি. ফোকাস', minutes: 25, mode: 'pomodoro', phase: 'focus', badge: 'জনপ্রিয়', icon: '🎯' },
+  { id: 'p45', label: '৪৫ মি. ডিপ স্টাডি', minutes: 45, mode: 'pomodoro', phase: 'focus', icon: '⚡' },
+  { id: 'p60', label: '৬০ মি. ম্যারাথন', minutes: 60, mode: 'pomodoro', phase: 'focus', icon: '🔥' },
+  { id: 'b5', label: '৫ মি. ব্রেক', minutes: 5, mode: 'pomodoro', phase: 'shortBreak', icon: '☕' },
+  { id: 'b15', label: '১৫ মি. লং ব্রেক', minutes: 15, mode: 'pomodoro', phase: 'longBreak', icon: '🌴' },
+  { id: 'stopwatch', label: 'স্টপওয়াচ', minutes: 0, mode: 'stopwatch', icon: '⏱️' },
 ];
 
 const SUBJECTS = [
-  'সাধারণ পড়া',
   'পদার্থবিজ্ঞান',
   'উচ্চতর গণিত',
   'রসায়ন',
@@ -166,14 +82,6 @@ const SUBJECTS = [
   'ইংরেজি',
   'স্পেসড রিভিশন',
   'প্রশ্ন ব্যাংক অনুশীলন',
-];
-
-const MOTIVATION_QUOTES = [
-  'আজ ফোকাস, আগামীকাল উদযাপন।',
-  'আজকের পরিশ্রম, আগামীকালের ঢাকা বিশ্ববিদ্যালয়!',
-  'এক ঘণ্টার গভীর মনোযোগ, এক দিনের বিভ্রান্তির চেয়ে শ্রেষ্ঠ।',
-  'প্রতিটি ফোকাস মিনিট তোমাকে তোমার ড্রিম ক্যাম্পাসের দিকে এগিয়ে নিচ্ছে!',
-  'আধা ঘণ্টার লড়াই তোমাকে হাজার জনের চেয়ে এগিয়ে রাখবে।',
 ];
 
 interface StopwatchLap {
@@ -189,21 +97,21 @@ export function StudyTimerHub({
   onSessionCompleteAura,
   onActiveTimerChange,
 }: StudyTimerHubProps) {
-  // Main Hub Sub-Tab: 'timer' | 'calendar'
+  // Main Dual Hub Tab: 'timer' | 'calendar'
   const [hubTab, setHubTab] = useState<'timer' | 'calendar'>('timer');
 
-  // Preset Selection
-  const [selectedPresetKey, setSelectedPresetKey] = useState<PresetKey>('start');
-  const activePreset = PRESET_CONFIGS.find((p) => p.key === selectedPresetKey) || PRESET_CONFIGS[0];
+  // Selected Preset
+  const [selectedPresetId, setSelectedPresetId] = useState<string>('p25');
+  const activePreset = PRESETS.find((p) => p.id === selectedPresetId) || PRESETS[0];
 
   // Subject
-  const [selectedSubject, setSelectedSubject] = useState('সাধারণ পড়া');
-  const [showSubjectPicker, setShowSubjectPicker] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState('পদার্থবিজ্ঞান');
 
   // Live Timer State
   const [mode, setMode] = useState<TimerMode>('pomodoro');
+  const [phase, setPhase] = useState<PomodoroPhase>('focus');
   const [isRunning, setIsRunning] = useState(false);
-  const [secondsLeft, setSecondsLeft] = useState(2 * 60);
+  const [secondsLeft, setSecondsLeft] = useState(25 * 60);
   const [stopwatchSeconds, setStopwatchSeconds] = useState(0);
   const [stopwatchLaps, setStopwatchLaps] = useState<StopwatchLap[]>([]);
   const sessionStartTimeRef = useRef<number>(Date.now());
@@ -216,21 +124,17 @@ export function StudyTimerHub({
   // Fullscreen / Zen Mode
   const [isZenMode, setIsZenMode] = useState(false);
 
-  // Custom minute modal / input
+  // Custom minute modal
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [customMinInput, setCustomMinInput] = useState(30);
 
   // Allowed Apps Hub Modal
   const [showAllowedApps, setShowAllowedApps] = useState(false);
 
-  // Anti-Distraction Lockout
+  // Anti-Distraction Lock
   const [focusLockActive, setFocusLockActive] = useState(true);
   const [showDistractionWarning, setShowDistractionWarning] = useState(false);
   const [distractionCount, setDistractionCount] = useState(0);
-  const [distractionPenaltySec, setDistractionPenaltySec] = useState(10);
-
-  // Dynamic Motivation Quote
-  const [quoteIndex, setQuoteIndex] = useState(0);
 
   // Stored Study Sessions
   const [sessions, setSessions] = useState<StudySession[]>(() => loadStudySessions());
@@ -260,11 +164,9 @@ export function StudyTimerHub({
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isRunning && focusLockActive) {
-        // User switched tab or minimized during active focus session!
         playWarningAlertSound(true);
         setShowDistractionWarning(true);
         setDistractionCount((prev) => prev + 1);
-        setDistractionPenaltySec(10);
       }
     };
 
@@ -286,22 +188,13 @@ export function StudyTimerHub({
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   };
 
-  // Split MM:SS into individual digits for flip-card display: [M1, M2, S1, S2]
-  const getDigits = (totalSec: number) => {
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-    const mStr = String(m).padStart(2, '0');
-    const sStr = String(s).padStart(2, '0');
-    return [mStr[0] || '0', mStr[1] || '0', sStr[0] || '0', sStr[1] || '0'];
-  };
-
   // Handle Session Completion
   const handleCompleteSession = useCallback(
     (studiedMinutes: number, studiedSeconds: number) => {
-      if (studiedSeconds < 30) return; // ignore accidental micro taps
+      if (studiedSeconds < 30) return;
 
       const effectiveMinutes = Math.max(1, studiedMinutes);
-      // Study gives 1 Aura per minute studied + 20 Aura bonus per completed pomodoro
+      // Study awards 1 Aura per minute studied + 20 Aura pomodoro completion bonus
       const earnedAura = effectiveMinutes + 20;
 
       const newSession: StudySession = {
@@ -322,11 +215,10 @@ export function StudyTimerHub({
       onSessionCompleteAura?.(earnedAura);
       playTimerFinishFanfare();
 
-      // Trigger phone notification
       sendPhoneNotification({
         title: 'স্টাডি সেশন সম্পন্ন! 🏆✨',
         body: `সাবাশ! ${effectiveMinutes} মিনিট ${selectedSubject} পড়া শেষ হয়েছে! +${earnedAura} Aura স্কোয়াডে যুক্ত হয়েছে!`,
-        mood: 'ice-bear',
+        mood: 'happy',
       });
     },
     [selectedSubject, mode, onSessionCompleteAura]
@@ -394,8 +286,8 @@ export function StudyTimerHub({
   };
 
   // Select Preset Handler
-  const handleSelectPreset = (p: PresetConfig) => {
-    setSelectedPresetKey(p.key);
+  const handleSelectPreset = (p: TimerPreset) => {
+    setSelectedPresetId(p.id);
     setIsRunning(false);
     if (p.mode === 'stopwatch') {
       setMode('stopwatch');
@@ -403,11 +295,8 @@ export function StudyTimerHub({
       setStopwatchLaps([]);
     } else {
       setMode('pomodoro');
-      if (p.key === 'custom') {
-        setShowCustomModal(true);
-      } else {
-        setSecondsLeft(p.minutes * 60);
-      }
+      setPhase(p.phase || 'focus');
+      setSecondsLeft(p.minutes * 60);
     }
   };
 
@@ -421,149 +310,135 @@ export function StudyTimerHub({
   const todayMinutes = getTodayStudyMinutes(sessions);
   const todayAura = getTodayStudyAura(sessions);
 
-  // Dial calculations
+  // Circular Dial Gauge Calculations
   const totalDurationSec =
     mode === 'pomodoro' ? Math.max(1, activePreset.minutes * 60) : 3600;
   const currentElapsedSec =
     mode === 'pomodoro' ? totalDurationSec - secondsLeft : stopwatchSeconds;
   const progressRatio = Math.min(1, Math.max(0, currentElapsedSec / totalDurationSec));
 
-  const dialSize = 340;
-  const strokeWidth = 10;
-  const radius = (dialSize - strokeWidth - 28) / 2;
+  const dialSize = 310;
+  const strokeWidth = 14;
+  const radius = (dialSize - strokeWidth - 16) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - progressRatio);
 
-  // 12 Numbers Trigonometric Positions (1, 2, ..., 12)
-  const hourNumbers = Array.from({ length: 12 }).map((_, i) => {
-    const num = i === 0 ? 12 : i;
-    const angle = (num * 30) * (Math.PI / 180);
-    const rNum = dialSize / 2 - 18;
-    const x = dialSize / 2 + rNum * Math.sin(angle);
-    const y = dialSize / 2 - rNum * Math.cos(angle);
-    return { num, x, y };
-  });
-
-  // 60 Sub-Ticks generator
-  const dialTicks = Array.from({ length: 60 }).map((_, i) => {
-    const isMajor = i % 5 === 0;
-    const angle = (i * 6) * (Math.PI / 180);
-    const rOuter = dialSize / 2 - 4;
-    const rInner = rOuter - (isMajor ? 7 : 3.5);
-    const x1 = dialSize / 2 + rInner * Math.sin(angle);
-    const y1 = dialSize / 2 - rInner * Math.cos(angle);
-    const x2 = dialSize / 2 + rOuter * Math.sin(angle);
-    const y2 = dialSize / 2 - rOuter * Math.cos(angle);
-    return { id: i, x1, y1, x2, y2, isMajor };
-  });
-
-  // Current display digits [D1, D2, D3, D4]
-  const currentActiveSec = mode === 'pomodoro' ? secondsLeft : stopwatchSeconds;
-  const [d1, d2, d3, d4] = getDigits(currentActiveSec);
+  const displayClockString =
+    mode === 'pomodoro'
+      ? formatTimeEnglish(secondsLeft)
+      : formatTimeEnglish(stopwatchSeconds);
 
   return (
     <div
-      className={`space-y-6 ${
+      className={`space-y-5 ${
         isZenMode
-          ? 'fixed inset-0 z-50 bg-[#070A11] text-slate-100 p-6 sm:p-10 flex flex-col justify-between overflow-y-auto select-none'
+          ? 'fixed inset-0 z-50 bg-slate-950 text-slate-100 p-6 sm:p-10 flex flex-col justify-between overflow-y-auto select-none'
           : ''
       }`}
     >
-      {/* Zen Mode Header with Close Button */}
+      {/* Zen Mode Header with Exit Button */}
       {isZenMode && (
-        <div className="flex items-center justify-between border-b border-cyan-500/20 pb-4">
+        <div className="flex items-center justify-between border-b border-indigo-500/20 pb-4">
           <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
-            <span className="text-xs font-black font-aura tracking-widest text-cyan-400 uppercase">
-              CAMPUS 6.0 · ZEN FOCUS LOCK
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-ping" />
+            <span className="text-xs font-black font-aura tracking-widest text-blue-400 uppercase">
+              ZEN FOCUS MODE · পূর্ণ মনোযোগ
             </span>
             <span className="text-xs text-slate-400">· {selectedSubject}</span>
           </div>
           <button
             type="button"
             onClick={() => setIsZenMode(false)}
-            className="px-3 py-1.5 rounded-xl border border-cyan-400/40 bg-cyan-950/40 text-cyan-300 text-xs font-bold hover:bg-cyan-900/40 transition-colors flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-xl border border-blue-400/40 bg-blue-950/40 text-blue-300 text-xs font-bold hover:bg-blue-900/40 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <Minimize2 className="w-3.5 h-3.5" />
-            <span>ফুলস্ক্রিন থেকে বের হন</span>
+            <span>ফুলস্ক্রিন বন্ধ করুন</span>
           </button>
         </div>
       )}
 
-      {/* Top Header: Campus 6.0 Precision Chronometer & Controls */}
+      {/* Top Controls Bar: Tab Switcher & Today Summary */}
       {!isZenMode && (
-        <div className="flex items-center justify-between gap-4 flex-wrap bg-slate-900/90 dark:bg-[#0C1019] border border-slate-800/90 p-4 sm:p-5 rounded-3xl text-white shadow-lg relative overflow-hidden">
-          {/* Subtle Cyber Glow */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-12 -left-12 w-48 h-48 rounded-full bg-orange-500/10 blur-3xl"
-          />
-
-          {/* Left Title with 6.0 Badge */}
-          <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-red-500 flex items-center justify-center font-mono font-black text-sm text-white shadow-md shadow-orange-500/30">
-              6.0
-            </div>
-            <div>
-              <div className="text-[10px] sm:text-[11px] font-black tracking-widest text-amber-400/90 font-mono uppercase">
-                PRECISION CHRONOMETER
-              </div>
-              <h2 className="font-display text-lg sm:text-xl font-black text-white tracking-wide">
-                ফোকাস টাইমার
-              </h2>
-            </div>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          {/* Dual Tab Switcher */}
+          <div className="inline-flex items-center p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 shadow-xs">
+            <button
+              type="button"
+              onClick={() => setHubTab('timer')}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                hubTab === 'timer'
+                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <TimerIcon className="w-4 h-4" />
+              <span>স্টাডি টাইমার</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setHubTab('calendar')}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                hubTab === 'calendar'
+                  ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <CalendarIcon className="w-4 h-4" />
+              <span>স্টাডি ক্যালেন্ডার ও ইতিহাস</span>
+            </button>
           </div>
 
-          {/* Right Action Icons: Hub Tab, Sound, Bell, Allowed Apps, Zen */}
-          <div className="flex items-center gap-2 sm:gap-2.5 relative z-10 flex-wrap">
-            {/* Dual Tab: Timer vs Calendar */}
-            <div className="inline-flex items-center p-1 rounded-2xl bg-slate-800/80 border border-slate-700/70 text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => setHubTab('timer')}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                  hubTab === 'timer'
-                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                টাইমার
-              </button>
-              <button
-                type="button"
-                onClick={() => setHubTab('calendar')}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                  hubTab === 'calendar'
-                    ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                ক্যালেন্ডার
-              </button>
+          {/* Today's Quick Summary & Utility Buttons */}
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+            <div className="px-3.5 py-1.5 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-xs flex items-center gap-2">
+              <span className="text-slate-500 dark:text-slate-400">আজকের মোট পড়া:</span>
+              <span className="text-blue-600 dark:text-blue-400 font-mono-num font-black">
+                {formatDurationBangla(todayMinutes)}
+              </span>
+              {todayAura > 0 && (
+                <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[10px] font-black font-aura flex items-center gap-0.5">
+                  <Sparkles className="w-3 h-3" />
+                  +{todayAura} Aura
+                </span>
+              )}
             </div>
 
-            {/* Allowed Apps Launcher Button */}
+            {/* Allowed Apps Hub Trigger Button */}
             <button
               type="button"
               onClick={() => setShowAllowedApps(true)}
-              className="px-3 py-1.5 rounded-2xl bg-indigo-950/70 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-900/60 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="px-3 py-1.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               title="অনুমোদিত স্টাডি টুলস ও ক্যালকুলেটর"
             >
-              <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
+              <Smartphone className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400" />
               <span>অনুমোদিত অ্যাপস</span>
             </button>
 
-            {/* Sound Toggle Menu */}
+            {/* Strict Focus Lock Pill */}
+            <button
+              type="button"
+              onClick={() => setFocusLockActive(!focusLockActive)}
+              className={`p-2 rounded-2xl border transition-all cursor-pointer ${
+                focusLockActive
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400'
+              }`}
+              title={focusLockActive ? 'স্ট্রিক্ট ফোকাস লক সক্রিয়' : 'লক নিষ্ক্রিয়'}
+            >
+              <ShieldCheck className="w-4 h-4" />
+            </button>
+
+            {/* Ambient Sound Menu */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowSoundMenu(!showSoundMenu)}
-                aria-label="সাউন্ড কন্ট্রোল"
                 className={`p-2 rounded-2xl border transition-all cursor-pointer ${
                   ambientSound !== 'none'
-                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
-                    : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-white'
+                    ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-300 dark:border-blue-800 text-blue-600 dark:text-blue-400'
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white'
                 }`}
+                title="ব্যাকগ্রাউন্ড অ্যাম্বিয়েন্ট সাউন্ড"
               >
                 {ambientSound !== 'none' ? (
                   <Volume2 className="w-4 h-4" />
@@ -572,10 +447,11 @@ export function StudyTimerHub({
                 )}
               </button>
 
-              {/* Sound Dropdown Menu */}
               {showSoundMenu && (
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-700 bg-slate-900 p-3 shadow-2xl z-30 space-y-2">
-                  <div className="text-xs font-bold text-slate-400">স্টাডি ব্যাকগ্রাউন্ড সাউন্ড:</div>
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 shadow-xl z-30 space-y-2">
+                  <div className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                    স্টাডি অ্যাম্বিয়েন্ট সাউন্ড:
+                  </div>
                   <div className="grid grid-cols-2 gap-1 text-xs">
                     {(['none', 'rain', 'waves', 'cafe', 'ticking'] as AmbientSoundType[]).map((snd) => (
                       <button
@@ -585,10 +461,10 @@ export function StudyTimerHub({
                           setAmbientSound(snd);
                           setShowSoundMenu(false);
                         }}
-                        className={`px-2.5 py-1.5 rounded-xl font-bold transition-all ${
+                        className={`px-2 py-1.5 rounded-xl font-bold transition-all text-center ${
                           ambientSound === snd
-                            ? 'bg-amber-500 text-slate-950 shadow-xs'
-                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
                         }`}
                       >
                         {snd === 'none' && 'অফ'}
@@ -601,8 +477,8 @@ export function StudyTimerHub({
                   </div>
 
                   {ambientSound !== 'none' && (
-                    <div className="space-y-1 pt-1 border-t border-slate-800">
-                      <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                    <div className="space-y-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between text-[11px] text-slate-500 font-mono">
                         <span>ভলিউম</span>
                         <span>{Math.round(ambientVolume * 100)}%</span>
                       </div>
@@ -613,7 +489,7 @@ export function StudyTimerHub({
                         step="0.05"
                         value={ambientVolume}
                         onChange={(e) => setAmbientVolume(parseFloat(e.target.value))}
-                        className="w-full accent-amber-500 cursor-pointer"
+                        className="w-full accent-blue-600 cursor-pointer"
                       />
                     </div>
                   )}
@@ -621,25 +497,11 @@ export function StudyTimerHub({
               )}
             </div>
 
-            {/* Strict Focus Lock Pill */}
-            <button
-              type="button"
-              onClick={() => setFocusLockActive(!focusLockActive)}
-              className={`p-2 rounded-2xl border transition-all cursor-pointer ${
-                focusLockActive
-                  ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300'
-                  : 'bg-slate-800 border-slate-700 text-slate-500'
-              }`}
-              title={focusLockActive ? 'স্ট্রিক্ট ফোকাস লক সক্রিয়' : 'লক নিষ্ক্রিয়'}
-            >
-              <ShieldCheck className="w-4 h-4" />
-            </button>
-
-            {/* Zen Fullscreen */}
+            {/* Zen Fullscreen Button */}
             <button
               type="button"
               onClick={() => setIsZenMode(true)}
-              className="p-2 rounded-2xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition-all cursor-pointer"
+              className="p-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all cursor-pointer shadow-xs"
               title="ফুলস্ক্রিন জেন মোড"
             >
               <Maximize2 className="w-4 h-4" />
@@ -648,364 +510,346 @@ export function StudyTimerHub({
         </div>
       )}
 
-      {/* VIEW 1: FOCUS TIMER */}
+      {/* VIEW 1: COHESIVE OCEAN BLUE FOCUS TIMER */}
       {hubTab === 'timer' && (
-        <div className="rounded-3xl border border-slate-800/90 bg-[#0B0E17] text-slate-100 p-6 sm:p-8 shadow-2xl space-y-6 flex flex-col items-center relative overflow-hidden">
-          {/* Subtle Glow Backdrops */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-32 -left-32 w-80 h-80 rounded-full bg-cyan-500/5 blur-3xl"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -bottom-32 -right-32 w-80 h-80 rounded-full bg-orange-500/5 blur-3xl"
-          />
-
-          {/* 1. HORIZONTAL PRESET CAROUSEL (Exact items & colors from the video) */}
-          <div className="w-full max-w-xl overflow-x-auto pb-1 select-none flex items-center justify-start sm:justify-center gap-2">
-            {PRESET_CONFIGS.map((p) => {
-              const isSelected = p.key === selectedPresetKey;
-              return (
-                <button
-                  key={p.key}
-                  type="button"
-                  onClick={() => handleSelectPreset(p)}
-                  className={`px-3.5 py-2 rounded-2xl text-xs font-mono font-black transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
-                    isSelected
-                      ? 'border-amber-400/80 bg-amber-500/10 text-white shadow-lg shadow-amber-500/20'
-                      : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                  }`}
-                  style={
-                    isSelected
-                      ? {
-                          borderColor: `${p.accentHex}AA`,
-                          backgroundColor: `${p.accentHex}15`,
-                          color: '#FFFFFF',
-                        }
-                      : {}
-                  }
-                >
-                  <span
-                    className="font-bold text-sm"
-                    style={{ color: isSelected ? p.accentHex : undefined }}
-                  >
-                    {p.label}
-                  </span>
-                  <span className="tracking-widest uppercase text-[11px] font-bold">
-                    {p.sub}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Thin Progress line under preset carousel */}
-          <div className="w-full max-w-xl h-1 rounded-full bg-slate-800/80 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Main Timer Dial Card */}
+          <div className="lg:col-span-8 rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-[0_8px_24px_rgba(37,99,235,0.06)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.35)] space-y-6 flex flex-col items-center relative overflow-hidden">
+            {/* Subtle Aurora Ambient Glow */}
             <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{
-                width: `${progressRatio * 100}%`,
-                backgroundColor: activePreset.accentHex,
-              }}
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-blue-500/10 dark:bg-blue-500/5 blur-3xl"
             />
-          </div>
-
-          {/* 2. CURRENT FOCUS CARD (Clickable to switch subject) */}
-          <div className="w-full max-w-sm space-y-1">
-            <div className="text-[10px] font-mono font-bold tracking-widest text-slate-400 uppercase text-center sm:text-left">
-              CURRENT FOCUS
-            </div>
             <div
-              onClick={() => setShowSubjectPicker(!showSubjectPicker)}
-              className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all flex items-center justify-between cursor-pointer group shadow-inner"
-            >
-              <div className="flex items-center gap-2.5">
-                <div
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: activePreset.accentHex }}
-                />
-                <span className="font-bold text-sm sm:text-base text-white">
-                  {selectedSubject}
-                </span>
-              </div>
-              <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-white transition-transform" />
+              aria-hidden="true"
+              className="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-cyan-500/10 dark:bg-cyan-500/5 blur-3xl"
+            />
+
+            {/* Horizontal Preset Chips Bar */}
+            <div className="w-full flex items-center justify-start sm:justify-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 select-none">
+              {PRESETS.map((p) => {
+                const isSelected = p.id === selectedPresetId;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => handleSelectPreset(p)}
+                    className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md shadow-blue-500/20'
+                        : 'bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400'
+                    }`}
+                  >
+                    <span>{p.icon}</span>
+                    <span>{p.label}</span>
+                    {p.badge && (
+                      <span className="px-1.5 py-0.2 rounded-md bg-white/20 text-[10px] font-black uppercase">
+                        {p.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+
+              {/* Custom Min Button */}
+              <button
+                type="button"
+                onClick={() => setShowCustomModal(true)}
+                className="px-3 py-2 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>কাস্টম</span>
+              </button>
             </div>
 
-            {/* Subject Picker Dropdown Chips */}
-            {showSubjectPicker && (
-              <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 space-y-2 animate-in fade-in">
-                <div className="text-xs font-bold text-slate-400 mb-1">বিষয় নির্বাচন করুন:</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {SUBJECTS.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => {
-                        setSelectedSubject(s);
-                        setShowSubjectPicker(false);
-                      }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        selectedSubject === s
-                          ? 'bg-amber-500 text-slate-950 font-black'
-                          : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'
-                      }`}
+            {/* Subject Selector Pill Bar */}
+            <div className="flex items-center gap-1.5 flex-wrap justify-center pt-1">
+              <span className="text-xs font-bold text-slate-400 mr-1 flex items-center gap-1">
+                <BookOpen className="w-3.5 h-3.5 text-blue-500" />
+                <span>বিষয়:</span>
+              </span>
+              {SUBJECTS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setSelectedSubject(s)}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    selectedSubject === s
+                      ? 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-400 shadow-xs'
+                      : 'border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+
+            {/* THE CIRCULAR FOCUS GAUGE */}
+            <div className="relative my-3 sm:my-5 flex items-center justify-center select-none">
+              {/* Outer Glowing Background Ring */}
+              <div
+                aria-hidden="true"
+                className={`absolute inset-4 rounded-full blur-2xl opacity-30 transition-all duration-700 ${
+                  isRunning
+                    ? phase === 'focus'
+                      ? 'bg-gradient-to-tr from-blue-500 via-indigo-500 to-cyan-400'
+                      : 'bg-gradient-to-tr from-emerald-400 to-teal-500'
+                    : 'bg-slate-200 dark:bg-slate-800'
+                }`}
+              />
+
+              <svg width={dialSize} height={dialSize} className="relative z-10 overflow-visible">
+                {/* Background Ring Track */}
+                <circle
+                  cx={dialSize / 2}
+                  cy={dialSize / 2}
+                  r={radius}
+                  stroke="currentColor"
+                  strokeWidth={strokeWidth}
+                  className="text-slate-100 dark:text-slate-800/80"
+                  fill="transparent"
+                />
+
+                {/* Animated Gradient Progress Stroke */}
+                <g className="transform -rotate-90 origin-center">
+                  <circle
+                    cx={dialSize / 2}
+                    cy={dialSize / 2}
+                    r={radius}
+                    stroke="url(#oceanBlueTimerGradient)"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    className="transition-all duration-500 ease-linear"
+                    fill="transparent"
+                  />
+                </g>
+
+                <defs>
+                  <linearGradient id="oceanBlueTimerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={phase === 'focus' ? '#2563EB' : '#10B981'} />
+                    <stop offset="50%" stopColor={phase === 'focus' ? '#4F46E5' : '#06B6D4'} />
+                    <stop offset="100%" stopColor={phase === 'focus' ? '#06B6D4' : '#3B82F6'} />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              {/* Digital Time Center Overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 pointer-events-none">
+                {/* Status Badge */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-[11px] font-black tracking-widest font-mono uppercase text-slate-600 dark:text-slate-300 mb-1 shadow-xs">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isRunning
+                        ? 'bg-blue-500 animate-ping'
+                        : 'bg-amber-400'
+                    }`}
+                  />
+                  <span>
+                    {isRunning
+                      ? mode === 'pomodoro'
+                        ? phase === 'focus'
+                          ? 'FOCUS'
+                          : 'BREAK'
+                        : 'RUNNING'
+                      : 'PAUSED'}
+                  </span>
+                </div>
+
+                {/* Big Clean English Digital Clock Digits */}
+                <div className="font-mono font-black text-5xl sm:text-6xl tracking-wider text-slate-900 dark:text-slate-50 drop-shadow-sm select-none tabular-nums my-1">
+                  {displayClockString}
+                </div>
+
+                {/* Subject Subtitle Chip */}
+                <div className="mt-1 px-3 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200/80 dark:border-blue-800/80 text-xs font-bold text-blue-700 dark:text-blue-300 max-w-[180px] truncate shadow-xs">
+                  {selectedSubject}
+                </div>
+
+                {/* Progress Percentage for Pomodoro */}
+                {mode === 'pomodoro' && (
+                  <div className="text-[11px] font-mono font-bold text-slate-400 dark:text-slate-500 mt-1">
+                    {Math.round(progressRatio * 100)}% COMPLETED
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons: Play/Pause, Reset, Lap, Finish */}
+            <div className="flex items-center gap-3 pt-2">
+              {/* Reset Button */}
+              <button
+                type="button"
+                onClick={handleReset}
+                aria-label="রিসেট করুন"
+                title="টাইমার রিসেট করুন"
+                className="p-3.5 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 transition-all cursor-pointer shadow-xs active:scale-95"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </button>
+
+              {/* Primary Play/Pause Button: Large Ocean Blue Gradient Pill */}
+              <button
+                type="button"
+                onClick={handleTogglePlay}
+                className={`px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl text-white text-sm sm:text-base font-black transition-all shadow-lg active:scale-95 cursor-pointer flex items-center gap-2 select-none ${
+                  isRunning
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-orange-500/25'
+                    : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 shadow-blue-500/30'
+                }`}
+              >
+                {isRunning ? (
+                  <>
+                    <Pause className="w-5 h-5 fill-white" />
+                    <span>একটু বিরতি নিন</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5 fill-white" />
+                    <span>পড়া শুরু করুন</span>
+                  </>
+                )}
+              </button>
+
+              {/* Lap Button for Stopwatch Mode */}
+              {mode === 'stopwatch' && isRunning && (
+                <button
+                  type="button"
+                  onClick={recordLap}
+                  className="px-4 py-3.5 sm:py-4 rounded-2xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Flag className="w-4 h-4" />
+                  <span>Lap</span>
+                </button>
+              )}
+
+              {/* Finish & Save for Stopwatch Mode */}
+              {mode === 'stopwatch' && stopwatchSeconds >= 60 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleCompleteSession(Math.floor(stopwatchSeconds / 60), stopwatchSeconds);
+                    setStopwatchSeconds(0);
+                    setIsRunning(false);
+                  }}
+                  className="px-4 py-3.5 sm:py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Finish & Save</span>
+                </button>
+              )}
+            </div>
+
+            {/* Stopwatch Laps Record View */}
+            {mode === 'stopwatch' && stopwatchLaps.length > 0 && (
+              <div className="w-full max-w-md pt-3 space-y-1.5 border-t border-slate-100 dark:border-slate-800">
+                <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between mb-1">
+                  <span>রেকর্ড করা ল্যাপস (Laps):</span>
+                  <span className="font-mono text-[11px]">{stopwatchLaps.length} Laps</span>
+                </div>
+                <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
+                  {stopwatchLaps.map((lap) => (
+                    <div
+                      key={lap.id}
+                      className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60 text-xs font-mono"
                     >
-                      {s}
-                    </button>
+                      <span className="font-bold text-slate-600 dark:text-slate-300">
+                        Lap #{lap.id}
+                      </span>
+                      <span className="font-black text-blue-600 dark:text-cyan-400">
+                        {lap.formatted}
+                      </span>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
           </div>
 
-          {/* 3. THE 12-HOUR CHRONOMETER DIAL & FLIP CLOCK (Exact match from the video!) */}
-          <div className="relative my-2 sm:my-4 flex items-center justify-center select-none">
-            {/* Outer Ambient Glow */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-4 rounded-full blur-3xl opacity-30 transition-all duration-700"
-              style={{
-                backgroundColor: isRunning ? activePreset.accentHex : 'transparent',
-              }}
-            />
-
-            <svg width={dialSize} height={dialSize} className="relative z-10 overflow-visible">
-              {/* 12 Hour Numbers (12, 1, 2, ..., 11) */}
-              <g className="hour-numbers">
-                {hourNumbers.map((h) => (
-                  <text
-                    key={h.num}
-                    x={h.x}
-                    y={h.y}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fill="currentColor"
-                    className="text-slate-500 font-mono text-[10px] sm:text-[11px] font-bold select-none opacity-60"
-                  >
-                    {h.num}
-                  </text>
-                ))}
-              </g>
-
-              {/* 60 Sub-Tick Marks */}
-              <g className="sub-ticks">
-                {dialTicks.map((t) => (
-                  <line
-                    key={t.id}
-                    x1={t.x1}
-                    y1={t.y1}
-                    x2={t.x2}
-                    y2={t.y2}
-                    stroke="currentColor"
-                    strokeWidth={t.isMajor ? 2.5 : 1.2}
-                    className={
-                      t.isMajor
-                        ? 'text-slate-400 opacity-80'
-                        : 'text-slate-700 opacity-40'
-                    }
-                  />
-                ))}
-              </g>
-
-              {/* 12-O'clock Major Accent Indicator */}
-              <circle
-                cx={dialSize / 2}
-                cy={15}
-                r={3}
-                fill={activePreset.accentHex}
-                className="animate-pulse"
-              />
-
-              {/* Circular Track Background */}
-              <circle
-                cx={dialSize / 2}
-                cy={dialSize / 2}
-                r={radius}
-                stroke="#1B2232"
-                strokeWidth={strokeWidth}
-                fill="transparent"
-              />
-
-              {/* Dynamic Neon Glowing Progress Arc */}
-              <g className="transform -rotate-90 origin-center">
-                <circle
-                  cx={dialSize / 2}
-                  cy={dialSize / 2}
-                  r={radius}
-                  stroke={activePreset.accentHex}
-                  strokeWidth={strokeWidth}
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  className="transition-all duration-500 ease-linear"
-                  fill="transparent"
+          {/* Right Column: Kira Mascot Encouragement & Daily Stats */}
+          <div className="lg:col-span-4 space-y-5">
+            {/* Mascot Kira Companion Speech Card */}
+            <div className="rounded-3xl border border-blue-200/90 dark:border-blue-900/60 bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/40 p-5 shadow-sm space-y-3 relative overflow-hidden">
+              <div className="flex items-center gap-3">
+                <MascotCharacter
+                  mood={isRunning ? 'happy' : distractionCount > 0 ? 'sassy' : 'smug'}
+                  size="md"
+                  animate={isRunning}
                 />
-              </g>
-            </svg>
-
-            {/* INNER DIAL OVERLAY: READY / STATUS + 4 FLIP-CLOCK CARDS */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-20 pointer-events-none">
-              {/* Status Badge */}
-              <div
-                className="text-[10px] sm:text-[11px] font-black tracking-widest font-mono uppercase mb-2"
-                style={{ color: activePreset.accentHex }}
-              >
-                {isRunning
-                  ? mode === 'pomodoro'
-                    ? 'FOCUSING'
-                    : 'INFINITY'
-                  : 'READY'}
-              </div>
-
-              {/* 4 DIGITAL FLIP-CLOCK TILES: [ 0 ] [ 2 ] : [ 0 ] [ 0 ] */}
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                {/* Digit 1 */}
-                <div className="w-11 sm:w-13 h-16 sm:h-18 rounded-2xl bg-[#111622] border border-slate-700/80 shadow-inner flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-x-0 top-1/2 h-px bg-black/40 z-10" />
-                  <span className="font-mono font-black text-3xl sm:text-4xl text-white tracking-tight tabular-nums select-none drop-shadow-sm">
-                    {d1}
-                  </span>
-                </div>
-
-                {/* Digit 2 */}
-                <div className="w-11 sm:w-13 h-16 sm:h-18 rounded-2xl bg-[#111622] border border-slate-700/80 shadow-inner flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-x-0 top-1/2 h-px bg-black/40 z-10" />
-                  <span className="font-mono font-black text-3xl sm:text-4xl text-white tracking-tight tabular-nums select-none drop-shadow-sm">
-                    {d2}
-                  </span>
-                </div>
-
-                {/* Colon Separator */}
-                <div
-                  className="font-mono font-black text-2xl sm:text-3xl px-0.5 select-none animate-pulse"
-                  style={{ color: activePreset.accentHex }}
-                >
-                  :
-                </div>
-
-                {/* Digit 3 */}
-                <div className="w-11 sm:w-13 h-16 sm:h-18 rounded-2xl bg-[#111622] border border-slate-700/80 shadow-inner flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-x-0 top-1/2 h-px bg-black/40 z-10" />
-                  <span className="font-mono font-black text-3xl sm:text-4xl text-white tracking-tight tabular-nums select-none drop-shadow-sm">
-                    {d3}
-                  </span>
-                </div>
-
-                {/* Digit 4 */}
-                <div className="w-11 sm:w-13 h-16 sm:h-18 rounded-2xl bg-[#111622] border border-slate-700/80 shadow-inner flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-x-0 top-1/2 h-px bg-black/40 z-10" />
-                  <span className="font-mono font-black text-3xl sm:text-4xl text-white tracking-tight tabular-nums select-none drop-shadow-sm">
-                    {d4}
-                  </span>
-                </div>
-              </div>
-
-              {/* Subtitle Under Digits: Lightning Icon + Preset Sub */}
-              <div className="flex items-center gap-1 mt-2 text-xs font-mono font-bold text-slate-400">
-                <Zap className="w-3.5 h-3.5" style={{ color: activePreset.accentHex }} />
-                <span>{activePreset.sub}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. MOTIVATION QUOTE BAR (Clickable to cycle quotes) */}
-          <div
-            onClick={() => setQuoteIndex((prev) => (prev + 1) % MOTIVATION_QUOTES.length)}
-            className="w-full max-w-md p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-all flex items-center gap-3 cursor-pointer group shadow-sm select-none"
-          >
-            <div className="w-8 h-8 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0">
-              <Zap className="w-4 h-4 fill-orange-400" />
-            </div>
-            <div className="text-xs sm:text-sm font-semibold text-slate-200 truncate group-hover:text-white transition-colors">
-              {MOTIVATION_QUOTES[quoteIndex]}
-            </div>
-          </div>
-
-          {/* 5. PRIMARY ACTION BUTTONS: START/PAUSE PILL & RESET */}
-          <div className="flex items-center gap-3 pt-2">
-            {/* Primary Action Button: Large Gradient Pill */}
-            <button
-              type="button"
-              onClick={handleTogglePlay}
-              className={`px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl text-slate-950 text-sm sm:text-base font-black transition-all shadow-xl active:scale-95 cursor-pointer flex items-center gap-2 select-none ${
-                isRunning
-                  ? 'bg-gradient-to-r from-amber-400 to-orange-500 shadow-orange-500/30'
-                  : 'bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 hover:from-amber-300 hover:to-orange-400 shadow-amber-500/30'
-              }`}
-            >
-              {isRunning ? (
-                <>
-                  <Pause className="w-5 h-5 fill-slate-950" />
-                  <span>থামুন</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-5 h-5 fill-slate-950" />
-                  <span>শুরু</span>
-                </>
-              )}
-            </button>
-
-            {/* Reset Button */}
-            <button
-              type="button"
-              onClick={handleReset}
-              aria-label="রিসেট করুন"
-              title="টাইমার রিসেট করুন"
-              className="p-3.5 sm:p-4 rounded-2xl border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer shadow-sm active:scale-95"
-            >
-              <RotateCcw className="w-5 h-5" />
-            </button>
-
-            {/* Lap Button for Stopwatch / Infinity Mode */}
-            {mode === 'stopwatch' && isRunning && (
-              <button
-                type="button"
-                onClick={recordLap}
-                className="px-4 py-3.5 sm:py-4 rounded-2xl border border-rose-500/50 bg-rose-950/40 text-rose-300 text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
-              >
-                <Flag className="w-4 h-4" />
-                <span>Lap</span>
-              </button>
-            )}
-
-            {/* Finish & Save for Stopwatch Mode */}
-            {mode === 'stopwatch' && stopwatchSeconds >= 60 && (
-              <button
-                type="button"
-                onClick={() => {
-                  handleCompleteSession(Math.floor(stopwatchSeconds / 60), stopwatchSeconds);
-                  setStopwatchSeconds(0);
-                  setIsRunning(false);
-                }}
-                className="px-4 py-3.5 sm:py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-1.5"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Finish & Save</span>
-              </button>
-            )}
-          </div>
-
-          {/* Stopwatch Laps Record View */}
-          {mode === 'stopwatch' && stopwatchLaps.length > 0 && (
-            <div className="w-full max-w-md pt-3 space-y-1.5 border-t border-slate-800/80">
-              <div className="text-xs font-bold text-slate-400 flex items-center justify-between mb-1">
-                <span>রেকর্ড করা ল্যাপস (Laps):</span>
-                <span className="font-mono text-[11px]">{stopwatchLaps.length} Laps</span>
-              </div>
-              <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
-                {stopwatchLaps.map((lap) => (
-                  <div
-                    key={lap.id}
-                    className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs font-mono"
-                  >
-                    <span className="font-bold text-slate-300">Lap #{lap.id}</span>
-                    <span className="font-black text-cyan-400">{lap.formatted}</span>
+                <div>
+                  <div className="text-xs font-black text-blue-600 dark:text-blue-400 font-display">
+                    স্টাডি বাডি কিরা (Kira)
                   </div>
-                ))}
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {isRunning ? 'ফোকাস মোডে পাশে আছে' : 'টেবিলে অপেক্ষা করছে'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Speech Bubble */}
+              <div className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs font-medium text-slate-700 dark:text-slate-200 shadow-xs relative">
+                {isRunning ? (
+                  <span>
+                    &ldquo;মনোযোগ দিয়ে পড়া চালিয়ে যাও! প্রতিটি মিনিট তোমার জন্য <strong>+১ Aura</strong> আনছে এবং স্কোয়াডে র্যাংক বাড়াচ্ছে! 🚀&rdquo;
+                  </span>
+                ) : distractionCount > 0 ? (
+                  <span>
+                    &ldquo;উঁকি মেরে কিন্তু দেখতে পাচ্ছি! স্ক্রিন থেকে দূরে না গিয়ে তাড়াতাড়ি স্টাডি শুরু করো! 😼&rdquo;
+                  </span>
+                ) : (
+                  <span>
+                    &ldquo;আজকে কোন চ্যাপ্টার শেষ করার টার্গেট? উপরের প্রিসেট থেকে সময় বেছে নিয়ে <strong>শুরু</strong> বাটনে চাপ দাও!&rdquo;
+                  </span>
+                )}
               </div>
             </div>
-          )}
+
+            {/* Quick Stats & Aura Rewards Card */}
+            <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span className="font-display text-sm font-bold text-slate-900 dark:text-slate-50">
+                    আজকের স্টাডি সামারি
+                  </span>
+                </div>
+                <span className="text-xs font-mono font-bold text-slate-400">
+                  {new Date().toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' })}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-center">
+                  <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    আজ পড়া হয়েছে
+                  </div>
+                  <div className="font-mono-num text-lg font-black text-blue-600 dark:text-blue-400 mt-0.5">
+                    {formatDurationBangla(todayMinutes)}
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-center">
+                  <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    স্টাডি Aura অর্জিত
+                  </div>
+                  <div className="font-aura text-lg font-black text-[#FF1744] dark:text-[#FF2A55] mt-0.5">
+                    +{todayAura} Aura
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                <div className="font-bold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>স্কোয়াডে লাইভ আপডেট:</span>
+                </div>
+                <div>
+                  টাইমারে পড়া শেষ করলেই সরাসরি আপনার স্কোয়াড লিডারবোর্ডে সময় ও Aura রিওয়ার্ড যুক্ত হবে।
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1022,7 +866,7 @@ export function StudyTimerHub({
         />
       )}
 
-      {/* 6. ALLOWED APPS HUB MODAL */}
+      {/* ALLOWED APPS HUB MODAL */}
       <AllowedAppsModal
         isOpen={showAllowedApps}
         onClose={() => setShowAllowedApps(false)}
@@ -1030,36 +874,36 @@ export function StudyTimerHub({
         remainingTimeSec={mode === 'pomodoro' ? secondsLeft : undefined}
       />
 
-      {/* 7. ANTI-DISTRACTION PENALTY ALERT MODAL */}
+      {/* ANTI-DISTRACTION PENALTY ALERT MODAL */}
       {showDistractionWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md animate-in fade-in">
-          <div className="w-full max-w-sm rounded-3xl border-2 border-rose-500 bg-[#120B10] p-6 text-white shadow-2xl shadow-rose-950/60 text-center space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-rose-500/20 border-2 border-rose-500/50 flex items-center justify-center text-rose-400 animate-bounce">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-sm rounded-3xl border-2 border-rose-500 bg-white dark:bg-slate-900 p-6 text-slate-900 dark:text-white shadow-2xl shadow-rose-950/40 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-rose-100 dark:bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center text-rose-600 dark:text-rose-400 animate-bounce">
               <ShieldAlert className="w-8 h-8" />
             </div>
 
             <div className="space-y-1">
-              <h3 className="font-display text-lg font-black text-rose-400">
+              <h3 className="font-display text-lg font-black text-rose-600 dark:text-rose-400">
                 🚨 ফোকাস ভঙ্গ সতর্কবার্তা!
               </h3>
-              <p className="text-xs text-slate-300 font-bangla">
-                পড়ার সেশন চলাকালীন অন্য অ্যাপ বা ব্রাউজার ট্যাবে যাওয়া নিষিদ্ধ!
+              <p className="text-xs text-slate-600 dark:text-slate-300 font-bangla">
+                পড়ার সেশন চলাকালীন অন্য কোনো ব্রাউজার ট্যাব বা অ্যাপে যাওয়া নিষিদ্ধ!
               </p>
             </div>
 
-            <div className="p-3 rounded-2xl bg-rose-950/50 border border-rose-800/60 text-xs text-rose-200 space-y-1">
-              <div className="font-bold">কিরা রেগে আগুন! 😤🔥</div>
-              <div>&ldquo;ফেসবুক বা রিলস স্ক্রল করা বন্ধ করে দ্রুত টেবিলে ফিরো!&rdquo;</div>
+            <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 space-y-1">
+              <div className="font-bold">কিরা রেগে গেছে! 😼🔥</div>
+              <div>&ldquo;ফেসবুক বা রিলস স্ক্রল করা বন্ধ করে দ্রুত পড়ার টেবিলে ফিরো!&rdquo;</div>
             </div>
 
-            <div className="text-[11px] font-mono text-slate-400">
-              ফোকাস লঙ্ঘন সংখ্যা: <strong className="text-rose-400 font-bold">{distractionCount}</strong> বার
+            <div className="text-[11px] font-mono text-slate-500">
+              ফোকাস লঙ্ঘন সংখ্যা: <strong className="text-rose-600 dark:text-rose-400 font-bold">{distractionCount}</strong> বার
             </div>
 
             <button
               type="button"
               onClick={() => setShowDistractionWarning(false)}
-              className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/20 cursor-pointer active:scale-95 transition-all"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm shadow-lg shadow-blue-500/25 cursor-pointer active:scale-95 transition-all"
             >
               পড়ায় ফিরে যাচ্ছি (আমি টেবিলে আছি)
             </button>
@@ -1067,7 +911,7 @@ export function StudyTimerHub({
         </div>
       )}
 
-      {/* 8. CUSTOM MINUTES MODAL */}
+      {/* CUSTOM MINUTES MODAL */}
       {showCustomModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs"
@@ -1075,10 +919,10 @@ export function StudyTimerHub({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xs rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl space-y-4 text-white"
+            className="w-full max-w-xs rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-2xl space-y-4 text-slate-900 dark:text-white"
           >
-            <h4 className="font-bold text-white text-sm font-display">
-              Custom Focus Time (মিনিট)
+            <h4 className="font-bold text-sm font-display text-slate-900 dark:text-slate-50">
+              কাস্টম ফোকাস টাইম (মিনিট)
             </h4>
             <input
               type="number"
@@ -1086,13 +930,13 @@ export function StudyTimerHub({
               max="180"
               value={customMinInput}
               onChange={(e) => setCustomMinInput(Math.max(1, Math.min(180, Number(e.target.value))))}
-              className="w-full px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-lg font-mono font-bold text-center text-white"
+              className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-lg font-mono font-bold text-center text-slate-900 dark:text-slate-50"
             />
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowCustomModal(false)}
-                className="px-3 py-1.5 rounded-xl border border-slate-700 text-xs font-bold text-slate-300"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-400"
               >
                 বাতিল
               </button>
@@ -1102,7 +946,7 @@ export function StudyTimerHub({
                   setSecondsLeft(customMinInput * 60);
                   setShowCustomModal(false);
                 }}
-                className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-sm"
+                className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-sm"
               >
                 সেট করুন
               </button>

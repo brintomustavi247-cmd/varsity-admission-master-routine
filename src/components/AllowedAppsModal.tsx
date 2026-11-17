@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Sparkles,
   ShieldCheck,
-  Video,
 } from 'lucide-react';
 
 interface CustomAllowedApp {
@@ -156,7 +155,6 @@ export function AllowedAppsModal({
 
   const handleCalcEvaluate = () => {
     try {
-      // Safe math evaluation with Math functions
       let expression = calcDisplay
         .replace(/×/g, '*')
         .replace(/÷/g, '/')
@@ -169,7 +167,6 @@ export function AllowedAppsModal({
         .replace(/ln\(/g, 'Math.log(')
         .replace(/√\(/g, 'Math.sqrt(');
 
-      // Auto close brackets
       const openCount = (expression.match(/\(/g) || []).length;
       const closeCount = (expression.match(/\)/g) || []).length;
       for (let i = 0; i < openCount - closeCount; i++) {
@@ -229,45 +226,45 @@ export function AllowedAppsModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-3xl border border-slate-700/80 bg-[#0F1420] text-slate-100 shadow-2xl overflow-hidden shadow-indigo-950/50"
+        className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl overflow-hidden"
       >
         {/* Top Header Bar */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-slate-900/80 shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-indigo-600 flex items-center justify-center text-white shadow-md">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-display text-sm sm:text-base font-bold text-slate-50">
-                  অনুমোদিত স্টাডি টুলস ও অ্যাপস হাব
+                <h3 className="font-display text-sm sm:text-base font-bold text-slate-900 dark:text-slate-50">
+                  অনুমোদিত স্টাডি টুলস হাব
                 </h3>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-wide border border-emerald-500/30">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-[10px] font-black tracking-wide border border-emerald-300 dark:border-emerald-800">
                   ফোকাস সুরক্ষিত
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">
-                এই টুলস ব্যবহারে ফোকাস টাইমার বন্ধ হবে না এবং কোনো পেনাল্টি হবে না
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                এই টুলস ব্যবহারে ফোকাস টাইমার সেশন বিঘ্নিত হবে না
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
             {remainingTimeSec !== undefined && remainingTimeSec > 0 && (
-              <div className="px-2.5 py-1 rounded-xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-inner">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+              <div className="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
                 <span>{formatRemaining(remainingTimeSec)}</span>
               </div>
             )}
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -275,14 +272,14 @@ export function AllowedAppsModal({
         </div>
 
         {/* Navigation Tabs Bar */}
-        <div className="flex items-center gap-1 px-4 py-2 bg-slate-900/50 border-b border-slate-800/80 overflow-x-auto shrink-0 select-none">
+        <div className="flex items-center gap-1 px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 overflow-x-auto shrink-0 select-none">
           <button
             type="button"
             onClick={() => setActiveTab('calc')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
               activeTab === 'calc'
-                ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <Calculator className="w-3.5 h-3.5" />
@@ -294,8 +291,8 @@ export function AllowedAppsModal({
             onClick={() => setActiveTab('notes')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
               activeTab === 'notes'
-                ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -307,12 +304,12 @@ export function AllowedAppsModal({
             onClick={() => setActiveTab('formulas')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
               activeTab === 'formulas'
-                ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>সূত্রাবলি (Formula Sheet)</span>
+            <span>সূত্রাবলি (Formulas)</span>
           </button>
 
           <button
@@ -320,8 +317,8 @@ export function AllowedAppsModal({
             onClick={() => setActiveTab('vocab')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
               activeTab === 'vocab'
-                ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
@@ -333,8 +330,8 @@ export function AllowedAppsModal({
             onClick={() => setActiveTab('apps')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
               activeTab === 'apps'
-                ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-xs'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <ExternalLink className="w-3.5 h-3.5" />
@@ -347,51 +344,51 @@ export function AllowedAppsModal({
           {/* TAB 1: SCIENTIFIC CALCULATOR */}
           {activeTab === 'calc' && (
             <div className="max-w-md mx-auto space-y-3">
-              {/* Calculator Screen */}
-              <div className="p-4 rounded-2xl bg-[#090D15] border border-slate-800/90 text-right space-y-1 shadow-inner">
-                <div className="h-4 text-[11px] font-mono text-cyan-400 truncate">
+              {/* Screen */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-right space-y-1 shadow-inner">
+                <div className="h-4 text-[11px] font-mono text-blue-600 dark:text-cyan-400 truncate">
                   {calcSub}
                 </div>
-                <div className="text-2xl sm:text-3xl font-mono font-black text-white tracking-wider truncate tabular-nums">
+                <div className="text-2xl sm:text-3xl font-mono font-black text-slate-900 dark:text-white tracking-wider truncate tabular-nums">
                   {calcDisplay}
                 </div>
               </div>
 
-              {/* Calculator Button Grid */}
+              {/* Keypad */}
               <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
                 {/* Advanced row 1 */}
                 <button
                   type="button"
                   onClick={() => handleCalcInput('sin(')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   sin
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('cos(')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   cos
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('tan(')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   tan
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('log(')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   log
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('ln(')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   ln
                 </button>
@@ -400,35 +397,35 @@ export function AllowedAppsModal({
                 <button
                   type="button"
                   onClick={() => handleCalcInput('√(')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   √x
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('^2')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   x²
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('π')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-cyan-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   π
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('(')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-amber-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-amber-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   (
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput(')')}
-                  className="p-2.5 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-amber-300 font-mono text-xs font-bold transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-amber-300 font-mono text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   )
                 </button>
@@ -437,46 +434,46 @@ export function AllowedAppsModal({
                 <button
                   type="button"
                   onClick={handleCalcClear}
-                  className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-800/60 text-rose-300 font-bold text-xs hover:bg-rose-900/60 cursor-pointer"
+                  className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 text-rose-600 dark:text-rose-300 font-bold text-xs hover:bg-rose-200 cursor-pointer"
                 >
                   AC
                 </button>
                 <button
                   type="button"
                   onClick={handleCalcDelete}
-                  className="p-2.5 rounded-xl bg-amber-950/60 border border-amber-800/60 text-amber-300 font-bold text-xs hover:bg-amber-900/60 cursor-pointer"
+                  className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 font-bold text-xs hover:bg-amber-200 cursor-pointer"
                 >
                   DEL
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('%')}
-                  className="p-2.5 rounded-xl bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700 cursor-pointer"
+                  className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 cursor-pointer"
                 >
                   %
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('÷')}
-                  className="p-2.5 rounded-xl bg-indigo-900/60 border border-indigo-700/60 text-indigo-300 font-bold text-sm hover:bg-indigo-800/60 cursor-pointer"
+                  className="p-2.5 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-sm hover:bg-blue-200 cursor-pointer"
                 >
                   ÷
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('×')}
-                  className="p-2.5 rounded-xl bg-indigo-900/60 border border-indigo-700/60 text-indigo-300 font-bold text-sm hover:bg-indigo-800/60 cursor-pointer"
+                  className="p-2.5 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-sm hover:bg-blue-200 cursor-pointer"
                 >
                   ×
                 </button>
 
-                {/* Main keypad row 2: 7, 8, 9, -, + */}
+                {/* Keypad numbers */}
                 {['7', '8', '9'].map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => handleCalcInput(n)}
-                    className="p-3 rounded-xl bg-slate-800/90 text-white font-mono text-base font-bold hover:bg-slate-700 cursor-pointer"
+                    className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-white font-mono text-base font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
                   >
                     {n}
                   </button>
@@ -484,70 +481,68 @@ export function AllowedAppsModal({
                 <button
                   type="button"
                   onClick={() => handleCalcInput('-')}
-                  className="p-3 rounded-xl bg-indigo-900/60 border border-indigo-700/60 text-indigo-300 font-bold text-sm hover:bg-indigo-800/60 cursor-pointer"
+                  className="p-3 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-sm hover:bg-blue-200 cursor-pointer"
                 >
                   -
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('+')}
-                  className="p-3 rounded-xl bg-indigo-900/60 border border-indigo-700/60 text-indigo-300 font-bold text-sm hover:bg-indigo-800/60 cursor-pointer"
+                  className="p-3 rounded-xl bg-blue-100 dark:bg-indigo-950/60 border border-blue-200 dark:border-indigo-800 text-blue-700 dark:text-indigo-300 font-bold text-sm hover:bg-blue-200 cursor-pointer"
                 >
                   +
                 </button>
 
-                {/* Main keypad row 3: 4, 5, 6, 1, 2 */}
                 {['4', '5', '6', '1', '2'].map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => handleCalcInput(n)}
-                    className="p-3 rounded-xl bg-slate-800/90 text-white font-mono text-base font-bold hover:bg-slate-700 cursor-pointer"
+                    className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-white font-mono text-base font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
                   >
                     {n}
                   </button>
                 ))}
 
-                {/* Main keypad row 4: 3, 0, ., = */}
                 <button
                   type="button"
                   onClick={() => handleCalcInput('3')}
-                  className="p-3 rounded-xl bg-slate-800/90 text-white font-mono text-base font-bold hover:bg-slate-700 cursor-pointer"
+                  className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-white font-mono text-base font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
                 >
                   3
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('0')}
-                  className="p-3 rounded-xl bg-slate-800/90 text-white font-mono text-base font-bold hover:bg-slate-700 cursor-pointer"
+                  className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-white font-mono text-base font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
                 >
                   0
                 </button>
                 <button
                   type="button"
                   onClick={() => handleCalcInput('.')}
-                  className="p-3 rounded-xl bg-slate-800/90 text-white font-mono text-base font-bold hover:bg-slate-700 cursor-pointer"
+                  className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/90 text-slate-900 dark:text-white font-mono text-base font-bold hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
                 >
                   .
                 </button>
                 <button
                   type="button"
                   onClick={handleCalcEvaluate}
-                  className="col-span-2 p-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-lg shadow-md cursor-pointer"
+                  className="col-span-2 p-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-lg shadow-md cursor-pointer"
                 >
                   =
                 </button>
               </div>
 
-              {/* Recent History */}
+              {/* History */}
               {calcHistory.length > 0 && (
-                <div className="pt-2 border-t border-slate-800/60">
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                   <div className="text-[11px] font-bold text-slate-500 mb-1">পূর্ববর্তী হিসাব:</div>
                   <div className="space-y-1">
                     {calcHistory.map((h, i) => (
                       <div
                         key={i}
-                        className="px-2.5 py-1 rounded-lg bg-slate-900/60 text-slate-400 font-mono text-xs flex justify-between"
+                        className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 font-mono text-xs flex justify-between"
                       >
                         <span>{h}</span>
                       </div>
@@ -561,15 +556,15 @@ export function AllowedAppsModal({
           {/* TAB 2: SCRATCHPAD */}
           {activeTab === 'notes' && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-400">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span className="font-bold flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                  <FileText className="w-3.5 h-3.5 text-blue-500" />
                   <span>দ্রুত রাফ ও নোটপ্যাড (অটো-সেভ হচ্ছে)</span>
                 </span>
                 <button
                   type="button"
                   onClick={() => setScratchText('')}
-                  className="text-slate-500 hover:text-rose-400 transition-colors text-[11px]"
+                  className="text-slate-400 hover:text-rose-500 transition-colors text-[11px]"
                 >
                   সব মুছুন
                 </button>
@@ -578,7 +573,7 @@ export function AllowedAppsModal({
                 value={scratchText}
                 onChange={(e) => setScratchText(e.target.value)}
                 placeholder="এখানে ম্যাথ রাফ, সূত্রের নোট বা গুরুত্বপূর্ণ পয়েন্ট লিখে রাখুন..."
-                className="w-full h-72 p-4 rounded-2xl bg-slate-950/70 border border-slate-800 text-slate-200 text-sm font-mono focus:border-cyan-500/80 focus:outline-hidden resize-none"
+                className="w-full h-72 p-4 rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-sm font-mono focus:border-blue-500 focus:outline-hidden resize-none"
               />
             </div>
           )}
@@ -589,19 +584,21 @@ export function AllowedAppsModal({
               {FORMULA_CHEAT_SHEET.map((cat) => (
                 <div
                   key={cat.category}
-                  className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 space-y-2"
+                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2"
                 >
-                  <h4 className="text-xs font-black text-cyan-400 font-display tracking-wider uppercase">
+                  <h4 className="text-xs font-black text-blue-600 dark:text-blue-400 font-display tracking-wider uppercase">
                     {cat.category}
                   </h4>
                   <div className="space-y-1.5">
                     {cat.items.map((item) => (
                       <div
                         key={item.name}
-                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 p-2 rounded-xl bg-slate-950/50 border border-slate-800/40 text-xs"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 p-2 rounded-xl bg-white dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800/60 text-xs"
                       >
-                        <span className="font-bold text-slate-300 shrink-0">{item.name}:</span>
-                        <code className="font-mono text-indigo-300 text-[11px] sm:text-xs">
+                        <span className="font-bold text-slate-700 dark:text-slate-300 shrink-0">
+                          {item.name}:
+                        </span>
+                        <code className="font-mono text-indigo-600 dark:text-indigo-300 text-[11px] sm:text-xs">
                           {item.formula}
                         </code>
                       </div>
@@ -622,7 +619,7 @@ export function AllowedAppsModal({
                   value={vocabQuery}
                   onChange={(e) => setVocabQuery(e.target.value)}
                   placeholder="ইংরেজি শব্দ বা অর্থ দিয়ে খুঁজুন..."
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-slate-200 focus:border-cyan-500 focus:outline-hidden"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm text-slate-800 dark:text-slate-200 focus:border-blue-500 focus:outline-hidden"
                 />
               </div>
 
@@ -630,16 +627,20 @@ export function AllowedAppsModal({
                 {filteredVocab.map((v) => (
                   <div
                     key={v.word}
-                    className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1"
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-black text-white text-sm tracking-wide font-display">
+                      <span className="font-black text-slate-900 dark:text-white text-sm tracking-wide font-display">
                         {v.word}
                       </span>
-                      <span className="text-[10px] text-cyan-400 font-mono">Admission Vocab</span>
+                      <span className="text-[10px] text-blue-600 dark:text-cyan-400 font-mono font-bold">
+                        Admission Vocab
+                      </span>
                     </div>
-                    <div className="text-xs text-slate-300 font-bangla">{v.meaning}</div>
-                    <div className="text-[11px] text-slate-400">
+                    <div className="text-xs text-slate-700 dark:text-slate-300 font-bangla">
+                      {v.meaning}
+                    </div>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
                       <strong>সমার্থক:</strong> {v.syn}
                     </div>
                   </div>
@@ -652,13 +653,13 @@ export function AllowedAppsModal({
           {activeTab === 'apps' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
                   অনুমোদিত ওয়েবসাইটসমূহ নিরাপদ ট্যাবে ওপেন হবে:
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowAddApp(!showAddApp)}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>নতুন লিঙ্ক যোগ করুন</span>
@@ -669,9 +670,9 @@ export function AllowedAppsModal({
               {showAddApp && (
                 <form
                   onSubmit={handleAddApp}
-                  className="p-3.5 rounded-2xl bg-slate-900 border border-indigo-500/40 space-y-2.5 animate-in fade-in"
+                  className="p-3.5 rounded-2xl bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-blue-900/60 space-y-2.5 animate-in fade-in"
                 >
-                  <div className="text-xs font-bold text-indigo-300">
+                  <div className="text-xs font-bold text-blue-700 dark:text-blue-300">
                     নতুন অনুমোদিত স্টাডি লিঙ্ক বা পোর্টাল যোগ করুন
                   </div>
                   <input
@@ -680,7 +681,7 @@ export function AllowedAppsModal({
                     value={newAppName}
                     onChange={(e) => setNewAppName(e.target.value)}
                     placeholder="নাম (যেমন: উদ্ভাস অনলাইন পোর্টাল / ঢাকা কলেজ)"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   />
                   <input
                     type="text"
@@ -688,19 +689,19 @@ export function AllowedAppsModal({
                     value={newAppUrl}
                     onChange={(e) => setNewAppUrl(e.target.value)}
                     placeholder="URL (যেমন: online.udvash.com বা drive.google.com)"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   />
                   <div className="flex justify-end gap-2 pt-1">
                     <button
                       type="button"
                       onClick={() => setShowAddApp(false)}
-                      className="px-3 py-1 rounded-xl text-xs text-slate-400 hover:text-white"
+                      className="px-3 py-1 rounded-xl text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white"
                     >
                       বাতিল
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm"
+                      className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm"
                     >
                       সেভ করুন
                     </button>
@@ -708,17 +709,19 @@ export function AllowedAppsModal({
                 </form>
               )}
 
-              {/* List of custom apps */}
+              {/* List */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {customApps.map((app) => (
                   <div
                     key={app.id}
-                    className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/50 transition-all flex items-center justify-between gap-2 group"
+                    className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 transition-all flex items-center justify-between gap-2"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <span className="text-xl">{app.icon || '🔗'}</span>
                       <div className="min-w-0">
-                        <div className="font-bold text-xs text-slate-200 truncate">{app.name}</div>
+                        <div className="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">
+                          {app.name}
+                        </div>
                         <div className="text-[10px] text-slate-500 truncate max-w-[170px]">
                           {app.url}
                         </div>
@@ -730,7 +733,7 @@ export function AllowedAppsModal({
                         href={app.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-2.5 py-1.5 rounded-xl bg-cyan-950 border border-cyan-500/40 text-cyan-300 hover:bg-cyan-900/60 text-xs font-bold transition-colors flex items-center gap-1"
+                        className="px-2.5 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 text-xs font-bold transition-colors flex items-center gap-1"
                       >
                         <span>ওপেন</span>
                         <ExternalLink className="w-3 h-3" />
@@ -738,7 +741,7 @@ export function AllowedAppsModal({
                       <button
                         type="button"
                         onClick={() => handleDeleteApp(app.id)}
-                        className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                        className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
                         title="মুছুন"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -751,16 +754,16 @@ export function AllowedAppsModal({
           )}
         </div>
 
-        {/* Modal Bottom Footer Notice */}
-        <div className="px-5 py-3 border-t border-slate-800/80 bg-slate-950/80 flex items-center justify-between text-[11px] text-slate-400">
-          <div className="flex items-center gap-1.5 text-emerald-400">
+        {/* Modal Footer */}
+        <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between text-[11px] text-slate-500">
+          <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
             <CheckCircle2 className="w-3.5 h-3.5" />
             <span>লকডাউন স্টাডি সেশন সক্রিয়: {activeSubject}</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors"
+            className="px-3.5 py-1 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors"
           >
             ফিরে যান
           </button>
