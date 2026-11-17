@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   X,
   Calculator,
@@ -10,6 +10,9 @@ import {
   Smartphone,
   RotateCcw,
   Check,
+  Search,
+  AlertCircle,
+  HelpCircle,
 } from 'lucide-react';
 
 export interface PhoneAllowedApp {
@@ -22,11 +25,11 @@ export interface PhoneAllowedApp {
   isCustom?: boolean;
 }
 
-const DEFAULT_PHONE_APPS: PhoneAllowedApp[] = [
+const DEFAULT_PHONE_APPS_CATALOG: PhoneAllowedApp[] = [
   {
     id: 'calculator',
-    name: 'ক্যালকুলেটর (Calculator)',
-    category: 'ম্যাথ ও বিজ্ঞান',
+    name: 'ক্যালকুলেটর (Scientific / Phone Calc)',
+    category: 'ম্যাথ ও সায়েন্স',
     icon: '🧮',
     urlScheme: '#inapp-calc',
     isAllowed: true,
@@ -34,14 +37,14 @@ const DEFAULT_PHONE_APPS: PhoneAllowedApp[] = [
   {
     id: 'youtube',
     name: 'YouTube (লেকচার ও ক্লাস)',
-    category: 'স্টাডি ভিডিও',
+    category: 'ভিডিও ও লেকচার',
     icon: '🔴',
     urlScheme: 'https://youtube.com',
     isAllowed: true,
   },
   {
     id: 'gdrive',
-    name: 'গুগল ড্রাইভ ও PDF নোটস',
+    name: 'গুগল ড্রাইভ ও PDF রিডার',
     category: 'হ্যান্ডনোট ও ফাইল',
     icon: '📁',
     urlScheme: 'https://drive.google.com',
@@ -58,34 +61,66 @@ const DEFAULT_PHONE_APPS: PhoneAllowedApp[] = [
   {
     id: 'notes',
     name: 'নোটস / Keep Notes',
-    category: 'নোট লেখা',
+    category: 'নোট ও ডায়েরি',
     icon: '📝',
     urlScheme: 'https://keep.google.com',
     isAllowed: true,
   },
   {
-    id: 'telegram',
-    name: 'টেলিগ্রাম স্টাডি গ্রুপ',
-    category: 'কোচিং চ্যানেল',
-    icon: '💬',
-    urlScheme: 'https://web.telegram.org',
-    isAllowed: false,
+    id: 'udvash',
+    name: 'উদ্ভাস অনলাইন / Udvash Portal',
+    category: 'কোচিং ও ক্লাস',
+    icon: '🎓',
+    urlScheme: 'https://online.udvash-unmesh.com',
+    isAllowed: true,
+  },
+  {
+    id: 'tenms',
+    name: '10 Minute School (১০এমএস)',
+    category: 'ক্লাস ও প্র্যাকটিস',
+    icon: '🔟',
+    urlScheme: 'https://10minuteschool.com',
+    isAllowed: true,
+  },
+  {
+    id: 'shikho',
+    name: 'শিখো অ্যাপ (Shikho)',
+    category: 'পড়ালেখা',
+    icon: '📚',
+    urlScheme: 'https://shikho.com',
+    isAllowed: true,
+  },
+  {
+    id: 'camscanner',
+    name: 'ক্যামস্ক্যানার (CamScanner / Scan)',
+    category: 'নোট স্ক্যান',
+    icon: '📷',
+    urlScheme: 'https://www.camscanner.com',
+    isAllowed: true,
   },
   {
     id: 'zoom',
     name: 'Zoom / Google Meet',
-    category: 'অনলাইন লাইভ ক্লাস',
+    category: 'লাইভ ক্লাস',
     icon: '💻',
     urlScheme: 'https://meet.google.com',
     isAllowed: true,
   },
   {
-    id: 'dictionary',
-    name: 'অভিধান ও ডিকশনারি',
-    category: 'শব্দার্থ ও ভোকাব',
-    icon: '📚',
-    urlScheme: 'https://bn.wikipedia.org',
-    isAllowed: true,
+    id: 'telegram',
+    name: 'টেলিগ্রাম স্টাডি গ্রুপ',
+    category: 'স্টাডি চ্যানেল',
+    icon: '💬',
+    urlScheme: 'https://web.telegram.org',
+    isAllowed: false,
+  },
+  {
+    id: 'whatsapp',
+    name: 'হোয়াটসঅ্যাপ (জরুরি স্টাডি)',
+    category: 'মেসেজিং',
+    icon: '🟢',
+    urlScheme: 'https://web.whatsapp.com',
+    isAllowed: false,
   },
 ];
 
@@ -95,6 +130,7 @@ interface AllowedAppsModalProps {
   activeSubject?: string;
   remainingTimeSec?: number;
   onLaunchAllowedApp?: (app: PhoneAllowedApp) => void;
+  onUpdateAllowedApps?: (apps: PhoneAllowedApp[]) => void;
 }
 
 export function AllowedAppsModal({
@@ -103,18 +139,20 @@ export function AllowedAppsModal({
   activeSubject = 'ফোকাস সেশন',
   remainingTimeSec,
   onLaunchAllowedApp,
+  onUpdateAllowedApps,
 }: AllowedAppsModalProps) {
   const [activeTab, setActiveTab] = useState<'apps' | 'calc'>('apps');
 
   // Phone Allowed Apps State
   const [phoneApps, setPhoneApps] = useState<PhoneAllowedApp[]>(() => {
     try {
-      const raw = localStorage.getItem('varsity_phone_allowed_apps_v2');
+      const raw = localStorage.getItem('varsity_phone_allowed_apps_v3');
       if (raw) return JSON.parse(raw);
     } catch {}
-    return DEFAULT_PHONE_APPS;
+    return DEFAULT_PHONE_APPS_CATALOG;
   });
 
+  const [searchQuery, setSearchQuery] = useState('');
   const [newAppName, setNewAppName] = useState('');
   const [newAppUrl, setNewAppUrl] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -125,8 +163,9 @@ export function AllowedAppsModal({
   const [calcHistory, setCalcHistory] = useState<string[]>([]);
 
   useEffect(() => {
-    localStorage.setItem('varsity_phone_allowed_apps_v2', JSON.stringify(phoneApps));
-  }, [phoneApps]);
+    localStorage.setItem('varsity_phone_allowed_apps_v3', JSON.stringify(phoneApps));
+    onUpdateAllowedApps?.(phoneApps);
+  }, [phoneApps, onUpdateAllowedApps]);
 
   if (!isOpen) return null;
 
@@ -138,19 +177,18 @@ export function AllowedAppsModal({
   };
 
   // Add custom app
-  const handleAddCustomApp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newAppName.trim()) return;
-    let url = newAppUrl.trim();
+  const handleAddCustomApp = (appName: string, appUrl = '') => {
+    if (!appName.trim()) return;
+    let url = appUrl.trim();
     if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
       url = 'https://' + url;
     }
     const newEntry: PhoneAllowedApp = {
       id: `custom_${Date.now()}`,
-      name: newAppName.trim(),
+      name: appName.trim(),
       category: 'কাস্টম অ্যাপ',
       icon: '📱',
-      urlScheme: url || 'https://google.com',
+      urlScheme: url || `https://www.google.com/search?q=${encodeURIComponent(appName)}`,
       isAllowed: true,
       isCustom: true,
     };
@@ -158,6 +196,7 @@ export function AllowedAppsModal({
     setNewAppName('');
     setNewAppUrl('');
     setShowAddForm(false);
+    setSearchQuery('');
   };
 
   const handleDeleteCustomApp = (id: string) => {
@@ -232,6 +271,13 @@ export function AllowedAppsModal({
     onClose();
   };
 
+  // Filter apps by search
+  const filteredApps = phoneApps.filter(
+    (a) =>
+      a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const allowedCount = phoneApps.filter((a) => a.isAllowed).length;
 
   const formatRemaining = (sec?: number) => {
@@ -248,7 +294,7 @@ export function AllowedAppsModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl overflow-hidden"
+        className="w-full max-w-lg max-h-[92vh] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xl overflow-hidden"
       >
         {/* Top Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 shrink-0">
@@ -259,14 +305,14 @@ export function AllowedAppsModal({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-display text-sm sm:text-base font-bold text-slate-900 dark:text-slate-50">
-                  অনুমোদিত অ্যাপস ও টুলস
+                  অনুমোদিত অ্যাপস ম্যানেজার
                 </h3>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 text-[10px] font-black tracking-wide border border-emerald-300 dark:border-emerald-800">
-                  {allowedCount}টি অ্যাপ সক্রিয়
+                  {allowedCount}টি অ্যাপ অনুমোদিত
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                পড়ার সময় এই অ্যাপগুলো ব্যবহারে Aura জরিমানা কাটা হবে না
+                পড়ার সময় আপনার অনুমোদিত অ্যাপগুলোতে গেলে Aura কাটা হবে না
               </p>
             </div>
           </div>
@@ -288,7 +334,7 @@ export function AllowedAppsModal({
           </div>
         </div>
 
-        {/* Dual Tab: Allowed Phone Apps vs In-App Scientific Calculator */}
+        {/* Dual Tab Switcher */}
         <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <button
             type="button"
@@ -300,7 +346,7 @@ export function AllowedAppsModal({
             }`}
           >
             <Smartphone className="w-4 h-4" />
-            <span>ফোনের অনুমোদিত অ্যাপস ({allowedCount})</span>
+            <span>ফোনের অ্যাপস তালিকা ({allowedCount})</span>
           </button>
 
           <button
@@ -322,42 +368,64 @@ export function AllowedAppsModal({
           {/* TAB 1: PHONE ALLOWED APPS WHITELIST */}
           {activeTab === 'apps' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  পড়ার সময় ব্যবহারের জন্য অ্যাপ অনুমতি দিন:
-                </span>
+              {/* Permission & Explanation Info Card */}
+              <div className="p-3.5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/40 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                <div className="font-bold text-blue-800 dark:text-blue-300 flex items-center gap-1.5">
+                  <Smartphone className="w-4 h-4" />
+                  <span>আপনার ইচ্ছামতো ফোনের অ্যাপস নির্বাচন করুন:</span>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                  ব্রাউজার নিরাপত্তার কারণে কোনো ওয়েবসাইট সরাসরি আপনার পুরো ফোন অটো-স্ক্যান করতে পারে না। তাই নিচে আপনার ফোনে থাকা স্টাডি অ্যাপগুলোতে টিক দিন অথবা নিজের যেকোনো পছন্দের অ্যাপ লিখে অ্যাড করুন।
+                </p>
+              </div>
+
+              {/* Search & Custom Add Bar */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="ফোনের অ্যাপ খুঁজুন বা নাম লিখুন..."
+                    className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 focus:border-blue-500 focus:outline-hidden"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowAddForm(!showAddForm)}
-                  className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>কাস্টম অ্যাপ যোগ</span>
+                  <span>নতুন অ্যাপ</span>
                 </button>
               </div>
 
               {/* Add Custom App Form */}
               {showAddForm && (
                 <form
-                  onSubmit={handleAddCustomApp}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleAddCustomApp(newAppName, newAppUrl);
+                  }}
                   className="p-3.5 rounded-2xl bg-blue-50 dark:bg-slate-900 border border-blue-200 dark:border-blue-900/60 space-y-2.5 animate-in fade-in"
                 >
                   <div className="text-xs font-bold text-blue-700 dark:text-blue-300">
-                    নতুন অনুমোদিত অ্যাপ যোগ করুন
+                    নিজের ফোন থেকে যেকোনো নতুন অ্যাপ যুক্ত করুন
                   </div>
                   <input
                     type="text"
                     required
                     value={newAppName}
                     onChange={(e) => setNewAppName(e.target.value)}
-                    placeholder="অ্যাপের নাম (যেমন: উদ্ভাস অ্যাপ / কলেজ পোর্টাল)"
+                    placeholder="অ্যাপের নাম (যেমন: Samsung Calc / পদার্থবিজ্ঞান ডিকশনারি / আনঅ্যাকাডেমি)"
                     className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   />
                   <input
                     type="text"
                     value={newAppUrl}
                     onChange={(e) => setNewAppUrl(e.target.value)}
-                    placeholder="ওয়েবসাইট বা লিঙ্ক (ঐচ্ছিক)"
+                    placeholder="ওয়েব লিঙ্ক বা অ্যাপ লিঙ্ক (ঐচ্ছিক)"
                     className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100"
                   />
                   <div className="flex justify-end gap-2 pt-1">
@@ -370,17 +438,34 @@ export function AllowedAppsModal({
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm"
+                      className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm cursor-pointer"
                     >
-                      সেভ করুন
+                      যুক্ত করুন
                     </button>
                   </div>
                 </form>
               )}
 
+              {/* Quick Add Search Prompt if Not Found */}
+              {searchQuery.trim() && filteredApps.length === 0 && (
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-center space-y-2">
+                  <div className="text-xs text-slate-600 dark:text-slate-300">
+                    তালিকায় &ldquo;<strong>{searchQuery}</strong>&rdquo; পাওয়া যায়নি।
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleAddCustomApp(searchQuery)}
+                    className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-xs hover:bg-blue-700 cursor-pointer inline-flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>&ldquo;{searchQuery}&rdquo; কে অনুমোদিত অ্যাপ হিসেবে যোগ করুন</span>
+                  </button>
+                </div>
+              )}
+
               {/* List of Phone Apps */}
-              <div className="space-y-2">
-                {phoneApps.map((app) => (
+              <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
+                {filteredApps.map((app) => (
                   <div
                     key={app.id}
                     className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
@@ -396,11 +481,11 @@ export function AllowedAppsModal({
                           <span>{app.name}</span>
                           {app.isAllowed ? (
                             <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                              (অনুমোদিত)
+                              (অনুমোদিত ✓)
                             </span>
                           ) : (
                             <span className="text-[10px] font-bold text-rose-500">
-                              (লকড)
+                              (লকড 🚫)
                             </span>
                           )}
                         </div>
@@ -441,7 +526,7 @@ export function AllowedAppsModal({
                         <button
                           type="button"
                           onClick={() => handleDeleteCustomApp(app.id)}
-                          className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
                           title="মুছুন"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -454,7 +539,7 @@ export function AllowedAppsModal({
             </div>
           )}
 
-          {/* TAB 2: IN-APP SCIENTIFIC CALCULATOR */}
+          {/* TAB 2: IN-APP SCIENTIFIC CALCULATOR WITH "সব মুছুন" BUTTON */}
           {activeTab === 'calc' && (
             <div className="max-w-md mx-auto space-y-3">
               {/* Screen */}
@@ -547,9 +632,9 @@ export function AllowedAppsModal({
                 <button
                   type="button"
                   onClick={handleCalcAllClear}
-                  className="col-span-2 p-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1"
+                  className="col-span-2 p-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-4 h-4" />
                   <span>সব মুছুন (AC)</span>
                 </button>
 
@@ -671,7 +756,7 @@ export function AllowedAppsModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-1 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors"
+            className="px-3.5 py-1 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
           >
             ফিরে যান
           </button>

@@ -151,7 +151,7 @@ export function StudyTimerHub({
   const [showAllowedApps, setShowAllowedApps] = useState(false);
   const [allowedAppsList, setAllowedAppsList] = useState<PhoneAllowedApp[]>(() => {
     try {
-      const raw = localStorage.getItem('varsity_phone_allowed_apps_v2');
+      const raw = localStorage.getItem('varsity_phone_allowed_apps_v3');
       if (raw) return JSON.parse(raw);
     } catch {}
     return [];
@@ -193,6 +193,58 @@ export function StudyTimerHub({
       selectedSubject
     );
   }, [isRunning, secondsLeft, stopwatchSeconds, mode, selectedSubject, onActiveTimerChange]);
+
+  // ANDROID BACK BUTTON & SWIPE GESTURE LOCK (Popstate Trap)
+  useEffect(() => {
+    if (!isRunning || !focusLockActive) return;
+
+    // Push barrier entry into browser history to trap Android back key / gesture
+    window.history.pushState({ varsityStudyLock: true }, '', window.location.href);
+
+    const handlePopState = () => {
+      if (isRunning && focusLockActive) {
+        // Prevent exiting! Push barrier again
+        window.history.pushState({ varsityStudyLock: true }, '', window.location.href);
+
+        // Immediately trigger dramatic exit warning
+        setShowDistractionWarning(true);
+        setDistractionCount((prev) => prev + 1);
+        setLastPenaltySec(1);
+        playWarningAlertSound(true);
+        triggerHaptic(350);
+
+        sendPhoneNotification({
+          title: '🚨 ফোকাস লক সক্রিয়! বের হওয়া যাবে না!',
+          body: `তোমার ${selectedSubject} পড়ার সেশন চলছে! ব্যাক বাটন চেপে বের হওয়া নিষেধ!`,
+          mood: 'panic',
+        });
+
+        // Deduct penalty
+        onSessionCompleteAura?.(-25);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isRunning, focusLockActive, selectedSubject, onSessionCompleteAura]);
+
+  // BROWSER TAB CLOSE & RELOAD LOCK (beforeunload)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isRunning && focusLockActive) {
+        e.preventDefault();
+        e.returnValue = 'পড়ার সেশন চলছে! বের হলে Aura জরিমানা কাটা হবে!';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isRunning, focusLockActive]);
 
   // Screen Wake Lock API Controller (keeps phone screen on while studying!)
   useEffect(() => {
@@ -246,57 +298,64 @@ export function StudyTimerHub({
     };
   }, [isRunning, ambientSound, ambientVolume]);
 
-  // Real Distraction & Tab Exit Detection with Aura Penalty & Native Alert
+  // INSTANT DISTRACTION & TAB EXIT DETECTION WITH REAL AURA PENALTY
   useEffect(() => {
+    const triggerPenaltyAndAlert = (awaySec = 1) => {
+      if (!isRunning || !focusLockActive) return;
+      if (isTemporaryAllowedExitRef.current) {
+        // Allowed study app was launched; suppress warning
+        isTemporaryAllowedExitRef.current = false;
+        return;
+      }
+
+      // 1. Immediate native phone notification on lockscreen / status shade
+      sendPhoneNotification({
+        title: '🚨 ফোকাস ভঙ্গ! দ্রুত টেবিলে আসো!',
+        body: `তোমার ${selectedSubject} ফোকাস টাইমার কিন্তু চলছে! এখনই না ফিরলে AURA জরিমানা কাটা হবে!`,
+        mood: 'panic',
+      });
+
+      // 2. Alarm sound & phone vibration
+      playWarningAlertSound(true);
+      triggerHaptic(400);
+
+      // 3. Trigger immediate distraction overlay
+      setShowDistractionWarning(true);
+      setLastPenaltySec(Math.max(1, awaySec));
+      setDistractionCount((prev) => prev + 1);
+
+      // 4. Deduct real Aura from squad progress
+      onSessionCompleteAura?.(-25);
+    };
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (isRunning && focusLockActive) {
-          if (isTemporaryAllowedExitRef.current) {
-            // User went to an approved study app; suppress penalty
-            isTemporaryAllowedExitRef.current = false;
-            return;
-          }
-
           exitTimestampRef.current = Date.now();
-
-          // 1. Immediate Native Phone Notification on Notification Bar / Lockscreen
-          sendPhoneNotification({
-            title: '🚨 ফোকাস ভঙ্গ! দ্রুত টেবিলে আসো!',
-            body: `তোমার ${selectedSubject} ফোকাস টাইমার কিন্তু চলছে! এখনই না ফিরলে AURA জরিমানা কাটা হবে!`,
-            mood: 'panic',
-          });
-
-          // 2. Alarm sound & Phone vibration
-          playWarningAlertSound(true);
-          triggerHaptic(400);
+          triggerPenaltyAndAlert(1);
         }
       } else {
-        // User returned to the app!
         if (exitTimestampRef.current && isRunning && focusLockActive) {
           const awayDurationMs = Date.now() - exitTimestampRef.current;
           const awaySec = Math.round(awayDurationMs / 1000);
           exitTimestampRef.current = null;
 
-          if (awaySec >= 5) {
-            // REAL PENALTY: Deduct -25 AURA from their squad progress!
-            const penaltyAura = -25;
-            setLastPenaltySec(awaySec);
-            setDistractionCount((prev) => prev + 1);
-            setShowDistractionWarning(true);
-
-            playWarningAlertSound(true);
-            triggerHaptic(300);
-
-            // Deduct from parent database / squad leaderboard
-            onSessionCompleteAura?.(penaltyAura);
-          }
+          triggerPenaltyAndAlert(awaySec);
         }
       }
     };
 
+    const handleWindowBlur = () => {
+      if (isRunning && focusLockActive) {
+        triggerPenaltyAndAlert(1);
+      }
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleWindowBlur);
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleWindowBlur);
     };
   }, [isRunning, focusLockActive, selectedSubject, onSessionCompleteAura]);
 
@@ -1166,6 +1225,7 @@ export function StudyTimerHub({
         activeSubject={selectedSubject}
         remainingTimeSec={mode === 'pomodoro' ? secondsLeft : undefined}
         onLaunchAllowedApp={handleLaunchAllowedApp}
+        onUpdateAllowedApps={(updated) => setAllowedAppsList(updated)}
       />
 
       {/* REAL DISTRACTION PENALTY ALERT MODAL */}
