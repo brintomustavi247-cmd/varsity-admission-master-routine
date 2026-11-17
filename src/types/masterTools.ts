@@ -19,16 +19,30 @@ export interface MistakeEntry {
   isMastered: boolean; // রিভিশনে সমাধান হয়েছে কিনা
 }
 
+export type VarsityCategory =
+  | 'autonomous'
+  | 'engineering'
+  | 'agri'
+  | 'gst'
+  | 'specialized'
+  | 'medical';
+
 export interface TargetVarsityInfo {
   id: string;
   name: string;
   shortName: string;
   unit: string;
   faculty: string;
-  examDateEstimate: string; // e.g. "মে ২০২৭" or ISO date
+  examDateEstimate: string; // e.g. "১২ ডিসেম্বর ২০২৬"
   targetDateISO: string; // YYYY-MM-DD for countdown
   calculatorAllowed: boolean;
   marksBreakdown: string;
+  applicationDeadline?: string;
+  negativeMarking?: string;
+  secondTimeAllowed?: boolean;
+  officialPortalUrl?: string;
+  clashAlert?: string;
+  category?: VarsityCategory;
   tips: string;
 }
 
