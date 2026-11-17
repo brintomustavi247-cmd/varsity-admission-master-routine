@@ -1,4 +1,4 @@
-const CACHE_NAME = 'varsity-routine-v17';
+const CACHE_NAME = 'varsity-routine-v18';
 const STATIC_ASSETS = [
   '/icons/mascot-notification.png',
   '/icons/badge-cyber-cat.png',
